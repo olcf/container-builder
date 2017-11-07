@@ -17,13 +17,17 @@ set(SOURCE_FILES_SERVER Server/src/main.cpp
         Server/include/ReservationRequest.h
         Server/include/Resource.h
         Server/include/ResourceQueue.h
-        Common/src/FileMover.cpp
-        Common/include/FileMover.h)
+        Common/src/FileWriter.cpp
+        Common/include/FileWriter.h
+        Common/src/FileReader.cpp
+        Common/include/FileReader.h)
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT Client/main.cpp
-                        Common/src/FileMover.cpp
-                        Common/include/FileMover.h)
+        Common/src/FileReader.cpp
+        Common/include/FileReader.h
+        Common/src/FileWriter.cpp
+        Common/include/FileWriter.h)
 
 # Create executables
 add_executable(ContainerBuilderServer ${SOURCE_FILES_SERVER})

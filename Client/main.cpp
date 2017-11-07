@@ -3,7 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <boost/asio.hpp>
-#include "FileMover.h"
+#include "FileWriter.h"
+#include "FileReader.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -24,11 +25,11 @@ int main(int argc, char *argv[]) {
         std::ofstream outfile("container.def");
         outfile << "i'm not really a definition" << std::endl;
         outfile.close();
-        FileMover definition("container.def");
+        FileWriter definition("container.def");
         definition.write(socket);
 
         // Read the container image
-        FileMover image("container.img");
+        FileReader image("container.img");
         image.read(socket);
 
         std::cout<<"Container build\n";

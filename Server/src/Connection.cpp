@@ -7,7 +7,8 @@
 #include "Resource.h"
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-#include "FileMover.h"
+#include "FileWriter.h"
+#include "FileReader.h"
 
 void Connection::begin() {
     auto self(shared_from_this());
@@ -31,6 +32,7 @@ void Connection::begin() {
 }
 
 // Handle server side logic to handle a request to build a new container
+// TODO create builder class to handle cleaning up files on (ab)normal exit
 void Connection::handle_build_request(asio::yield_context yield) {
     // Wait in the queue for a reservation to begin
     ReservationRequest reservation(socket.get_io_service(), queue);
@@ -39,7 +41,7 @@ void Connection::handle_build_request(asio::yield_context yield) {
     // Create build directory consisting of remote endpoint and local enpoint
     // This should uniquely identify the connection as it includes the IP and port
     std::cout<<"not setting build directory\n";
-    std::string build_dir("");
+    std::string build_dir("./");
     build_dir +=  boost::lexical_cast<std::string>(socket.remote_endpoint())
             += std::string("_")
             += boost::lexical_cast<std::string>(socket.local_endpoint());
@@ -48,7 +50,7 @@ void Connection::handle_build_request(asio::yield_context yield) {
     // Copy definition file to server
     std::string definition_file(build_dir);
     definition_file += "/container.def";
-    FileMover definition(definition_file);
+    FileReader definition(definition_file);
     definition.async_read(socket, yield);
 
     // Build the container
@@ -62,8 +64,10 @@ void Connection::handle_build_request(asio::yield_context yield) {
     // Copy container to client
     std::string container_file(build_dir);
     container_file += "/container.img";
-    FileMover container(container_file);
+    FileWriter container(container_file);
     container.async_write(socket, yield);
+
+    // Remove the directory
 }
 
 void Connection::handle_diagnostic_request(asio::yield_context yield) {

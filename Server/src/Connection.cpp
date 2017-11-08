@@ -59,26 +59,32 @@ void Connection::handle_build_request(asio::yield_context yield) {
 
     // Start subprocess work
     boost::process::async_pipe pipe(socket.get_io_service());
-    boost::process::child c("/usr/bin/printenv", (boost::process::std_out & boost::process::std_err) > pipe);
+
+    boost::process::child c("/usr/bin/printenv");
+
+    boost::process::child cv("/usr/bin/printenv", (boost::process::std_out & boost::process::std_err) > pipe);
 
     // Read process pipe output and write it to the client
     // EOF will be returned as an error code when the pipe is closed...I think
     // This can also be line buffered by using async_read_until('\n')
     // TODO an extra write for each buffer is probably not good, explicit length buffers could fix this
     boost::system::error_code ec;
-    boost::asio::streambuf buffer;
+    //size_t buffer_size = 32;
+    boost::asio::streambuf buffer();
     uint64_t bytes_read;
-    while( bytes_read = boost::asio::async_read(pipe, buffer, yield[ec]) ) {
+    do {
+        bytes_read = boost::asio::async_read(pipe, buffer, yield[ec]);
         // Send the header indicating the number of bytes in the send message
         asio::async_write(socket, asio::buffer(&bytes_read, sizeof(uint64_t)), yield);
         asio::async_write(socket, buffer, asio::transfer_exactly(bytes_read), yield);
         if(ec && ec != asio::error::eof) {
             std::cout<< "some sort of error\n";
         }
-    }
+    } while (bytes_read != 0);
 
     // Send termination to client so it knows we're streaming output done
-    asio::async_write(socket, asio::buffer('\0', 1), yield);
+    size_t end_header(0);
+    asio::async_write(socket, asio::buffer(&end_header, sizeof(uint64_t)), yield);
 
     // Copy container to client
     std::string container_file(build_dir);

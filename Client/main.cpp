@@ -39,23 +39,20 @@ int main(int argc, char *argv[]) {
 
         // Read the build output
         asio::streambuf buf;
-        size_t read_bytes;
+        size_t read_bytes = 0;
         boost::system::error_code ec;
         uint64_t message_size;
         for(;;) {
             // Read header
             asio::read(socket, asio::buffer(&message_size, sizeof(uint64_t)));
-            // If our header is \0 we break as we're done streaming output
+            // If message size is 0 the server is done streaming output
             if(message_size == 0)
                 break;
             else {
-                asio::read(socket, buf, message_size);
-                std::istream stream(&buf);
-                std::string string;
-                std::getline(stream, string);
-                std::cout << string << std::endl;
+                asio::read(socket, buf, asio::transfer_exactly(message_size));
+                std::string s( (std::istreambuf_iterator<char>(&buf)), std::istreambuf_iterator<char>() );
+                std::cout<<s;
             }
-
         }
 
         // Read the container image

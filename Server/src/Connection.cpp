@@ -67,18 +67,18 @@ void Connection::handle_build_request(asio::yield_context yield) {
     // TODO an extra write for each buffer is probably not good, explicit length buffers could fix this
     boost::system::error_code ec;
     boost::asio::streambuf buffer;
-    size_t bytes_read;
+    uint64_t bytes_read;
     while( bytes_read = boost::asio::async_read(pipe, buffer, yield[ec]) ) {
-        // Send the character s, for success?, to indicate a buffer will be sent
-        asio::async_write(socket, asio::buffer('s', 1), yield);
-        asio::async_write(socket, buffer, yield);
+        // Send the header indicating the number of bytes in the send message
+        asio::async_write(socket, asio::buffer(&bytes_read, sizeof(uint64_t)), yield);
+        asio::async_write(socket, buffer, asio::transfer_exactly(bytes_read), yield);
         if(ec && ec != asio::error::eof) {
             std::cout<< "some sort of error\n";
         }
     }
 
-    // Send termination to client so it knows we're done
-
+    // Send termination to client so it knows we're streaming output done
+    asio::async_write(socket, asio::buffer('\0', 1), yield);
 
     // Copy container to client
     std::string container_file(build_dir);

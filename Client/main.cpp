@@ -41,12 +41,21 @@ int main(int argc, char *argv[]) {
         asio::streambuf buf;
         size_t read_bytes;
         boost::system::error_code ec;
-        char header;
-        while(header...something or another...asio::read(socket, buf, ec)) {
-            std::istream stream(&buf);
-            std::string string;
-            std::getline(stream, string);
-            std::cout << string << std::endl;
+        uint64_t message_size;
+        for(;;) {
+            // Read header
+            asio::read(socket, asio::buffer(&message_size, sizeof(uint64_t)));
+            // If our header is \0 we break as we're done streaming output
+            if(message_size == 0)
+                break;
+            else {
+                asio::read(socket, buf, message_size);
+                std::istream stream(&buf);
+                std::string string;
+                std::getline(stream, string);
+                std::cout << string << std::endl;
+            }
+
         }
 
         // Read the container image

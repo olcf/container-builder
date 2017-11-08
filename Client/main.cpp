@@ -39,17 +39,14 @@ int main(int argc, char *argv[]) {
 
         // Read the build output
         asio::streambuf buf;
-        for(int i=0; i<20; i++) {
-            boost::system::error_code ec;
-            auto bytes = asio::read(socket, buf, ec);
-            if(!ec || ec == asio::error::eof) {
-                std::cout<<"good to go\n";
-            }
-            std::cout<<"bytes: "<<bytes<<std::endl;
+        size_t read_bytes;
+        boost::system::error_code ec;
+
+        while(read_bytes = asio::read(socket, buf, ec)) {
             std::istream stream(&buf);
             std::string string;
             std::getline(stream, string);
-            std::cout << "output: " << string << std::endl;
+            std::cout << string << std::endl;
         }
 
         // Read the container image

@@ -59,26 +59,21 @@ void Connection::handle_build_request(asio::yield_context yield) {
 
     // Start subprocess work
     boost::process::async_pipe pipe(socket.get_io_service());
-    boost::process::child c("/usr/bin/nm", "a.out", (boost::process::std_out & boost::process::std_err) > pipe);
+    boost::process::child c("/usr/bin/printenv", (boost::process::std_out & boost::process::std_err) > pipe);
 
-    // Read pipe, while it's open, with line buffering and write to client
-    // EOF will be returned as an error code
+    // Read process pipe output and write it to the client
+    // EOF will be returned as an error code when the pipe is closed...I think
+    // This can also be line buffered by using async_read_until('\n')
+    // TODO handle other errors
     boost::system::error_code ec;
     boost::asio::streambuf buffer;
-    //TODO: Can we be sure pipe stays open until all bytes read?
-    while(pipe.is_open()) {
-//        auto bytes = boost::asio::async_read_until(pipe, buffer, '\n', yield[ec]);
-        auto bytes = boost::asio::async_read(pipe, buffer, yield[ec]);
-        // Can also test for ec == EOF
-        if((!ec || ec == asio::error::eof) && bytes != 0) {
-            auto bytes = asio::async_write(socket, buffer, yield);
-            std::cout<<"bytes write: "<<bytes<<std::endl;
-        }
-        else {
-            std::cout<<"crap: "<<ec.message()<<std::endl;
-            break;
-        }
+    size_t bytes_read;
+    while( bytes_read = boost::asio::async_read(pipe, buffer, yield[ec]) ) {
+        asio::async_write(socket, buffer, yield);
     }
+
+    // Send termination to client so it knows we're done
+
 
     // Copy container to client
     std::string container_file(build_dir);

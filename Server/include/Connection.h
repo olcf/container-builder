@@ -22,5 +22,3 @@ private:
     // Send queue diagnostic information
     void handle_diagnostic_request(asio::yield_context yield);
 };
-
-std::string async_read_line(tcp::socket &socket, asio::yield_context &yield);

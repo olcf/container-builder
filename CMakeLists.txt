@@ -20,7 +20,9 @@ set(SOURCE_FILES_SERVER Server/src/main.cpp
         Common/src/FileWriter.cpp
         Common/include/FileWriter.h
         Common/src/FileReader.cpp
-        Common/include/FileReader.h)
+        Common/include/FileReader.h
+        Server/src/Builder.cpp
+        Server/include/Builder.h)
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT Client/main.cpp
@@ -38,7 +40,7 @@ find_package(Threads REQUIRED)
 target_link_libraries(ContainerBuilderServer ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(ContainerBuilderClient ${CMAKE_THREAD_LIBS_INIT})
 
-find_package(Boost 1.64.0 COMPONENTS system coroutine filesystem serialization REQUIRED)
+find_package(Boost 1.64.0 COMPONENTS system coroutine filesystem serialization regex REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(ContainerBuilderServer ${Boost_LIBRARIES})
 target_link_libraries(ContainerBuilderClient ${Boost_LIBRARIES})

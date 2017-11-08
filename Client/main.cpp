@@ -42,18 +42,19 @@ int main(int argc, char *argv[]) {
         size_t read_bytes = 0;
         boost::system::error_code ec;
         uint64_t message_size;
-        for(;;) {
+        do {
             // Read header
             asio::read(socket, asio::buffer(&message_size, sizeof(uint64_t)));
             // If message size is 0 the server is done streaming output
-            if(message_size == 0)
+            if(message_size == 0) {
                 break;
+            }
             else {
                 asio::read(socket, buf, asio::transfer_exactly(message_size));
                 std::string s( (std::istreambuf_iterator<char>(&buf)), std::istreambuf_iterator<char>() );
                 std::cout<<s;
             }
-        }
+        } while(message_size > 0);
 
         // Read the container image
         FileReader image("container.img");

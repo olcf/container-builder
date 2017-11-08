@@ -58,17 +58,20 @@ void Connection::handle_build_request(asio::yield_context yield) {
 
 
     // Start subprocess work
-    asio::streambuf buf;
-    boost::process::child c("/usr/bin/nm", "a.out", (boost::process::std_out & boost::process::std_err) > buf, socket.get_io_service());
-//        boost::asio::async_read(ap, boost::asio::buffer(buf), yield);
+    std::string buf;
+    boost::process::async_pipe ap(socket.get_io_service());
 
-    c.wait();
-    std::istream buf_stream(&buf);
-    std::string buf_string;
-    std::getline(buf_stream, buf_string);
-    std::cout<<"shit: "<< buf_string<<std::endl;
+    boost::process::child c("/usr/bin/nm", "a.out", (boost::process::std_out & boost::process::std_err) > ap);
 
-//        asio::async_write(socket, buf, yield);
+    // Read pipe line by line
+    bool line_empty=false;
+    while(c.running() && !line_empty) {
+        boost::asio::async_read_until(ap, boost::asio::buffer(buf), '/n', yield);
+        if(buf.empty())
+          line_empty = true;
+        else
+          asio::async_write(socket, buf, yield);
+    }
 
     // Copy container to client
     std::string container_file(build_dir);

@@ -9,6 +9,15 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
+std::string read_line(tcp::socket &socket) {
+    asio::streambuf reserve_buffer;
+    asio::read_until(socket, reserve_buffer, '\n');
+    std::istream reserve_stream(&reserve_buffer);
+    std::string reserve_string;
+    std::getline(reserve_stream, reserve_string);
+    return reserve_string;
+}
+
 int main(int argc, char *argv[]) {
     try {
         asio::io_service io_service;
@@ -28,11 +37,15 @@ int main(int argc, char *argv[]) {
         FileWriter definition("container.def");
         definition.write(socket);
 
+        // Read the build output
+        auto output = read_line(socket);
+        std::cout<<"output: "<<output<<std::endl;
+
         // Read the container image
         FileReader image("container.img");
         image.read(socket);
 
-        std::cout<<"Container build\n";
+        std::cout<<"Container built!\n";
 
     }
     catch (std::exception &e) {

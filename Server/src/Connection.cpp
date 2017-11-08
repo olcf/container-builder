@@ -7,6 +7,7 @@
 #include "Resource.h"
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/process.hpp>
 #include "FileWriter.h"
 #include "FileReader.h"
 
@@ -54,12 +55,20 @@ void Connection::handle_build_request(asio::yield_context yield) {
     definition.async_read(socket, yield);
 
     // Build the container
-    // TODO : Actually build the container asynchronously
-    // While streaming output line by line
-    std::cout<<"Building container!\n"<<std::endl;
-    std::ofstream outfile(build_dir + "/container.img");
-    outfile << "i'm not really a container" << std::endl;
-    outfile.close();
+
+
+    // Start subprocess work
+    asio::streambuf buf;
+    boost::process::child c("/usr/bin/nm", "a.out", (boost::process::std_out & boost::process::std_err) > buf, socket.get_io_service());
+//        boost::asio::async_read(ap, boost::asio::buffer(buf), yield);
+
+    c.wait();
+    std::istream buf_stream(&buf);
+    std::string buf_string;
+    std::getline(buf_stream, buf_string);
+    std::cout<<"shit: "<< buf_string<<std::endl;
+
+//        asio::async_write(socket, buf, yield);
 
     // Copy container to client
     std::string container_file(build_dir);

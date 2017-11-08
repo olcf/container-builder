@@ -41,8 +41,8 @@ int main(int argc, char *argv[]) {
         asio::streambuf buf;
         size_t read_bytes;
         boost::system::error_code ec;
-
-        while(read_bytes = asio::read(socket, buf, ec)) {
+        char header;
+        while(header...something or another...asio::read(socket, buf, ec)) {
             std::istream stream(&buf);
             std::string string;
             std::getline(stream, string);

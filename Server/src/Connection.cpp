@@ -64,12 +64,17 @@ void Connection::handle_build_request(asio::yield_context yield) {
     // Read process pipe output and write it to the client
     // EOF will be returned as an error code when the pipe is closed...I think
     // This can also be line buffered by using async_read_until('\n')
-    // TODO handle other errors
+    // TODO an extra write for each buffer is probably not good, explicit length buffers could fix this
     boost::system::error_code ec;
     boost::asio::streambuf buffer;
     size_t bytes_read;
     while( bytes_read = boost::asio::async_read(pipe, buffer, yield[ec]) ) {
+        // Send the character s, for success?, to indicate a buffer will be sent
+        asio::async_write(socket, asio::buffer('s', 1), yield);
         asio::async_write(socket, buffer, yield);
+        if(ec && ec != asio::error::eof) {
+            std::cout<< "some sort of error\n";
+        }
     }
 
     // Send termination to client so it knows we're done

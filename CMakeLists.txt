@@ -46,3 +46,5 @@ find_package(Boost 1.64.0 COMPONENTS system coroutine filesystem serialization r
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(ContainerBuilderServer ${Boost_LIBRARIES})
 target_link_libraries(ContainerBuilderClient ${Boost_LIBRARIES})
+
+install (TARGETS ContainerBuilderServer ContainerBuilderClient RUNTIME DESTINATION bin)

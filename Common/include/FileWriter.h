@@ -11,6 +11,7 @@ class FileWriter {
 public:
     explicit FileWriter(std::string file_name) : file_name(file_name),
                                                 file_size(0) {
+        file.exceptions(std::fstream::failbit);
         file.open(file_name, std::fstream::in | std::fstream::binary);
 
         // Get filesize

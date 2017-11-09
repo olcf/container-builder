@@ -11,6 +11,7 @@ class FileReader {
 public:
     explicit FileReader(std::string file_name) : file_name(file_name),
                                                 file_size(0) {
+        file.exceptions(std::fstream::failbit);
         file.open(file_name, std::fstream::out | std::fstream::binary | std::fstream::trunc);
     }
 

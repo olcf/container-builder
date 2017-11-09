@@ -22,14 +22,15 @@ public:
     {};
 
     ~DockerBackend() {
-        std::cerr << "Attempting to kill docker..." << std::endl;
         std::string stop_command;
         stop_command += "docker stop " + docker_name;
-        boost::process::system(stop_command);
+        boost::process::child stop_dock(stop_command);
+        stop_dock.detach();
 
         std::string rm_command;
         rm_command += "docker rm " + docker_name;
-        boost::process::system(rm_command);
+        boost::process::child rm_dock(rm_command);
+        rm_dock.detach();
     }
 
     void build_singularity_container();

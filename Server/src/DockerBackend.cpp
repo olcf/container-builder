@@ -8,4 +8,5 @@ void DockerBackend::build_singularity_container() {
                       + ",destination=/work_dir -w /work_dir singularity_builder";
 
     boost::process::child docker_proc(docker_command, (boost::process::std_out & boost::process::std_err) > std_pipe);
+    docker_proc.detach();
 }

@@ -55,6 +55,7 @@ void Builder::build_container() {
     boost::regex line_matcher{"\\r|\\n"};
     do {
         bytes_read = asio::async_read_until(std_pipe, buffer, line_matcher, yield[ec]);
+
         // TODO just prepend size to buffer(?)
         // Send the header indicating the number of bytes in the send message
         asio::async_write(socket, asio::buffer(&bytes_read, sizeof(uint64_t)), yield);

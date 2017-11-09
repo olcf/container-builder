@@ -23,12 +23,12 @@ public:
 
     ~DockerBackend() {
         std::string stop_command;
-        stop_command += "docker stop " + docker_name;
+        stop_command += "/usr/bin/docker stop " + docker_name;
         boost::process::child stop_dock(stop_command);
         stop_dock.detach();
 
         std::string rm_command;
-        rm_command += "docker rm " + docker_name;
+        rm_command += "/usr/bin/docker rm " + docker_name;
         boost::process::child rm_dock(rm_command);
         rm_dock.detach();
     }

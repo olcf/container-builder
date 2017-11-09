@@ -27,8 +27,9 @@ void Builder::singularity_build() {
 }
 
 std::string Builder::definition_filename() {
-    std::string definition_filename(build_directory);
-    definition_filename += "/container.def";
+    std::string def_filename(build_directory);
+    def_filename += "/container.def";
+    return def_filename;
 }
 
 // Copy definition file to server

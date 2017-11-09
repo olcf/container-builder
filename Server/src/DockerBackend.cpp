@@ -2,7 +2,7 @@
 
 void DockerBackend::build_singularity_container() {
     std::string docker_command;
-    docker_command += "docker run --device=" + loop_device +
+    docker_command += "docker run --device=" + resource.loop_device +
                       " --security-opt apparmor=docker-singularity --cap-add SYS_ADMIN --name "
                       + docker_name + " --mount type=bind,source=" + working_directory
                       + ",destination=/work_dir -w /work_dir singularity_builder";

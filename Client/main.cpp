@@ -45,15 +45,11 @@ int main(int argc, char *argv[]) {
         do {
             // Read header
             asio::read(socket, asio::buffer(&message_size, sizeof(uint64_t)));
-            // If message size is 0 the server is done streaming output
-            if(message_size == 0) {
-                break;
-            }
-            else {
-                asio::read(socket, buf, asio::transfer_exactly(message_size));
-                std::string s( (std::istreambuf_iterator<char>(&buf)), std::istreambuf_iterator<char>() );
-                std::cout<<s;
-            }
+            // Read the message
+            asio::read(socket, buf, asio::transfer_exactly(message_size));
+            // Convert the buffer to a string and print
+            std::string s( (std::istreambuf_iterator<char>(&buf)), std::istreambuf_iterator<char>() );
+            std::cout<<s;
         } while(message_size > 0);
 
         // Read the container image

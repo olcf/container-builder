@@ -61,11 +61,7 @@ void Builder::build_container() {
         asio::async_write(socket, asio::buffer(&bytes_read, sizeof(uint64_t)), yield);
         // Send the message
         asio::async_write(socket, buffer, asio::transfer_exactly(bytes_read), yield);
-    } while (bytes_read != 0);
-
-    // Send termination to client so it knows we're streaming output done
-    size_t end_header(0);
-    asio::async_write(socket, asio::buffer(&end_header, sizeof(uint64_t)), yield);
+    } while (bytes_read > 0);
 }
 
 void Builder::send_image() {

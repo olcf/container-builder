@@ -6,6 +6,7 @@
 #include <boost/asio/spawn.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include <Resource.h>
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -37,9 +38,11 @@ private:
     void receive_definition();
     void build_container();
     void send_image();
+    std::string definition_filename();
 
     tcp::socket& socket;
     ResourceQueue& queue;
     asio::yield_context& yield;
     std::string build_directory;
+    Resource resource;
 };

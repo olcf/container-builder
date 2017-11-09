@@ -21,10 +21,10 @@ int main(int argc, char *argv[]) {
 
         ResourceQueue job_queue;
         Resource resource;
-        resource.loop_id = 0;
+        resource.loop_device = "/dev/loop0";
         resource.host = std::string("localhost");
         job_queue.add_resource(resource);
-        resource.loop_id = 1;
+        resource.loop_device = "/dev/loop1";
         job_queue.add_resource(resource);
 
         // Wait for connections

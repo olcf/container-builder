@@ -22,7 +22,9 @@ set(SOURCE_FILES_SERVER Server/src/main.cpp
         Common/src/FileReader.cpp
         Common/include/FileReader.h
         Server/src/Builder.cpp
-        Server/include/Builder.h)
+        Server/include/Builder.h
+        Server/src/DockerBackend.cpp
+        Server/include/DockerBackend.h)
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT Client/main.cpp

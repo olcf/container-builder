@@ -8,12 +8,13 @@
 #include "FileReader.h"
 #include <boost/regex.hpp>
 #include <boost/process.hpp>
+#include "DockerBackend.h"
 
 void Builder::singularity_build() {
 
     // Wait in the queue for a reservation to begin
     ReservationRequest reservation(socket.get_io_service(), queue);
-    auto resource = reservation.async_wait(yield);
+    resource = reservation.async_wait(yield);
 
     // Copy the definition file from the client
     receive_definition();
@@ -25,19 +26,24 @@ void Builder::singularity_build() {
     send_image();
 }
 
+std::string Builder::definition_filename() {
+    std::string definition_filename(build_directory);
+    definition_filename += "/container.def";
+}
+
+// Copy definition file to server
 void Builder::receive_definition() {
-    // Copy definition file to server
-    std::string definition_file(build_directory);
-    definition_file += "/container.def";
-    FileReader definition(definition_file);
+    FileReader definition(definition_filename());
     definition.async_read(socket, yield);
 }
 
 void Builder::build_container() {
     // Start subprocess work
-    boost::process::async_pipe pipe(socket.get_io_service());
+    boost::process::async_pipe std_pipe(socket.get_io_service());
 
-    boost::process::child cv("/usr/bin/printenv", (boost::process::std_out & boost::process::std_err) > pipe);
+    // Start the build process, stdout/err will be passed to std_pipe for reading
+    DockerBackend docker(resource, std_pipe, definition_filename());
+    docker.build_singularity_container();
 
     // Read process pipe output and write it to the client
     // EOF will be returned as an error code when the pipe is closed...I think
@@ -47,16 +53,12 @@ void Builder::build_container() {
     uint64_t bytes_read;
     boost::regex line_matcher{"\\r|\\n"};
     do {
-        bytes_read = asio::async_read_until(pipe, buffer, line_matcher, yield[ec]);
+        bytes_read = asio::async_read_until(std_pipe, buffer, line_matcher, yield[ec]);
         // TODO just prepend size to buffer(?)
         // Send the header indicating the number of bytes in the send message
         asio::async_write(socket, asio::buffer(&bytes_read, sizeof(uint64_t)), yield);
-
         // Send the message
         asio::async_write(socket, buffer, asio::transfer_exactly(bytes_read), yield);
-        if (ec && ec != asio::error::eof) {
-            std::cout << "some sort of error\n";
-        }
     } while (bytes_read != 0);
 
     // Send termination to client so it knows we're streaming output done

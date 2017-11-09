@@ -12,7 +12,7 @@ using asio::ip::tcp;
 
 class Resource {
 public:
-    int loop_id;
+    std::string loop_device;
     std::string host;
 
     // Async write of a Resource
@@ -30,7 +30,7 @@ namespace boost {
 
         template<class Archive>
         void serialize(Archive &ar, Resource &res, const unsigned int version) {
-            ar & res.loop_id;
+            ar & res.loop_device;
             ar & res.host;
         }
     } // namespace serialization

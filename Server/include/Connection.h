@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ResourceQueue.h"
-#include "logger.h"
+#include "Logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;

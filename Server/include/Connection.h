@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ResourceQueue.h"
+#include "logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -8,7 +9,13 @@ using asio::ip::tcp;
 class Connection : public std::enable_shared_from_this<Connection> {
 public:
     explicit Connection(tcp::socket socket, ResourceQueue &queue) : socket(std::move(socket)),
-                                                                    queue(queue) {}
+                                                                    queue(queue) {
+        logger::write(this->socket, "Established connection");
+    }
+
+    ~Connection() {
+        logger::write(socket, "Ending connection");
+    }
 
     void begin();
 

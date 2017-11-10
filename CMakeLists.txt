@@ -24,7 +24,9 @@ set(SOURCE_FILES_SERVER Server/src/main.cpp
         Server/src/Builder.cpp
         Server/include/Builder.h
         Server/src/DockerBackend.cpp
-        Server/include/DockerBackend.h)
+        Server/include/DockerBackend.h
+        Server/src/Logger.cpp
+        Server/include/Logger.h)
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT Client/main.cpp
@@ -37,12 +39,8 @@ set(SOURCE_FILES_CLIENT Client/main.cpp
 add_executable(ContainerBuilderServer ${SOURCE_FILES_SERVER})
 add_executable(ContainerBuilderClient ${SOURCE_FILES_CLIENT})
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-target_link_libraries(ContainerBuilderServer ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(ContainerBuilderClient ${CMAKE_THREAD_LIBS_INIT})
 
-find_package(Boost 1.64.0 COMPONENTS system coroutine filesystem serialization regex REQUIRED)
+find_package(Boost 1.64.0 COMPONENTS system coroutine filesystem serialization regex log log_setup thread REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(ContainerBuilderServer ${Boost_LIBRARIES})
 target_link_libraries(ContainerBuilderClient ${Boost_LIBRARIES})

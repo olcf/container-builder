@@ -6,11 +6,16 @@
 #include "Reservation.h"
 #include "ResourceQueue.h"
 #include "Connection.h"
+#include "logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
 int main(int argc, char *argv[]) {
+
+    // Enable logging
+    logger::init("ContainerBuilder.log");
+
     try {
         if (argc != 2) {
             std::cerr << "Usage: echo_server <port>\n";
@@ -37,8 +42,11 @@ int main(int argc, char *argv[]) {
                             boost::system::error_code ec;
                             tcp::socket socket(io_service);
                             acceptor.async_accept(socket, yield[ec]);
-                            if (!ec)
+                            if (!ec) {
                                 std::make_shared<Connection>(std::move(socket), job_queue)->begin();
+                            } else {
+                                logger::write("New connection error: " + ec.message());
+                            }
                         }
                     });
 

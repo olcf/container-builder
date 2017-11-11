@@ -1,5 +1,6 @@
 #include "ResourceQueue.h"
 #include <iostream>
+#include "Logger.h"
 
 // Create a new queue reservation and return it to the requester
 void ResourceQueue::enter(Reservation *reservation) {
@@ -26,7 +27,9 @@ void ResourceQueue::exit(Reservation *reservation) noexcept {
             }
         }
     } catch (std::exception const &e) {
-        std::cerr << "Exception in ResourceQueue.exit(): " << e.what() << std::endl;
+        std::string except("Exception: ");
+        except += e.what();
+        logger::write(except);
     }
 }
 

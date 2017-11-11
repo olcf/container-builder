@@ -33,10 +33,14 @@ void FileReader::async_read(tcp::socket &socket, asio::yield_context yield) {
 
     // Read size of file
     auto header_size = sizeof(std::streampos);
-    asio::async_read(socket, asio::buffer(&file_size, header_size), yield);
+
+    std::cout<<file_size<<std::endl;
+    auto shit = asio::async_read(socket, asio::buffer(&file_size, header_size), yield);
+    std::cout<<file_size<<std::endl;
 
     // Read buffered file
     auto bytes_remaining = file_size;
+
     while (bytes_remaining > 0) {
         auto bytes_to_read = std::min<std::streampos>(buffer.size(), bytes_remaining);
 

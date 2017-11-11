@@ -33,7 +33,9 @@ set(SOURCE_FILES_CLIENT Client/main.cpp
         Common/src/FileReader.cpp
         Common/include/FileReader.h
         Common/src/FileWriter.cpp
-        Common/include/FileWriter.h)
+        Common/include/FileWriter.h
+        Server/src/Logger.cpp
+        Server/include/Logger.h)
 
 # Create executables
 add_executable(ContainerBuilderServer ${SOURCE_FILES_SERVER})

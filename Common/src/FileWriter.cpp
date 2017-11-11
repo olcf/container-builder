@@ -10,8 +10,10 @@ void FileWriter::write(tcp::socket &socket) {
     // Set cursor back to beginning of file
     file.seekg(0, std::ios::beg);
 
+    std::cout<<"file size: "<<file_size<<std::endl;
     // Send size of file
     asio::write(socket, asio::buffer(&file_size, sizeof(std::streampos)));
+    std::cout<<"file size: "<<file_size<<std::endl;
 
     // Send buffered file
     auto bytes_remaining = file_size;

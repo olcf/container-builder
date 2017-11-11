@@ -3,6 +3,7 @@
 #include <fstream>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/spawn.hpp>
+#include "Logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -11,8 +12,13 @@ class FileWriter {
 public:
     explicit FileWriter(std::string file_name) : file_name(file_name),
                                                 file_size(0) {
-        file.exceptions(std::fstream::failbit);
-        file.open(file_name, std::fstream::in | std::fstream::binary);
+        file.exceptions(std::fstream::failbit | std::ifstream::badbit);
+
+        try {
+            file.open(file_name, std::fstream::in | std::fstream::binary);
+        } catch (std::system_error& e) {
+            logger::write(e.code().message());
+        }
 
         // Get filesize
         file.seekg(0, std::ios::end);

@@ -27,10 +27,12 @@ void Connection::begin() {
                         else if (reserve_message == "diagnostic_request")
                             handle_diagnostic_request(yield);
                         else
-                            throw std::system_error(EPERM, std::system_category());
+                            throw std::system_error(EPERM, std::system_category(), reserve_message);
                     }
                     catch (std::exception &e) {
-                        std::cout << "Exception: " << e.what() << std::endl;
+                        std::string except("Exception: ");
+                        except += e.what();
+                        logger::write(socket, except);
                     }
                 });
 }

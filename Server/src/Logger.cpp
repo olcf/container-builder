@@ -3,7 +3,6 @@
 #include "Logger.h"
 #include <boost/lexical_cast.hpp>
 
-
 namespace logger {
     BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(global_log, src::logger_mt)
 

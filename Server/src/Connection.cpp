@@ -6,7 +6,7 @@
 
 // Async read a line message into a string
 std::string async_read_line(tcp::socket &socket, asio::yield_context &yield) {
-    asio::streambuf reserve_buffer;
+    asio::streambuf reserve_buffer(14);
     asio::async_read_until(socket, reserve_buffer, '\n', yield);
     std::istream reserve_stream(&reserve_buffer);
     std::string reserve_string;

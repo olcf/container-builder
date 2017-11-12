@@ -33,7 +33,7 @@ public:
     void write(tcp::socket &socket);
 private:
     const std::string file_name;
-    std::fstream file;
+    std::ifstream file;
     std::streampos file_size;
     std::array<char, 1024> buffer;
 };

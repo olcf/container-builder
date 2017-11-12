@@ -3,8 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include <boost/asio.hpp>
-#include "FileWriter.h"
-#include "FileReader.h"
+#include "WriteFile.h"
+#include "ReadFile.h"
+#include "WriteMessage.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -17,15 +18,15 @@ int main(int argc, char *argv[]) {
         asio::connect(socket, resolver.resolve({std::string("localhost"), std::string("12345")}));
 
         // Initiate a build request
-        std::string request_message("build_request\n");
-        asio::write(socket, asio::buffer(request_message));
+        std::string request_message("build_request");
+        message::write(socket, asio::buffer(request_message), request_message.size());
 
         // Send the definition file
         std::cout<<"creating fake definition file\n";
         std::ofstream outfile("container.def");
         outfile << "i'm not really a definition" << std::endl;
         outfile.close();
-        FileWriter definition("container.def");
+        WriteFile definition("container.def");
         definition.write(socket);
 
         // Read the build output
@@ -44,7 +45,7 @@ int main(int argc, char *argv[]) {
         } while(message_size > 0);
 
         // Read the container image
-        FileReader image("container.img");
+        ReadFile image("container.img");
         image.read(socket);
 
         std::cout<<"Container built!\n";

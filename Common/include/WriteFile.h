@@ -8,9 +8,9 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
-class FileWriter {
+class WriteFile {
 public:
-    explicit FileWriter(std::string file_name) : file_name(file_name),
+    explicit WriteFile(std::string file_name) : file_name(file_name),
                                                 file_size(0) {
         file.exceptions(std::fstream::failbit | std::ifstream::badbit);
 
@@ -25,7 +25,7 @@ public:
         file_size = file.tellg();
     }
 
-    ~FileWriter() {
+    ~WriteFile() {
         file.close();
     }
 

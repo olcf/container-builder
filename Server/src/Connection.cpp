@@ -1,33 +1,24 @@
 #include "Connection.h"
-#include "iostream"
-#include <boost/asio/read_until.hpp>
 #include "Builder.h"
+#include "ReadMessage.h"
 #include <boost/asio/streambuf.hpp>
-
-// Async read a line message into a string
-std::string async_read_line(tcp::socket &socket, asio::yield_context &yield) {
-    asio::streambuf reserve_buffer(14);
-    asio::async_read_until(socket, reserve_buffer, '\n', yield);
-    std::istream reserve_stream(&reserve_buffer);
-    std::string reserve_string;
-    std::getline(reserve_stream, reserve_string);
-    return reserve_string;
-}
 
 void Connection::begin() {
     auto self(shared_from_this());
     asio::spawn(socket.get_io_service(),
                 [this, self](asio::yield_context yield) {
                     try {
-
                         // Read initial request type from client
-                        auto reserve_message = async_read_line(socket, yield);
-                        if (reserve_message == "build_request")
+                        std::array<char, 127> initial_buffer;
+                        message::async_read<std::size_t>(socket, asio::buffer(initial_buffer), yield);
+                        std::string initial_message(initial_buffer.data());
+
+                        if (initial_message == "build_request")
                             handle_build_request(yield);
-                        else if (reserve_message == "diagnostic_request")
+                        else if (initial_message == "diagnostic_request")
                             handle_diagnostic_request(yield);
                         else
-                            throw std::system_error(EPERM, std::system_category(), reserve_message);
+                            throw std::system_error(EPERM, std::system_category(), initial_message);
                     }
                     catch (std::exception &e) {
                         std::string except("Exception: ");

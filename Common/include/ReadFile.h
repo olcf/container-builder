@@ -10,9 +10,9 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
-class FileReader {
+class ReadFile {
 public:
-    explicit FileReader(std::string file_name, std::size_t buffer_size=1024) : file_name(file_name),
+    explicit ReadFile(std::string file_name, std::size_t buffer_size=1024) : file_name(file_name),
                                                                                file_size(0),
                                                                                buffer(buffer_size)
     {
@@ -24,7 +24,7 @@ public:
         }
     }
 
-    ~FileReader() {
+    ~ReadFile() {
         file.close();
     }
 

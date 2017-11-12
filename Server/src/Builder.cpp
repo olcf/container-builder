@@ -4,8 +4,8 @@
 #include <boost/asio/write.hpp>
 #include <boost/asio/read_until.hpp>
 #include <boost/asio/streambuf.hpp>
-#include "FileWriter.h"
-#include "FileReader.h"
+#include "WriteFile.h"
+#include "ReadFile.h"
 #include <boost/regex.hpp>
 #include <boost/process.hpp>
 #include "DockerBackend.h"
@@ -34,7 +34,7 @@ std::string Builder::definition_filename() {
 
 // Copy definition file to server
 void Builder::receive_definition() {
-    FileReader definition(definition_filename());
+    ReadFile definition(definition_filename());
     definition.async_read(socket, yield);
 }
 
@@ -67,6 +67,6 @@ void Builder::build_container() {
 void Builder::send_image() {
     std::string container_file(build_directory);
     container_file += "/container.img";
-    FileWriter container(container_file);
+    WriteFile container(container_file);
     container.async_write(socket, yield);
 }

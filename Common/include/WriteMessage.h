@@ -19,7 +19,7 @@ namespace message {
         // Write message in buffer sized chunks
         H bytes_remaining = message_size;
         while (bytes_remaining) {
-            auto bytes_to_write= std::min<H>(asio::buffer_size(buffer), bytes_remaining);
+            auto bytes_to_write = std::min<H>(asio::buffer_size(buffer), bytes_remaining);
 
             // Callback to fill buffer with bytes_to_write bytes
             fill_buffer(bytes_to_write);
@@ -40,7 +40,7 @@ namespace message {
         // Write message in buffer sized chunks
         H bytes_remaining = message_size;
         while (bytes_remaining) {
-            auto bytes_to_write= std::min<H>(asio::buffer_size(buffer), bytes_remaining);
+            auto bytes_to_write = std::min<H>(asio::buffer_size(buffer), bytes_remaining);
 
             // Callback to fill buffer with bytes_to_write bytes
             fill_buffer(bytes_to_write);

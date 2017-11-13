@@ -53,6 +53,7 @@ int main(int argc, char *argv[]) {
         io_service.run();
     }
     catch (std::exception &e) {
+        std::cout<<"wtf\n";
         std::cerr << "Exception: " << e.what() << std::endl;
     }
 

@@ -28,7 +28,7 @@ set(SOURCE_FILES_SERVER Server/src/main.cpp
         Server/src/Logger.cpp
         Server/include/Logger.h
         Common/include/ReadMessage.h
-        Common/include/WriteMessage.h)
+        Common/include/WriteMessage.h Common/src/WriteMessage.cpp)
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT Client/main.cpp

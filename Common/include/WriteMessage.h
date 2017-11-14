@@ -5,6 +5,7 @@
 #include <boost/asio/write.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/spawn.hpp>
+#include <boost/asio/streambuf.hpp>
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -12,6 +13,7 @@ using asio::ip::tcp;
 namespace message {
     // Write an integer header, of type size_t, containing the number of bytes to follow
     // followed by a write of the message.
+    // If no callback is provided it's assumed the buffer is populated with the full message
     template<typename BufferSequence>
     void write(tcp::socket &socket, BufferSequence buffer, std::size_t message_size, std::function<void(std::size_t)> fill_buffer=[](std::size_t){}) {
         asio::write(socket, asio::buffer(&message_size, sizeof(std::size_t)));
@@ -33,6 +35,7 @@ namespace message {
 
     // Write an integer header, of type size_t, containing the number of bytes to follow
     // followed by a write of the message.
+    // If no callback is provided it's assumed the buffer is populated with the full message
     template<typename BufferSequence>
     void async_write(tcp::socket &socket, BufferSequence buffer, std::size_t message_size, asio::yield_context yield, std::function<void(std::size_t)> fill_buffer=[](std::size_t){}) {
         asio::async_write(socket, asio::buffer(&message_size, sizeof(std::size_t)), yield);
@@ -51,4 +54,9 @@ namespace message {
             bytes_remaining -= bytes_to_write;
         }
     }
+
+    // Write an integer header, of type size_t, containing the number of bytes to follow
+    // followed by a write of the message.
+    void async_write(tcp::socket &socket, asio::streambuf& buffer, asio::yield_context yield);
+
 }

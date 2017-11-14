@@ -52,25 +52,16 @@ void Builder::build_container() {
 
     // Read process pipe output and write it to the client
     // EOF will be returned as an error code when the pipe is closed...I think
-    // line buffer by reading from the pipe until we hit \n, \r, of the buffer max size
+    // line buffer by reading from the pipe until we hit \n, \r
     boost::system::error_code ec;
     asio::streambuf buffer;
-    uint64_t bytes_read;
+    uint64_t pipe_bytes_read;
     boost::regex line_matcher{"\\r|\\n"};
 
     do {
-        bytes_read = asio::async_read_until(std_pipe, buffer, line_matcher, yield[ec]);
-
-        // TODO figure out what to do with truncated messages
-
-        // TODO prepend size to buffer for a single write?
-
-        // Send the header indicating the number of bytes in the send message
-        uint32_t bytes_to_send = static_cast<uint32_t>(bytes_read);
-        asio::async_write(socket, asio::buffer(&bytes_to_send, sizeof(uint32_t)), yield);
-        // Send the message
-        asio::async_write(socket, buffer, asio::transfer_exactly(bytes_to_send), yield);
-    } while (bytes_read > 0);
+        pipe_bytes_read = asio::async_read_until(std_pipe, buffer, line_matcher, yield[ec]);
+        message::async_write(socket, buffer, yield);
+    } while (pipe_bytes_read > 0);
 }
 
 void Builder::send_image() {

@@ -10,7 +10,7 @@ void Connection::begin() {
                     try {
                         // Read initial request type from client
                         std::array<char, 127> initial_buffer;
-                        message::async_read<std::size_t>(socket, asio::buffer(initial_buffer), yield);
+                        message::async_read(socket, asio::buffer(initial_buffer), yield);
                         std::string initial_message(initial_buffer.data());
 
                         if (initial_message == "build_request")

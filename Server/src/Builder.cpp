@@ -1,5 +1,6 @@
 #include "Builder.h"
 #include <iostream>
+#include <limits>
 #include "ReservationRequest.h"
 #include <boost/asio/write.hpp>
 #include <boost/asio/read_until.hpp>
@@ -9,6 +10,9 @@
 #include <boost/regex.hpp>
 #include <boost/process.hpp>
 #include "DockerBackend.h"
+#include "WriteMessage.h"
+#include <limits>
+#include "Logger.h"
 
 void Builder::singularity_build() {
 
@@ -48,19 +52,24 @@ void Builder::build_container() {
 
     // Read process pipe output and write it to the client
     // EOF will be returned as an error code when the pipe is closed...I think
-    // line buffer by reading from the pipe until we hit \n or \r
+    // line buffer by reading from the pipe until we hit \n, \r, of the buffer max size
     boost::system::error_code ec;
-    boost::asio::streambuf buffer;
+    asio::streambuf buffer;
     uint64_t bytes_read;
     boost::regex line_matcher{"\\r|\\n"};
+
     do {
         bytes_read = asio::async_read_until(std_pipe, buffer, line_matcher, yield[ec]);
 
-        // TODO just prepend size to buffer(?)
+        // TODO figure out what to do with truncated messages
+
+        // TODO prepend size to buffer for a single write?
+
         // Send the header indicating the number of bytes in the send message
-        asio::async_write(socket, asio::buffer(&bytes_read, sizeof(uint64_t)), yield);
+        uint32_t bytes_to_send = static_cast<uint32_t>(bytes_read);
+        asio::async_write(socket, asio::buffer(&bytes_to_send, sizeof(uint32_t)), yield);
         // Send the message
-        asio::async_write(socket, buffer, asio::transfer_exactly(bytes_read), yield);
+        asio::async_write(socket, buffer, asio::transfer_exactly(bytes_to_send), yield);
     } while (bytes_read > 0);
 }
 

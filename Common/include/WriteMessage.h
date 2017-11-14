@@ -10,43 +10,43 @@ namespace asio = boost::asio;
 using asio::ip::tcp;
 
 namespace message {
-    // Write an integer header, of type H, containing the number of bytes to follow
+    // Write an integer header, of type size_t, containing the number of bytes to follow
     // followed by a write of the message.
-    template<typename H, typename BufferSequence>
-    void write(tcp::socket &socket, BufferSequence buffer, H message_size, std::function<void(H)> fill_buffer=[](H){}) {
-        asio::write(socket, asio::buffer(&message_size, sizeof(H)));
+    template<typename BufferSequence>
+    void write(tcp::socket &socket, BufferSequence buffer, std::size_t message_size, std::function<void(std::size_t)> fill_buffer=[](std::size_t){}) {
+        asio::write(socket, asio::buffer(&message_size, sizeof(std::size_t)));
 
         // Write message in buffer sized chunks
-        H bytes_remaining = message_size;
+        std::size_t bytes_remaining = message_size;
         while (bytes_remaining) {
-            auto bytes_to_write = std::min<H>(asio::buffer_size(buffer), bytes_remaining);
+            auto bytes_to_write = std::min(asio::buffer_size(buffer), bytes_remaining);
 
             // Callback to fill buffer with bytes_to_write bytes
             fill_buffer(bytes_to_write);
 
             // Write the buffer
-            asio::write(socket, asio::buffer(buffer, bytes_to_write));
+            asio::write(socket, asio::buffer(buffer, bytes_to_write), asio::transfer_exactly(bytes_to_write));
 
             bytes_remaining -= bytes_to_write;
         }
     }
 
-    // Write an integer header, of type H, containing the number of bytes to follow
+    // Write an integer header, of type size_t, containing the number of bytes to follow
     // followed by a write of the message.
-    template<typename H, typename BufferSequence>
-    void async_write(tcp::socket &socket, BufferSequence buffer, H message_size, asio::yield_context yield, std::function<void(H)> fill_buffer=[](H){}) {
-        asio::async_write(socket, asio::buffer(&message_size, sizeof(H)), yield);
+    template<typename BufferSequence>
+    void async_write(tcp::socket &socket, BufferSequence buffer, std::size_t message_size, asio::yield_context yield, std::function<void(std::size_t)> fill_buffer=[](std::size_t){}) {
+        asio::async_write(socket, asio::buffer(&message_size, sizeof(std::size_t)), yield);
 
         // Write message in buffer sized chunks
-        H bytes_remaining = message_size;
+        std::size_t bytes_remaining = message_size;
         while (bytes_remaining) {
-            auto bytes_to_write = std::min<H>(asio::buffer_size(buffer), bytes_remaining);
+            auto bytes_to_write = std::min(asio::buffer_size(buffer), bytes_remaining);
 
             // Callback to fill buffer with bytes_to_write bytes
             fill_buffer(bytes_to_write);
 
             // Write the buffer
-            asio::async_write(socket, asio::buffer(buffer, bytes_to_write), yield);
+            asio::async_write(socket, asio::buffer(buffer, bytes_to_write), asio::transfer_exactly(bytes_to_write), yield);
 
             bytes_remaining -= bytes_to_write;
         }

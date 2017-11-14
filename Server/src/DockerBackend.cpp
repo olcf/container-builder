@@ -11,8 +11,7 @@ void DockerBackend::build_singularity_container() {
                       + docker_name + " --mount type=bind,source=" + working_directory
                       + ",destination=/work_dir -w /work_dir singularity_builder";
 
-    docker_command = "/bin/hostname";
-
+    // TODO: find out why OSX still throws an exception if error encountered
     std::error_code ec;
     boost::process::child docker_proc(docker_command, ec, (boost::process::std_out & boost::process::std_err) > std_pipe);
         // Check for an error launching before we detach the process

@@ -6,6 +6,7 @@
 #include "WriteFile.h"
 #include "ReadFile.h"
 #include "WriteMessage.h"
+#include "ReadMessage.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -29,20 +30,16 @@ int main(int argc, char *argv[]) {
         WriteFile definition("container.def");
         definition.write(socket);
 
-        // Read the build output
-        asio::streambuf buf;
-        size_t read_bytes = 0;
-        boost::system::error_code ec;
-        uint64_t message_size;
+        // Read the build output until a zero length message is sent
+        uint32_t bytes_read = 0;
         do {
-            // Read header
-            asio::read(socket, asio::buffer(&message_size, sizeof(uint64_t)));
-            // Read the message
-            asio::read(socket, buf, asio::transfer_exactly(message_size));
-            // Convert the buffer to a string and print
-            std::string s( (std::istreambuf_iterator<char>(&buf)), std::istreambuf_iterator<char>() );
-            std::cout<<s;
-        } while(message_size > 0);
+            std::array<char, 1024> buffer;
+            bytes_read = message::read(socket, asio::buffer(buffer), [buffer](auto chunk_size) {
+                std::string message;
+                message.assign(buffer.data(), chunk_size);
+                std::cout<<message;
+            });
+        } while(bytes_read > 0);
 
         // Read the container image
         ReadFile image("container.img");
@@ -52,7 +49,7 @@ int main(int argc, char *argv[]) {
 
     }
     catch (std::exception &e) {
-        std::cerr << "Exception: " << e.what() << "\n";
+        std::cerr << "Failed to build container: " << e.what() << "\n";
     }
 
     return 0;

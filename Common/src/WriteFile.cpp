@@ -11,7 +11,7 @@ void WriteFile::write(tcp::socket &socket) {
     // Set cursor back to beginning of file
     file.seekg(0, std::ios::beg);
 
-    message::write<std::streampos>(socket, asio::buffer(buffer), file_size, [&](auto bytes_to_fill) {
+    message::write(socket, asio::buffer(buffer), file_size, [&](auto bytes_to_fill) {
         file.read(buffer.data(), bytes_to_fill);
     });
 }
@@ -22,7 +22,7 @@ void WriteFile::async_write(tcp::socket &socket, asio::yield_context yield) {
     // Set cursor back to beginning of file
     file.seekg(0, std::ios::beg);
 
-    message::async_write<std::streampos>(socket, asio::buffer(buffer), file_size, yield, [&](auto bytes_to_fill) {
+    message::async_write(socket, asio::buffer(buffer), file_size, yield, [&](auto bytes_to_fill) {
         file.read(buffer.data(), bytes_to_fill);
     });
 }

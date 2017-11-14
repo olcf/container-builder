@@ -26,7 +26,9 @@ set(SOURCE_FILES_SERVER Server/src/main.cpp
         Server/src/DockerBackend.cpp
         Server/include/DockerBackend.h
         Server/src/Logger.cpp
-        Server/include/Logger.h Common/src/ReadMessage.cpp Common/include/ReadMessage.h Common/src/WriteMessage.cpp Common/include/WriteMessage.h)
+        Server/include/Logger.h
+        Common/include/ReadMessage.h
+        Common/include/WriteMessage.h)
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT Client/main.cpp
@@ -35,7 +37,8 @@ set(SOURCE_FILES_CLIENT Client/main.cpp
         Common/src/WriteFile.cpp
         Common/include/WriteFile.h
         Server/src/Logger.cpp
-        Server/include/Logger.h Common/src/ReadMessage.cpp Common/include/ReadMessage.h Common/src/WriteMessage.cpp Common/include/WriteMessage.h)
+        Server/include/Logger.h Common/include/ReadMessage.h
+        Common/include/WriteMessage.h)
 
 # Create executables
 add_executable(ContainerBuilderServer ${SOURCE_FILES_SERVER})

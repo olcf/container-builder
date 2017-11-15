@@ -58,5 +58,4 @@ namespace message {
     // Write an integer header, of type size_t, containing the number of bytes to follow
     // followed by a write of the message.
     void async_write(tcp::socket &socket, asio::streambuf& buffer, asio::yield_context yield);
-
 }

@@ -1,0 +1,74 @@
+BootStrap: docker
+From: ubuntu:latest
+
+%post
+apt update
+apt install -y software-properties-common pkg-config wget git
+apt-add-repository universe
+apt update
+
+# Fetch server init scripts
+git clone https://github.com/olcf/SingularityTools.git
+
+SCRIPTS_DIR=/home/cades/SingularityTools/Builder/Server/InitScripts
+
+# Install docker
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+apt-get update
+apt-get install -y docker-ce
+# Install SQLite
+apt-get install -y sqlite3 libsqlite3-dev
+
+# Docker by default seems to use aufs which isnt compatible with singularity(atleast when bootstrapping from docker)
+# We force the use of overlayfs instead: https://docs.docker.com/engine/userguide/storagedriver/overlayfs-driver/#configure-docker-with-the-overlay-or-overlay2-storage-driver
+systemctl stop docker
+cat << EOF > /etc/docker/daemon.json
+{
+  "storage-driver": "overlay2"
+}
+EOF
+systemctl start docker
+
+# Enable apparmor profile
+apparmor_parser -r -W ${SCRIPTS_DIR}/apparmour.builder
+
+# Create non root builder user
+useradd --create-home --home-dir /home/builder --shell /bin/bash builder
+# Allow builder user to run docker as sudo by adding to docker group
+gpasswd -a builder docker
+
+# Create builder scratch work directory
+mkdir /home/builder/container_scratch
+sudo chown builder /home/builder/container_scratch
+sudo chgrp builder /home/builder/container_scratch
+
+# Create singularity builder docker image
+docker build -t singularity_builder -f ${SCRIPTS_DIR}/Dockerfile .
+
+# Update cmake version
+cd /
+apt remove cmake
+wget https://cmake.org/files/v3.9/cmake-3.9.5-Linux-x86_64.sh
+chmod +x ./cmake-3.9.5-Linux-x86_64.sh
+./cmake-3.9.5-Linux-x86_64.sh --skip-license
+ln -s /cmake-3.9.5-Linux-x86_64/bin/* /usr/local/bin
+
+# Install a new version of boost
+cd /
+apt-get install -y cmake
+wget https://dl.bintray.com/boostorg/release/1.65.1/source/boost_1_65_1.tar.gz
+tar xf boost_1_65_1.tar.gz
+cd boost_1_65_1
+./bootstrap.sh
+./b2 install
+
+# Install ContainerBuilder
+cd /
+apt-get install -y pkg-config
+git clone https://github.com/AdamSimpson/ContainerBuilder.git
+cd ContainerBuilder
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTAL_PREFIX="/usr/local" ..
+make
+make install

@@ -17,13 +17,9 @@ int main(int argc, char *argv[]) {
     logger::init("ContainerBuilder.log");
 
     try {
-        if (argc != 2) {
-            std::cerr << "Usage: echo_server <port>\n";
-            return 1;
-        }
-
         asio::io_service io_service;
 
+        // Add a few resources
         ResourceQueue job_queue;
         Resource resource;
         resource.loop_device = "/dev/loop0";
@@ -36,7 +32,7 @@ int main(int argc, char *argv[]) {
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
                         tcp::acceptor acceptor(io_service,
-                                               tcp::endpoint(tcp::v4(), std::atoi(argv[1])));
+                                               tcp::endpoint(tcp::v4(), 8080));
 
                         for (;;) {
                             boost::system::error_code ec;
@@ -53,7 +49,6 @@ int main(int argc, char *argv[]) {
         io_service.run();
     }
     catch (std::exception &e) {
-        std::cout<<"wtf\n";
         std::cerr << "Exception: " << e.what() << std::endl;
     }
 

@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
         asio::io_service io_service;
         tcp::socket socket(io_service);
         tcp::resolver resolver(io_service);
-        asio::connect(socket, resolver.resolve({std::string("localhost"), std::string("12345")}));
+        asio::connect(socket, resolver.resolve({std::string("127.0.0.1"), std::string("8080")}));
 
         // Initiate a build request
         std::string request_message("build_request");
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
     }
     catch (std::exception &e) {
-        std::cerr << "Failed to build container: " << e.what() << "\n";
+        std::cerr << "\033[1;31m Failed to build container: " << e.what() << "\033[0m\n";
     }
 
     return 0;

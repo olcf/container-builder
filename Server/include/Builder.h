@@ -19,25 +19,28 @@ static std::string get_home_dir() {
     return std::string(home);
 }
 
+// Create build directory consisting of remote endpoint and local enpoint
+// This should uniquely identify the connection as it includes the IP and port
 static std::string get_build_dir(tcp::socket &socket) {
-    // Create build directory consisting of remote endpoint and local enpoint
-    // This should uniquely identify the connection as it includes the IP and port
-
     std::string build_dir(get_home_dir() + "/container_scratch/");
-    build_dir += boost::lexical_cast<std::string>(socket.remote_endpoint())
-            += std::string("_")
-            += boost::lexical_cast<std::string>(socket.local_endpoint());
+
+    auto remote_ip = socket.remote_endpoint().address().to_string();
+    auto remote_port = std::to_string(socket.remote_endpoint().port());
+    auto local_ip = socket.local_endpoint().address().to_string();
+    auto local_port = std::to_string(socket.local_endpoint().port());
+    build_dir += remote_ip + "_" + remote_port + "-" + local_ip + "_" + local_port;
+
     return build_dir;
 }
 
 class Builder {
 public:
-    explicit Builder(tcp::socket &socket, ResourceQueue &queue, asio::yield_context &yield) : socket(socket),
-                                                                                              queue(queue),
-                                                                                              yield(yield),
-                                                                                              build_directory(
-                                                                                                      get_build_dir(
-                                                                                                              socket)) {
+    explicit Builder(tcp::socket &socket,
+                     ResourceQueue &queue,
+                     asio::yield_context &yield) : socket(socket),
+                                                   queue(queue),
+                                                   yield(yield),
+                                                   build_directory(get_build_dir(socket)) {
         boost::filesystem::create_directory(build_directory);
     }
 

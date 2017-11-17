@@ -35,9 +35,9 @@ make install
 
 # Create the builder and singularity backend containers
 cd /home/builder
-su builder -c 'singularity build /home/builder/builder.img /home/builder/builder.def'
-su builder -c 'singularity build /home/builder/singularity_backend.img /home/builder/singularity_backend.def'
+su builder -c 'sudo singularity build /home/builder/builder.img /home/builder/builder.def'
+su builder -c 'sudo singularity build /home/builder/singularity_backend.img /home/builder/singularity_backend.def'
 
 # Start the container builder service
 cd /home/builder
-su builder -c 'singularity instance.start /home/builder/builder.img builder'
+su builder -c 'sudo singularity instance.start /home/builder/builder.img builder'

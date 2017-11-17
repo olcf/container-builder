@@ -12,6 +12,11 @@ SingularityTools/Builder/Server/BuilderControl/BringUp
 ```
 After bringup three files will be created containing the Builder IP address as well as two SSH keys. `CadesKey` provides access for the cades user for administration of the builder while `BuilderKey` provides access the builder user who is restricted to running `SafeSH`. `BuilderIP` will contain the builders IP address.
 
+To login to the container
+```
+ssh -i ./CadesKey cades@`cat BuilderIP`
+```
+
 To destroy a new builder instance:
 ```
 SingularityTools/Builder/Server/BuilderControl/TearDown

@@ -17,9 +17,6 @@ cd singularity-$VERSION
 make
 make install
 
-# Create singularity_backend container
-singularity build /home/builder/singularity_backend.img /home/builder/singularity_backend.def
-
 # Update cmake version
 cd /
 apt remove cmake

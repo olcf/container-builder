@@ -14,6 +14,7 @@ class Resource {
 public:
     std::string loop_device;
     std::string host;
+    int num_cores;
 
     // Async write of a Resource
     // Send header consisting of 4 byte size, in bytes, of archived Resource
@@ -32,6 +33,7 @@ namespace boost {
         void serialize(Archive &ar, Resource &res, const unsigned int version) {
             ar & res.loop_device;
             ar & res.host;
+            ar & res.num_cores;
         }
     } // namespace serialization
 } // namespace boost

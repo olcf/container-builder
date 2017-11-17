@@ -12,11 +12,12 @@ chmod 0440 /etc/sudoers.d/builder
 # Copy over singularity build script
 wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Server/scripts/builder.def
 mv builder.def /home/builder/builder.def
+wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Server/scripts/singularity_backend.def
+mv singularity_backend.def /home/builder/singularity_backend.def
 wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Server/scripts/build.sh
 mv build.sh /home/builder/build.sh
 chmod +x /home/builder/build.sh
-wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Server/scripts/singularity_backend.def
-mv singularity_backend.def /home/builder/singularity_backend.def
+
 
 # Create builder scratch work directory
 mkdir /home/builder/container_scratch
@@ -32,10 +33,10 @@ cd singularity-$VERSION
 make
 make install
 
-# Create builder service
+# Create the builder and singularity backend containers
 cd /home/builder
-ls /home/builder
-su builder -c 'sudo singularity build /home/builder/builder.img /home/builder/builder.def'
+sudo builder -c 'singularity build /home/builder/builder.img /home/builder/builder.def'
+sudo builder -c 'singularity build /home/builder/singularity_backend.img /home/builder/singularity_backend.def'
 
 # Start the container builder service
 cd /home/builder

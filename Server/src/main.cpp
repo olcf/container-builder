@@ -24,6 +24,7 @@ int main(int argc, char *argv[]) {
         Resource resource;
         resource.loop_device = "/dev/loop0";
         resource.host = std::string("localhost");
+        resource.num_cores = 1;
         job_queue.add_resource(resource);
         resource.loop_device = "/dev/loop1";
         job_queue.add_resource(resource);

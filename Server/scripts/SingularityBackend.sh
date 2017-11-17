@@ -32,7 +32,7 @@ make install
 
 # Create builder service
 cd /home/cades
-su builder -c 'sudo singularity build /home/builder/builder.img builder.def'
+su builder -c 'sudo singularity build /home/builder/builder.img /home/builder/builder.def'
 
 # Start the container builder service
 cd /home/builder

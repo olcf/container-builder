@@ -18,8 +18,7 @@ make
 make install
 
 # Create singularity_backend container
-cd /home/builder
-singularity build ./singularity_backend.img ./singularity_backend.def
+singularity build /home/builder/singularity_backend.img /home/builder/singularity_backend.def
 
 # Update cmake version
 cd /

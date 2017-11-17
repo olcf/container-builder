@@ -80,7 +80,4 @@ VM_IP=`nova show ${VM_UUID} | grep or_provider_general_extnetwork1 | awk '{print
 
 echo $VM_IP > ${SCRIPT_DIR}/BuilderIP
 
-# Retrieve private key for builder
-scp -oIdentitiesOnly=yes -oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no -i $KEY_FILE cades@${VM_IP}:/home/cades/BuilderKey ${SCRIPT_DIR}
-
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"

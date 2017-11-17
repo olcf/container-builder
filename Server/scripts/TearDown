@@ -11,7 +11,6 @@ fi
 # Remove Key
 nova keypair-delete CadesKey
 rm ${SCRIPT_DIR}/CadesKey
-rm ${SCRIPT_DIR}/BuilderKey
 
 # Remove IP file
 rm ${SCRIPT_DIR}/BuilderIP

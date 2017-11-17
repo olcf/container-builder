@@ -1,10 +1,6 @@
 BootStrap: docker
 From: ubuntu:zesty
 
-%setup
-cp ./singularity_backend.def ${SINGULARITY_ROOTFS}
-cp ./builder.sh ${SINGULARITY_ROOTFS}
-
 %post
 apt update
 apt install -y software-properties-common pkg-config wget git apt-transport-https systemd sudo
@@ -23,7 +19,7 @@ make install
 
 # Create singularity_backend container
 cd /home/builder
-singularity build singularity_backend.img /singularity_backend.def
+singularity build ./singularity_backend.img ./singularity_backend.def
 
 # Update cmake version
 cd /

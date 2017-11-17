@@ -10,8 +10,11 @@ echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/singularity' > /etc/sudoers.d/b
 chmod 0440 /etc/sudoers.d/builder
 
 # Copy over singularity build script
-cp /build.sh /home/builder/build.sh
+wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Server/scripts/build.sh
+mv build.sh /home/builder/build.sh
 chmod +x /home/builder/build.sh
+wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Server/scripts/singularity_backend.def
+mv singularity_backend.def /home/builder/singularity_backend.def
 
 # Create builder scratch work directory
 mkdir /home/builder/container_scratch
@@ -29,8 +32,6 @@ make install
 
 # Create builder service
 cd /home/cades
-git clone https://github.com/AdamSimpson/ContainerBuilder.git
-cd ContainerBuilder/Server/scripts
 su builder -c 'sudo singularity build /home/builder/builder.img builder.def'
 
 # Start the container builder service

@@ -9,7 +9,7 @@
 #include "ReadFile.h"
 #include <boost/regex.hpp>
 #include <boost/process.hpp>
-#include "DockerBackend.h"
+#include "SingularityBackend.h"
 #include "WriteMessage.h"
 #include <limits>
 #include "Logger.h"
@@ -47,7 +47,7 @@ void Builder::build_container() {
     boost::process::async_pipe std_pipe(socket.get_io_service());
 
     // Start the build process, stdout/err will be passed to std_pipe for reading
-    DockerBackend docker(resource, std_pipe, definition_filename());
+    SingularityBackend docker(resource, std_pipe, definition_filename());
     docker.build_singularity_container();
 
     // Read process pipe output and write it to the client

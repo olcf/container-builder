@@ -1,6 +1,9 @@
 BootStrap: docker
 From: ubuntu:zesty
 
+%environment
+export LD_LIBRARY_PATH=/usr/local/lib
+
 %post
 apt update
 apt install -y software-properties-common pkg-config wget git apt-transport-https systemd sudo

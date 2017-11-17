@@ -10,6 +10,8 @@ echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/singularity' > /etc/sudoers.d/b
 chmod 0440 /etc/sudoers.d/builder
 
 # Copy over singularity build script
+wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Server/scripts/builder.def
+mv builder.def /home/builder/builder.def
 wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Server/scripts/build.sh
 mv build.sh /home/builder/build.sh
 chmod +x /home/builder/build.sh

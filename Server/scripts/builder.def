@@ -3,6 +3,7 @@ From: ubuntu:zesty
 
 %environment
 export LD_LIBRARY_PATH=/usr/local/lib
+export HOME=/home/builder
 
 %post
 apt update
@@ -22,7 +23,7 @@ make install
 
 # Update cmake version
 cd /
-apt remove cmake
+apt remove -y cmake
 wget https://cmake.org/files/v3.9/cmake-3.9.5-Linux-x86_64.sh
 chmod +x ./cmake-3.9.5-Linux-x86_64.sh
 ./cmake-3.9.5-Linux-x86_64.sh --skip-license

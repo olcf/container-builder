@@ -51,4 +51,4 @@ make install
 rm -rf /ContainerBuilder
 
 %startscript
-/usr/local/bin/ContainerBuilderServer
+nohup /usr/local/bin/ContainerBuilderServer > /dev/null 2>&1 < /dev/null &

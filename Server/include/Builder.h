@@ -7,7 +7,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 #include <Resource.h>
-#include "logger.h"
+#include "Logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;

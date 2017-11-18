@@ -16,6 +16,7 @@ void SingularityBackend::build_singularity_container() {
     if (ec) {
         logger::write("Singularity backend launch failure: " + ec.message());
     } else {
+        logger::write("detaching Singularity process: " + singularity_command);
         singularity_proc.detach();
     }
 }

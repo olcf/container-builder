@@ -39,5 +39,4 @@ su builder -c 'sudo singularity build /home/builder/builder.img /home/builder/bu
 su builder -c 'sudo singularity build /home/builder/singularity_backend.img /home/builder/singularity_backend.def'
 
 # Start the container builder service
-cd /home/builder
 su builder -c 'singularity instance.start /home/builder/builder.img builder'

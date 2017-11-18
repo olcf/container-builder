@@ -12,7 +12,8 @@ class Reservation {
 public:
     explicit Reservation(asio::io_service &io_service) : io_service(io_service),
                                                 ready_timer(io_service),
-                                                active(false) {}
+                                                active(false)
+    {}
 
     // Create an infinite timer that will be cancelled by the queue when the job is ready
     void async_wait(asio::yield_context yield);
@@ -22,6 +23,7 @@ public:
 
     bool active;
     Resource resource;
+
 private:
     asio::io_service &io_service;
     asio::deadline_timer ready_timer;

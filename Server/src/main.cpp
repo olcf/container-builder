@@ -50,8 +50,9 @@ int main(int argc, char *argv[]) {
         io_service.run();
     }
     catch (std::exception &e) {
-        std::cerr << "Exception: " << e.what() << std::endl;
+        logger::write("Server Exception: " + std::string(e.what()));
     }
 
+    logger::write("Server shutting down");
     return 0;
 }

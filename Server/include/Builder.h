@@ -7,6 +7,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 #include <Resource.h>
+#include "logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -42,13 +43,16 @@ public:
                                                    yield(yield),
                                                    build_directory(get_build_dir(socket)) {
         boost::filesystem::create_directory(build_directory);
+        logger::write(socket, "New builder: " + build_directory);
     }
 
     ~Builder() {
         boost::system::error_code ec;
         boost::filesystem::remove_all(build_directory, ec);
         if (ec) {
-            std::cerr << "Error removing directory: " << std::endl;
+            logger::write(socket, "Error removing directory: " + build_directory);
+        } else {
+            logger::write(socket, "Removing builder: " + build_directory);
         }
     }
 

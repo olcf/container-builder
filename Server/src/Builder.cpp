@@ -38,6 +38,7 @@ std::string Builder::definition_filename() {
 
 // Copy definition file to server
 void Builder::receive_definition() {
+    logger::write(socket, "Receiving definition");
     ReadFile definition(definition_filename());
     definition.async_read(socket, yield);
 }
@@ -65,6 +66,7 @@ void Builder::build_container() {
 }
 
 void Builder::send_image() {
+    logger::write(socket, "Sending image");
     std::string container_file(build_directory);
     container_file += "/container.img";
     WriteFile container(container_file);

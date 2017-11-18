@@ -4,6 +4,7 @@
 
 // Create a new queue reservation and return it to the requester
 void ResourceQueue::enter(Reservation *reservation) {
+    logger::write("Entering queue");
     pending_queue.push_back(reservation);
     tick();
 }
@@ -13,6 +14,7 @@ void ResourceQueue::add_resource(Resource resource) {
 }
 
 void ResourceQueue::exit(Reservation *reservation) noexcept {
+    logger::write("Exiting queue");
     try {
         if (reservation->active) {
             add_resource(reservation->resource);

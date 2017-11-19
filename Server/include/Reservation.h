@@ -10,8 +10,8 @@ namespace asio = boost::asio;
 // Reservations are handled by the queue and assigned resources as available
 class Reservation {
 public:
-    explicit Reservation(asio::io_service &io_service) : io_service(io_service),
-                                                ready_timer(io_service),
+    explicit Reservation(tcp::socket& socket) : socket(socket),
+                                                ready_timer(socket.get_io_service()),
                                                 active(false)
     {}
 
@@ -23,8 +23,7 @@ public:
 
     bool active;
     Resource resource;
-
+    tcp::socket &socket;
 private:
-    asio::io_service &io_service;
     asio::deadline_timer ready_timer;
 };

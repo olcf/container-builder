@@ -17,7 +17,7 @@
 void Builder::singularity_build() {
 
     // Wait in the queue for a reservation to begin
-    ReservationRequest reservation(socket.get_io_service(), queue);
+    ReservationRequest reservation(socket, queue);
     resource = reservation.async_wait(yield);
 
     // Copy the definition file from the client
@@ -59,16 +59,26 @@ void Builder::build_container() {
     uint64_t pipe_bytes_read;
     boost::regex line_matcher{"\\r|\\n"};
 
+    logger::write(socket, "Starting to build output");
+
     do {
         pipe_bytes_read = asio::async_read_until(std_pipe, buffer, line_matcher, yield[ec]);
+        if(ec) {
+            logger::write(socket, "Error: build output error" + ec.message());
+        }
         message::async_write(socket, buffer, yield);
     } while (pipe_bytes_read > 0);
+
+    logger::write(socket, "Finish sending build output");
 }
 
 void Builder::send_image() {
-    logger::write(socket, "Sending image");
+    logger::write(socket, "Start sending image");
+
     std::string container_file(build_directory);
     container_file += "/container.img";
     WriteFile container(container_file);
     container.async_write(socket, yield);
+
+    logger::write(socket, "Finish sending image");
 }

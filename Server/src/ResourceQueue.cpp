@@ -14,7 +14,7 @@ void ResourceQueue::add_resource(Resource resource) {
 }
 
 void ResourceQueue::exit(Reservation *reservation) noexcept {
-    logger::write("Exiting queue");
+    logger::write(reservation->socket, "Exiting queue");
     try {
         if (reservation->active) {
             add_resource(reservation->resource);
@@ -29,9 +29,7 @@ void ResourceQueue::exit(Reservation *reservation) noexcept {
             }
         }
     } catch (std::exception const &e) {
-        std::string except("Exception: ");
-        except += e.what();
-        logger::write(except);
+        logger::write(reservation->socket, "Exception:" + std::string(e.what()));
     }
 }
 

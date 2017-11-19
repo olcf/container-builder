@@ -21,6 +21,9 @@ public:
     // Receive message as a string
     std::string receive();
     std::string async_receive(asio::yield_context yield);
+
+    // Send entire contents of streambuf
+    void async_send(asio::streambuf& message_body, asio::yield_context yield);
     
 private:
     asio::streambuf buffer;

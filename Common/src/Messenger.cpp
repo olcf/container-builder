@@ -31,6 +31,18 @@ void Messenger::async_send(const std::string& message, asio::yield_context yield
     asio::async_write(socket, body, asio::transfer_exactly(message_size), yield);
 }
 
+// Send a streambuf message asynchronously
+void Messenger::async_send(asio::streambuf& message_body, asio::yield_context yield) {
+    std::size_t message_size = message_body.size();
+
+    // Write message size to header
+    auto header = asio::buffer(&message_size, sizeof(std::size_t));
+    asio::async_write(socket, header, asio::transfer_exactly(message_size), yield);
+
+    // Write the message body
+    asio::async_write(socket, message_body, asio::transfer_exactly(message_size), yield);
+}
+
 // Receive a string message
 std::string Messenger::receive() {
     std::size_t message_size;

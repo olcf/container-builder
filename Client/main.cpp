@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
         std::string line;
         do {
             line = messenger.receive();
-            std::cout<<line<<std::endl;
+            std::cout<<line;
         } while(!line.empty());
 
         // Read the container image

@@ -53,7 +53,9 @@ void Builder::build_container() {
 
     // Read process pipe output and write it to the client
     // EOF will be returned as an error code when the pipe is closed...I think
-    // line buffer by reading from the pipe until we hit \n, \r
+    // line buffer(ish) by reading from the pipe until we hit \n, \r
+    // NOTE: read_until will fill buffer until line_matcher is satisfied but generally will contain additional data.
+    // This is fine as all we care about is dumping everything from std_pipe to our buffer and don't require exact line buffering
     boost::system::error_code ec;
     asio::streambuf buffer;
     uint64_t pipe_bytes_read;
@@ -67,15 +69,8 @@ void Builder::build_container() {
             logger::write(socket, "Error: build output error: " + ec.message());
         }
 
-        // Find the exact number of bytes for each line
-        // TODO fix this as it doesn't handle \r characters and generally sucks
-        // Boost regex search of some find/sort instead?
-        std::istream stream(&buffer);
-        std::string line;
-        std::getline(stream, line);
-
-        // Write the line
-        messenger.async_send(line, yield[ec]);
+        // Write the output grabbed from std_pipe
+        messenger.async_send(buffer, yield[ec]);
         if(ec && ec != asio::error::eof) {
             logger::write(socket, "Error: build output error: " + ec.message());
         }

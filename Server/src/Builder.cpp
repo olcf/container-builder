@@ -59,7 +59,7 @@ void Builder::build_container() {
     uint64_t pipe_bytes_read;
     boost::regex line_matcher{"\\r|\\n"};
 
-    logger::write(socket, "Starting to build output");
+    logger::write(socket, "Sending build output");
 
     do {
         pipe_bytes_read = asio::async_read_until(std_pipe, buffer, line_matcher, yield[ec]);
@@ -69,11 +69,11 @@ void Builder::build_container() {
         message::async_write(socket, buffer, yield);
     } while (pipe_bytes_read > 0);
 
-    logger::write(socket, "Finish sending build output");
+    logger::write(socket, "Finished build output");
 }
 
 void Builder::send_image() {
-    logger::write(socket, "Start sending image");
+    logger::write(socket, "Sending image");
 
     std::string container_file(build_directory);
     container_file += "/container.img";

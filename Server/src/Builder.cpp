@@ -48,8 +48,8 @@ void Builder::build_container() {
     boost::process::async_pipe std_pipe(socket.get_io_service());
 
     // Start the build process, stdout/err will be passed to std_pipe for reading
-    SingularityBackend docker(resource, std_pipe, definition_filename());
-    docker.build_singularity_container();
+    SingularityBackend backend(socket, resource, std_pipe, definition_filename());
+    backend.build_singularity_container();
 
     // Read process pipe output and write it to the client
     // EOF will be returned as an error code when the pipe is closed...I think
@@ -63,8 +63,8 @@ void Builder::build_container() {
 
     do {
         pipe_bytes_read = asio::async_read_until(std_pipe, buffer, line_matcher, yield[ec]);
-        if(ec) {
-            logger::write(socket, "Error: build output error" + ec.message());
+        if(ec && ec != asio::error::eof) {
+            logger::write(socket, "Error: build output error: " + ec.message());
         }
         message::async_write(socket, buffer, yield);
     } while (pipe_bytes_read > 0);

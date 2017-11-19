@@ -7,6 +7,7 @@
 #include "ReadFile.h"
 #include "WriteMessage.h"
 #include "ReadMessage.h"
+#include "Messenger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -18,9 +19,10 @@ int main(int argc, char *argv[]) {
         tcp::resolver resolver(io_service);
         asio::connect(socket, resolver.resolve({std::string("127.0.0.1"), std::string("8080")}));
 
+        Messenger messenger(socket);
+
         // Initiate a build request
-        std::string request_message("build_request");
-        message::write(socket, asio::buffer(request_message), request_message.size());
+        messenger.send("build_request");
 
         // Send the definition file
         std::cout<<"creating fake definition file\n";
@@ -31,15 +33,11 @@ int main(int argc, char *argv[]) {
         definition.write(socket);
 
         // Read the build output until a zero length message is sent
-        uint32_t bytes_read = 0;
+        std::string line;
         do {
-            std::array<char, 1024> buffer;
-            bytes_read = message::read(socket, asio::buffer(buffer), [buffer](auto chunk_size) {
-                std::string message;
-                message.assign(buffer.data(), chunk_size);
-                std::cout<<message;
-            });
-        } while(bytes_read > 0);
+            line = messenger.receive();
+            std::cout<<line<<std::endl;
+        } while(!line.empty());
 
         // Read the container image
         ReadFile image("container.img");

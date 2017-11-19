@@ -27,8 +27,6 @@ namespace message {
             // Callback to fill buffer with bytes_to_write bytes
             fill_buffer(bytes_to_write);
 
-            std::cout<<"bytes to write: "<< bytes_to_write<<std::endl;
-
             // Write the buffer
             asio::write(socket, asio::buffer(buffer, bytes_to_write), asio::transfer_exactly(bytes_to_write));
 
@@ -51,9 +49,6 @@ namespace message {
             // Callback to fill buffer with bytes_to_write bytes
             fill_buffer(bytes_to_write);
 
-            std::cout<<"bytes to write: "<< bytes_to_write<<std::endl;
-
-
             // Write the buffer
             asio::async_write(socket, asio::buffer(buffer, bytes_to_write), asio::transfer_exactly(bytes_to_write), yield);
 
@@ -63,5 +58,5 @@ namespace message {
 
     // Write an integer header, of type size_t, containing the number of bytes to follow
     // followed by a write of the message.
-    void async_write(tcp::socket &socket, asio::streambuf& buffer, asio::yield_context yield);
+    void async_write(tcp::socket &socket, asio::streambuf& buffer, size_t length, asio::yield_context yield);
 }

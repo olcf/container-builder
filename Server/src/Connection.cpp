@@ -2,6 +2,7 @@
 #include "Builder.h"
 #include "ReadMessage.h"
 #include <boost/asio/streambuf.hpp>
+#include "Messenger.h"
 
 void Connection::begin() {
     auto self(shared_from_this());
@@ -9,16 +10,15 @@ void Connection::begin() {
                 [this, self](asio::yield_context yield) {
                     try {
                         // Read initial request type from client
-                        std::array<char, 127> initial_buffer;
-                        message::async_read(socket, asio::buffer(initial_buffer), yield);
-                        std::string initial_message(initial_buffer.data());
+                        Messenger messenger(socket);
+                        auto request = messenger.receive();
 
-                        if (initial_message == "build_request")
+                        if (request == "build_request")
                             handle_build_request(yield);
-                        else if (initial_message == "diagnostic_request")
+                        else if (request == "diagnostic_request")
                             handle_diagnostic_request(yield);
                         else
-                            throw std::system_error(EPERM, std::system_category(), initial_message);
+                            throw std::system_error(EPERM, std::system_category(), request);
                     }
                     catch (std::exception &e) {
                         std::string except("Exception: ");

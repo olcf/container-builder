@@ -31,7 +31,7 @@ set(SOURCE_FILES_SERVER Server/src/main.cpp
         Common/include/WriteMessage.h
         Common/src/WriteMessage.cpp
         Server/src/SingularityBackend.cpp
-        Server/include/SingularityBackend.h Common/src/Message.cpp Common/src/Message.h)
+        Server/include/SingularityBackend.h Common/src/Messenger.cpp Common/include/Messenger.h)
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT Client/main.cpp
@@ -41,7 +41,7 @@ set(SOURCE_FILES_CLIENT Client/main.cpp
         Common/include/WriteFile.h
         Server/src/Logger.cpp
         Server/include/Logger.h Common/include/ReadMessage.h
-        Common/include/WriteMessage.h Common/src/Message.cpp Common/src/Message.h)
+        Common/include/WriteMessage.h Common/src/Messenger.cpp Common/include/Messenger.h)
 
 # Create executables
 add_executable(ContainerBuilderServer ${SOURCE_FILES_SERVER})

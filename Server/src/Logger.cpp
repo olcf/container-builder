@@ -10,7 +10,7 @@ namespace logger {
         logging::add_file_log(log_filename,
                               keywords::auto_flush = true,
                               keywords::open_mode = (std::ios::out | std::ios::app),
-                              keywords::format = "%TimeStamp% (%LineID%) %Message%");
+                              keywords::format = "%TimeStamp% (%LineID%) %Messenger%");
         logging::add_common_attributes();
         logger::write("Initializing logger\n");
     }

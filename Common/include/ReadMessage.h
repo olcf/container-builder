@@ -26,9 +26,6 @@ namespace message {
             // Read the entire message if possible, otherwise read until buffer is full
             std::size_t bytes_to_read = std::min(asio::buffer_size(buffer), bytes_remaining);
 
-
-            std::cout<<"bytes to read: "<< bytes_to_read<<std::endl;
-
             // Read into buffer
             auto bytes_read = asio::read(socket, buffer, asio::transfer_exactly(bytes_to_read));
             process_read(bytes_read);
@@ -54,9 +51,6 @@ namespace message {
         while (bytes_remaining > 0) {
             // Read the entire message if possible, otherwise read until buffer is full
             std::size_t bytes_to_read = std::min(asio::buffer_size(buffer), bytes_remaining);
-
-            std::cout<<"bytes to read: "<< bytes_to_read<<std::endl;
-
 
             // Read into buffer
             auto bytes_read = asio::async_read(socket, buffer, asio::transfer_exactly(bytes_to_read), yield);

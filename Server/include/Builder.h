@@ -8,6 +8,7 @@
 #include <boost/filesystem.hpp>
 #include <Resource.h>
 #include "Logger.h"
+#include "Messenger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -41,7 +42,8 @@ public:
                      asio::yield_context &yield) : socket(socket),
                                                    queue(queue),
                                                    yield(yield),
-                                                   build_directory(get_build_dir(socket)) {
+                                                   build_directory(get_build_dir(socket)),
+                                                   messenger(socket){
         boost::filesystem::create_directory(build_directory);
         logger::write(socket, "New builder: " + build_directory);
     }
@@ -73,4 +75,5 @@ private:
     asio::yield_context &yield;
     const std::string build_directory;
     Resource resource;
+    Messenger messenger;
 };

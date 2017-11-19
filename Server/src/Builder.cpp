@@ -66,7 +66,19 @@ void Builder::build_container() {
         if(ec && ec != asio::error::eof) {
             logger::write(socket, "Error: build output error: " + ec.message());
         }
-        message::async_write(socket, buffer, yield);
+
+        // Find the exact number of bytes for each line
+        // TODO fix this as it doesn't handle \r characters and generally sucks
+        // Boost regex search of some find/sort instead?
+        std::istream stream(&buffer);
+        std::string line;
+        std::getline(stream, line);
+
+        // Write the line
+        messenger.async_send(line, yield[ec]);
+        if(ec && ec != asio::error::eof) {
+            logger::write(socket, "Error: build output error: " + ec.message());
+        }
     } while (pipe_bytes_read > 0);
 
     logger::write(socket, "Finished build output");

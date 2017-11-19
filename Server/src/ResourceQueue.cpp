@@ -4,7 +4,7 @@
 
 // Create a new queue reservation and return it to the requester
 void ResourceQueue::enter(Reservation *reservation) {
-    logger::write("Entering queue");
+    logger::write(reservation->socket, "Entering queue");
     pending_queue.push_back(reservation);
     tick();
 }

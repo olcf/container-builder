@@ -31,7 +31,7 @@ void Connection::begin() {
 // Handle server side logic to handle a request to build a new container
 // TODO create builder class to handle cleaning up files on (ab)normal exit
 void Connection::handle_build_request(asio::yield_context yield) {
-    logger::write(socket, "New connection");
+    logger::write(socket, "New build request");
     Builder builder(socket, queue, yield);
     builder.singularity_build();
 }

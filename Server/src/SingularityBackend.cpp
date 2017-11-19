@@ -14,9 +14,9 @@ void SingularityBackend::build_singularity_container() {
     boost::process::child singularity_proc(singularity_command, ec, (boost::process::std_out & boost::process::std_err) > std_pipe, group);
     // Check for an error launching before we detach the process
     if (ec) {
-        logger::write("Singularity backend launch failure: " + ec.message());
+        logger::write(socket, "Singularity backend launch failure: " + ec.message());
     } else {
-        logger::write("detaching Singularity process: " + singularity_command);
+        logger::write(socket, "detaching Singularity process: " + singularity_command);
         singularity_proc.detach();
     }
 }

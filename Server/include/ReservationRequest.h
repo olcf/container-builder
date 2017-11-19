@@ -7,9 +7,9 @@
 // Handle RAII access to the ResourceQueue
 class ReservationRequest {
 public:
-    ReservationRequest(asio::io_service &io_service, ResourceQueue &queue) : io_service(io_service),
-                                                                             queue(queue),
-                                                                             reservation(io_service) {
+    ReservationRequest(tcp::socket &socket, ResourceQueue &queue) : socket(socket),
+                                                                    queue(queue),
+                                                                    reservation(socket) {
         queue.enter(&reservation);
     }
 
@@ -18,9 +18,8 @@ public:
     }
 
     Resource async_wait(asio::yield_context yield);
-
+    tcp::socket &socket;
 private:
-    asio::io_service &io_service;
     Reservation reservation;
     ResourceQueue &queue;
 };

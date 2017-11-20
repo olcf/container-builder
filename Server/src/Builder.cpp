@@ -5,7 +5,6 @@
 #include <boost/regex.hpp>
 #include <boost/process.hpp>
 #include "SingularityBackend.h"
-#include "Messenger.h"
 
 void Builder::singularity_build() {
 
@@ -24,9 +23,9 @@ void Builder::singularity_build() {
 }
 
 std::string Builder::definition_path() {
-    std::string def_filename(build_directory);
-    def_filename += "/container.def";
-    return def_filename;
+    std::string def_path(build_directory);
+    def_path += "/container.def";
+    return def_path;
 }
 
 // Copy definition file to server
@@ -63,10 +62,7 @@ void Builder::build_container() {
         }
 
         // Write the output grabbed from std_pipe
-        messenger.async_send(buffer, yield[ec]);
-        if(ec && ec != asio::error::eof) {
-            logger::write(socket, "Error: build output pipe send error: " + ec.message());
-        }
+        messenger.async_send(buffer, yield);
     } while (pipe_bytes_read > 0);
 
     logger::write(socket, "Finished build output");

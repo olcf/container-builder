@@ -82,8 +82,7 @@ void Messenger::send_file(boost::filesystem::path file_path, std::size_t chunk_s
 
     // Send file as message body, in chunk_size sections
     auto bytes_remaining = file_size;
-    std::vector<char> buffer_storage;
-    buffer_storage.reserve(chunk_size);
+    std::vector<char> buffer_storage(chunk_size);
     auto buffer = asio::buffer(buffer_storage);
     do {
         auto bytes_to_send = std::min(bytes_remaining, chunk_size);

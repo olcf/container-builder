@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
         } while(!line.empty());
 
         // Read the container image
-        messenger.send_file("container.img");
+        messenger.receive_file("./container.img");
 
         std::cout<<"Container built!\n";
 

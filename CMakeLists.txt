@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(ContainerBuilder)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIE -fpie")# -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen")
 
 include_directories(Server/include Common/include)
 
@@ -37,6 +38,16 @@ set(SOURCE_FILES_CLIENT Client/main.cpp
 # Create executables
 add_executable(ContainerBuilderServer ${SOURCE_FILES_SERVER})
 add_executable(ContainerBuilderClient ${SOURCE_FILES_CLIENT})
+
+set_target_properties(ContainerBuilderServer
+        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -DDEBUG=1 -fsanitize=address,undefined -fno-omit-frame-pointer")
+set_target_properties(ContainerBuilderServer
+        PROPERTIES LINK_FLAGS "${LINK_FLAGS} -fsanitize=address,undefined -fno-omit-frame-pointer")
+set_target_properties(ContainerBuilderClient
+        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -DDEBUG=1 -fsanitize=address,undefined -fno-omit-frame-pointer")
+set_target_properties(ContainerBuilderClient
+        PROPERTIES LINK_FLAGS "${LINK_FLAGS} -fsanitize=address,undefined -fno-omit-frame-pointer")
+
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)

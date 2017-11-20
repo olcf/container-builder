@@ -37,6 +37,7 @@ static std::string get_build_dir(tcp::socket &socket) {
 
 class Builder {
 public:
+    // Create a unique build directory and set it as the current working directory
     explicit Builder(tcp::socket &socket,
                      ResourceQueue &queue,
                      asio::yield_context &yield) : socket(socket),
@@ -45,11 +46,18 @@ public:
                                                    build_directory(get_build_dir(socket)),
                                                    messenger(socket) {
         boost::filesystem::create_directory(build_directory);
+
+        boost::filesystem::current_path(build_directory);
+
         logger::write(socket, "New builder: " + build_directory);
     }
 
+    // Remove the unique build directory
     ~Builder() {
         boost::system::error_code ec;
+
+        boost::filesystem::current_path(get_home_dir());
+
         boost::filesystem::remove_all(build_directory, ec);
         if (ec) {
             logger::write(socket, "Error removing directory: " + build_directory);

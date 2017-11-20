@@ -7,7 +7,7 @@
 namespace ex = boost::process::extend;
 
 void SingularityBackend::build_singularity_container() {
-    boost::filesystem::current_path(working_directory);
+
     std::string singularity_command(
             "/usr/local/bin/singularity exec --containall /home/builder/singularity_backend.img /home/builder/build.sh");
 

@@ -29,8 +29,7 @@ int main(int argc, char *argv[]) {
         std::ofstream outfile("container.def");
         outfile << "i'm not really a definition" << std::endl;
         outfile.close();
-        WriteFile definition("container.def");
-        definition.write(socket);
+        messenger.send_file("./container.def");
 
         // Read the build output until a zero length message is sent
         std::string line;

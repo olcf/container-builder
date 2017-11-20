@@ -5,6 +5,7 @@
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/spawn.hpp>
 #include <boost/asio/streambuf.hpp>
+#include <boost/filesystem.hpp>
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -24,24 +25,18 @@ public:
 
     // Send entire contents of streambuf
     void async_send(asio::streambuf& message_body, asio::yield_context yield);
-    
+
+    // Send a file in multiple chunk_size, or smaller, messages
+    void send_file(boost::filesystem::path, std::size_t chunk_size=1024);
+    void async_send_file(boost::filesystem::path file_path, asio::yield_context yield, std::size_t chunk_size=1024);
+
+
 private:
-    asio::streambuf buffer;
+    void send_header(std::size_t message_size);
+    void send_header(std::size_t message_size, asio::yield_context yield);
+    std::size_t receive_header();
+    std::size_t receive_header(asio::yield_context yield);
+
     tcp::socket& socket;
 
-    /*
-    // Write an integer header, of type size_t, containing the number of bytes to follow
-    // followed by a write of the message, potentially in multiple chunks
-    void send(std::size_t message_size, std::function<void(asio::streambuf&)> fill_buffer);
-
-    // Asynchronously Write an integer header, of type size_t, containing the number of bytes to follow
-    // followed by a write of the message, potentially in multiple chunks
-    void async_send(std::size_t message_size, asio::yield_context yield,
-                              std::function<void(asio::streambuf&)> fill_buffer);
-
-    std::size_t receive(std::size_t chunk_size, std::function<void(asio::streambuf&)> process_read);
-
-    std::size_t async_receive(std::size_t chunk_size, asio::yield_context yield,
-                              std::function<void(asio::streambuf&)> process_read);
-                              */
 };

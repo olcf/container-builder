@@ -66,13 +66,13 @@ void Builder::build_container() {
     do {
         pipe_bytes_read = asio::async_read_until(std_pipe, buffer, line_matcher, yield[ec]);
         if(ec && ec != asio::error::eof) {
-            logger::write(socket, "Error: build output error: " + ec.message());
+            logger::write(socket, "Error: build output pipe read error: " + ec.message());
         }
 
         // Write the output grabbed from std_pipe
         messenger.async_send(buffer, yield[ec]);
         if(ec && ec != asio::error::eof) {
-            logger::write(socket, "Error: build output error: " + ec.message());
+            logger::write(socket, "Error: build output pipe send error: " + ec.message());
         }
     } while (pipe_bytes_read > 0);
 

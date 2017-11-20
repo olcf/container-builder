@@ -9,7 +9,6 @@ void SingularityBackend::build_singularity_container() {
     boost::filesystem::current_path(working_directory);
     std::string singularity_command("/usr/local/bin/singularity exec --containall /home/builder/singularity_backend.img /home/builder/build.sh");
 
-
     // TODO: find out why OSX still throws an exception if error encountered
     std::error_code ec;
     boost::process::child singularity_proc(singularity_command, ec, boost::process::std_in.close(), (boost::process::std_out & boost::process::std_err) > std_pipe, group);

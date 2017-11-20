@@ -22,7 +22,7 @@ void Resource::read(tcp::socket &socket) {
     archive >> *this;
 }
 
-void Resource::async_write(tcp::socket& socket, asio::yield_context yield) {
+void Resource::async_write(tcp::socket &socket, asio::yield_context yield) {
     // Serialize the data into a string
     std::ostringstream archive_stream;
     boost::archive::text_oarchive archive(archive_stream);

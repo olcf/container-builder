@@ -43,7 +43,7 @@ public:
                                                    queue(queue),
                                                    yield(yield),
                                                    build_directory(get_build_dir(socket)),
-                                                   messenger(socket){
+                                                   messenger(socket) {
         boost::filesystem::create_directory(build_directory);
         logger::write(socket, "New builder: " + build_directory);
     }

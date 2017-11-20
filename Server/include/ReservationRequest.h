@@ -18,6 +18,7 @@ public:
     }
 
     Resource async_wait(asio::yield_context yield);
+
     tcp::socket &socket;
 private:
     Reservation reservation;

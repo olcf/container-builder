@@ -57,7 +57,7 @@ void Builder::build_container() {
 
     do {
         pipe_bytes_read = asio::async_read_until(std_pipe, buffer, line_matcher, yield[ec]);
-        if(ec && ec != asio::error::eof) {
+        if (ec && ec != asio::error::eof) {
             logger::write(socket, "Error: build output pipe read error: " + ec.message());
         }
 

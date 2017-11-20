@@ -13,26 +13,26 @@ static std::string parent_directory(std::string definition_filename) {
 
 class SingularityBackend {
 public:
-    explicit SingularityBackend(tcp::socket& socket, Resource resource, boost::process::async_pipe& std_pipe, std::string definition_filename)
+    explicit SingularityBackend(tcp::socket &socket, Resource resource, boost::process::async_pipe &std_pipe,
+                                std::string definition_filename)
             : resource(resource),
               socket(socket),
               std_pipe(std_pipe),
               definition_filename(definition_filename),
-              working_directory(parent_directory(definition_filename))
-    {};
+              working_directory(parent_directory(definition_filename)) {};
 
     ~SingularityBackend() {
-        if(group.valid())
-          group.terminate();
+        if (group.valid())
+            group.terminate();
     }
 
     void build_singularity_container();
 
 private:
-    tcp::socket& socket;
+    tcp::socket &socket;
     const Resource resource;
     boost::process::group group;
-    boost::process::async_pipe& std_pipe;
+    boost::process::async_pipe &std_pipe;
     const std::string definition_filename;
     const std::string working_directory;
 };

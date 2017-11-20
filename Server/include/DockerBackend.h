@@ -13,13 +13,12 @@ static std::string parent_directory(std::string definition_filename) {
 
 class DockerBackend {
 public:
-    explicit DockerBackend(Resource resource, boost::process::async_pipe& std_pipe, std::string definition_filename)
+    explicit DockerBackend(Resource resource, boost::process::async_pipe &std_pipe, std::string definition_filename)
             : resource(resource),
               std_pipe(std_pipe),
               definition_filename(definition_filename),
-              docker_name("docker_"+ resource.loop_device),
-              working_directory(parent_directory(definition_filename))
-    {};
+              docker_name("docker_" + resource.loop_device),
+              working_directory(parent_directory(definition_filename)) {};
 
     ~DockerBackend() {
         std::string stop_command;
@@ -37,7 +36,7 @@ public:
 
 private:
     const Resource resource;
-    boost::process::async_pipe& std_pipe;
+    boost::process::async_pipe &std_pipe;
     const std::string definition_filename;
     const std::string docker_name;
     const std::string working_directory;

@@ -2,7 +2,6 @@
 #include <boost/asio/write.hpp>
 #include <boost/asio/read.hpp>
 #include <iostream>
-#include <fstream>
 
 // TODO: move this into .cpp as it's not templated!
 
@@ -15,7 +14,7 @@ void Messenger::send_header(header_t message_size) {
 // Send the header asynchrnously, which is the size of the message that will immediately follow
 void Messenger::async_send_header(header_t message_size, asio::yield_context yield) {
     auto header = asio::buffer(&message_size, header_size());
-    asio::async_write(socket, header, asio::transfer_exactly( header_size()), yield);
+    asio::async_write(socket, header, asio::transfer_exactly(header_size()), yield);
 }
 
 // Receive the message header
@@ -35,7 +34,7 @@ header_t Messenger::async_receive_header(asio::yield_context yield) {
 }
 
 // Send a string message
-void Messenger::send(const std::string& message) {
+void Messenger::send(const std::string &message) {
     auto message_size = message.size();
 
     send_header(message_size);
@@ -46,7 +45,7 @@ void Messenger::send(const std::string& message) {
 }
 
 // Send a string message asynchronously
-void Messenger::async_send(const std::string& message, asio::yield_context yield) {
+void Messenger::async_send(const std::string &message, asio::yield_context yield) {
     auto message_size = message.size();
 
     async_send_header(message_size, yield);
@@ -57,7 +56,7 @@ void Messenger::async_send(const std::string& message, asio::yield_context yield
 }
 
 // Send a streambuf message asynchronously
-void Messenger::async_send(asio::streambuf& message_body, asio::yield_context yield) {
+void Messenger::async_send(asio::streambuf &message_body, asio::yield_context yield) {
     auto message_size = message_body.size();
 
     async_send_header(message_size, yield);
@@ -92,7 +91,7 @@ void Messenger::send_file(boost::filesystem::path file_path, std::size_t chunk_s
         auto bytes_sent = asio::write(socket, buffer, asio::transfer_exactly(bytes_to_send));
 
         bytes_remaining -= bytes_sent;
-    } while(bytes_remaining);
+    } while (bytes_remaining);
 }
 
 // Send a file as a message asynchronously
@@ -120,7 +119,7 @@ void Messenger::async_send_file(boost::filesystem::path file_path, asio::yield_c
         auto bytes_sent = asio::async_write(socket, buffer, asio::transfer_exactly(bytes_to_send), yield);
 
         bytes_remaining -= bytes_sent;
-    } while(bytes_remaining);
+    } while (bytes_remaining);
 }
 
 // Receive a string message
@@ -134,7 +133,7 @@ std::string Messenger::receive() {
 
     // Construct a string from the message body
     std::string body((std::istreambuf_iterator<char>(&buffer)),
-                      std::istreambuf_iterator<char>());
+                     std::istreambuf_iterator<char>());
 
     return body;
 }
@@ -150,7 +149,7 @@ std::string Messenger::async_receive(asio::yield_context yield) {
 
     // Construct a string from the message body
     std::string body((std::istreambuf_iterator<char>(&buffer)),
-                      std::istreambuf_iterator<char>());
+                     std::istreambuf_iterator<char>());
 
     return body;
 }
@@ -180,10 +179,11 @@ void Messenger::receive_file(boost::filesystem::path file_path, std::size_t chun
 
         bytes_remaining -= bytes_received;
 
-    } while(bytes_remaining);
+    } while (bytes_remaining);
 }
 
-void Messenger::async_receive_file(boost::filesystem::path file_path, asio::yield_context yield, std::size_t chunk_size) {
+void
+Messenger::async_receive_file(boost::filesystem::path file_path, asio::yield_context yield, std::size_t chunk_size) {
     std::ofstream file;
 
     // Throw exception if we run into any file issues
@@ -208,5 +208,5 @@ void Messenger::async_receive_file(boost::filesystem::path file_path, asio::yiel
 
         bytes_remaining -= bytes_received;
 
-    } while(bytes_remaining);
+    } while (bytes_remaining);
 }

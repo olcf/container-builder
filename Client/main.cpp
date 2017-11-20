@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
         messenger.send("build_request");
 
         // Send the definition file
-        std::cout<<"creating fake definition file\n";
+        std::cout << "creating fake definition file\n";
         std::ofstream outfile("container.def");
         outfile << "i'm not really a definition" << std::endl;
         outfile.close();
@@ -31,13 +31,13 @@ int main(int argc, char *argv[]) {
         std::string line;
         do {
             line = messenger.receive();
-            std::cout<<line;
-        } while(!line.empty());
+            std::cout << line;
+        } while (!line.empty());
 
         // Read the container image
         messenger.receive_file("./container.img");
 
-        std::cout<<"Container built!\n";
+        std::cout << "Container built!\n";
 
     }
     catch (std::exception &e) {

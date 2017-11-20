@@ -15,14 +15,14 @@ namespace logger {
         logger::write("Initializing logger\n");
     }
 
-    void write(const std::string& message) {
+    void write(const std::string &message) {
         src::logger_mt &lg = global_log::get();
         BOOST_LOG(lg) << message;
     }
 
-    void write(const tcp::socket& socket, const std::string& message) {
+    void write(const tcp::socket &socket, const std::string &message) {
         src::logger_mt &lg = global_log::get();
         const std::string connection_string = boost::lexical_cast<std::string>(socket.remote_endpoint());
-        BOOST_LOG(lg) <<" ["<< connection_string << "] : "<< message;
+        BOOST_LOG(lg) << " [" << connection_string << "] : " << message;
     }
 }

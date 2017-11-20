@@ -39,15 +39,14 @@ set(SOURCE_FILES_CLIENT Client/main.cpp
 add_executable(ContainerBuilderServer ${SOURCE_FILES_SERVER})
 add_executable(ContainerBuilderClient ${SOURCE_FILES_CLIENT})
 
-# -fsanitize=undefined causing issues with launching application, removing for now
-set_target_properties(ContainerBuilderServer
-        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -DDEBUG=1 -fsanitize=address -fno-omit-frame-pointer")
-set_target_properties(ContainerBuilderServer
-        PROPERTIES LINK_FLAGS "${LINK_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
-set_target_properties(ContainerBuilderClient
-        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -DDEBUG=1 -fsanitize=address -fno-omit-frame-pointer")
-set_target_properties(ContainerBuilderClient
-        PROPERTIES LINK_FLAGS "${LINK_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+#set_target_properties(ContainerBuilderServer
+#        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -DDEBUG=1 -fsanitize=address,undefined -fno-omit-frame-pointer")
+#set_target_properties(ContainerBuilderServer
+#        PROPERTIES LINK_FLAGS "${LINK_FLAGS} -fsanitize=address,undefined -fno-omit-frame-pointer")
+#set_target_properties(ContainerBuilderClient
+#        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -DDEBUG=1 -fsanitize=address,undefined -fno-omit-frame-pointer")
+#set_target_properties(ContainerBuilderClient
+#        PROPERTIES LINK_FLAGS "${LINK_FLAGS} -fsanitize=address,undefined -fno-omit-frame-pointer")
 
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

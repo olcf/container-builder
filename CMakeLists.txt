@@ -17,31 +17,20 @@ set(SOURCE_FILES_SERVER Server/src/main.cpp
         Server/include/ReservationRequest.h
         Server/include/Resource.h
         Server/include/ResourceQueue.h
-        Common/src/WriteFile.cpp
-        Common/include/WriteFile.h
-        Common/src/ReadFile.cpp
-        Common/include/ReadFile.h
         Server/src/Builder.cpp
         Server/include/Builder.h
         Server/src/DockerBackend.cpp
         Server/include/DockerBackend.h
         Server/src/Logger.cpp
         Server/include/Logger.h
-        Common/include/ReadMessage.h
-        Common/include/WriteMessage.h
-        Common/src/WriteMessage.cpp
         Server/src/SingularityBackend.cpp
         Server/include/SingularityBackend.h Common/src/Messenger.cpp Common/include/Messenger.h)
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT Client/main.cpp
-        Common/src/ReadFile.cpp
-        Common/include/ReadFile.h
-        Common/src/WriteFile.cpp
-        Common/include/WriteFile.h
         Server/src/Logger.cpp
-        Server/include/Logger.h Common/include/ReadMessage.h
-        Common/include/WriteMessage.h Common/src/Messenger.cpp Common/include/Messenger.h)
+        Server/include/Logger.h
+        Common/src/Messenger.cpp Common/include/Messenger.h)
 
 # Create executables
 add_executable(ContainerBuilderServer ${SOURCE_FILES_SERVER})

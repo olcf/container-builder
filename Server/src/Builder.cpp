@@ -1,18 +1,11 @@
 #include "Builder.h"
-#include <iostream>
-#include <limits>
 #include "ReservationRequest.h"
 #include <boost/asio/write.hpp>
 #include <boost/asio/read_until.hpp>
-#include <boost/asio/streambuf.hpp>
-#include "WriteFile.h"
-#include "ReadFile.h"
 #include <boost/regex.hpp>
 #include <boost/process.hpp>
 #include "SingularityBackend.h"
-#include "WriteMessage.h"
-#include <limits>
-#include "Logger.h"
+#include "Messenger.h"
 
 void Builder::singularity_build() {
 
@@ -30,7 +23,7 @@ void Builder::singularity_build() {
     send_image();
 }
 
-std::string Builder::definition_filename() {
+std::string Builder::definition_path() {
     std::string def_filename(build_directory);
     def_filename += "/container.def";
     return def_filename;
@@ -39,8 +32,8 @@ std::string Builder::definition_filename() {
 // Copy definition file to server
 void Builder::receive_definition() {
     logger::write(socket, "Receiving definition");
-    ReadFile definition(definition_filename());
-    definition.async_read(socket, yield);
+    Messenger messenger(socket);
+    messenger.async_receive_file(definition_path(), yield);
 }
 
 void Builder::build_container() {
@@ -48,7 +41,7 @@ void Builder::build_container() {
     boost::process::async_pipe std_pipe(socket.get_io_service());
 
     // Start the build process, stdout/err will be passed to std_pipe for reading
-    SingularityBackend backend(socket, resource, std_pipe, definition_filename());
+    SingularityBackend backend(socket, resource, std_pipe, definition_path());
     backend.build_singularity_container();
 
     // Read process pipe output and write it to the client
@@ -82,10 +75,10 @@ void Builder::build_container() {
 void Builder::send_image() {
     logger::write(socket, "Sending image");
 
-    std::string container_file(build_directory);
-    container_file += "/container.img";
-    WriteFile container(container_file);
-    container.async_write(socket, yield);
+    Messenger messenger(socket);
+    std::string container_path(build_directory);
+    container_path += "/container.img";
+    messenger.async_send_file(container_path, yield);
 
     logger::write(socket, "Finish sending image");
 }

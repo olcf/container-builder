@@ -1,6 +1,5 @@
 #include "Connection.h"
 #include "Builder.h"
-#include "ReadMessage.h"
 #include <boost/asio/streambuf.hpp>
 #include "Messenger.h"
 
@@ -11,14 +10,14 @@ void Connection::begin() {
                     try {
                         // Read initial request type from client
                         Messenger messenger(socket);
-                        auto request = messenger.receive();
+                        auto request = messenger.async_receive(yield);
 
                         if (request == "build_request")
                             handle_build_request(yield);
                         else if (request == "diagnostic_request")
                             handle_diagnostic_request(yield);
                         else
-                            throw std::system_error(EPERM, std::system_category(), request);
+                            throw std::system_error(EPERM, std::system_category(), request + "not supported");
                     }
                     catch (std::exception &e) {
                         std::string except("Exception: ");

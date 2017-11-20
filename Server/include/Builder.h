@@ -68,7 +68,7 @@ private:
     void send_image();
 
 
-    std::string definition_filename();
+    std::string definition_path();
 
     tcp::socket &socket;
     ResourceQueue &queue;

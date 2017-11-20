@@ -3,10 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <boost/asio.hpp>
-#include "WriteFile.h"
-#include "ReadFile.h"
-#include "WriteMessage.h"
-#include "ReadMessage.h"
 #include "Messenger.h"
 
 namespace asio = boost::asio;
@@ -39,8 +35,7 @@ int main(int argc, char *argv[]) {
         } while(!line.empty());
 
         // Read the container image
-        ReadFile image("container.img");
-        image.read(socket);
+        messenger.send_file("container.img");
 
         std::cout<<"Container built!\n";
 

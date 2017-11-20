@@ -24,7 +24,9 @@ set(SOURCE_FILES_SERVER Server/src/main.cpp
         Server/src/Logger.cpp
         Server/include/Logger.h
         Server/src/SingularityBackend.cpp
-        Server/include/SingularityBackend.h Common/src/Messenger.cpp Common/include/Messenger.h)
+        Server/include/SingularityBackend.h
+        Common/src/Messenger.cpp
+        Common/include/Messenger.h)
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT Client/main.cpp

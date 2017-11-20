@@ -92,6 +92,8 @@ void Messenger::send_file(boost::filesystem::path file_path, std::size_t chunk_s
 
         bytes_remaining -= bytes_sent;
     } while (bytes_remaining);
+
+    file.close();
 }
 
 // Send a file as a message asynchronously
@@ -120,6 +122,8 @@ void Messenger::async_send_file(boost::filesystem::path file_path, asio::yield_c
 
         bytes_remaining -= bytes_sent;
     } while (bytes_remaining);
+
+    file.close();
 }
 
 // Receive a string message
@@ -180,6 +184,8 @@ void Messenger::receive_file(boost::filesystem::path file_path, std::size_t chun
         bytes_remaining -= bytes_received;
 
     } while (bytes_remaining);
+
+    file.close();
 }
 
 void
@@ -209,4 +215,6 @@ Messenger::async_receive_file(boost::filesystem::path file_path, asio::yield_con
         bytes_remaining -= bytes_received;
 
     } while (bytes_remaining);
+
+    file.close();
 }

@@ -8,6 +8,13 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
+void create_def() {
+    std::cout << "creating simple definition file\n";
+    std::ofstream outfile("container.def");
+    outfile << "BootStrap: docker\nFrom: ppc64le/ubuntu:zesty" << std::endl;
+    outfile.close();
+}
+
 int main(int argc, char *argv[]) {
     try {
         asio::io_service io_service;
@@ -20,11 +27,9 @@ int main(int argc, char *argv[]) {
         // Initiate a build request
         messenger.send("build_request");
 
+        create_def();
+
         // Send the definition file
-        std::cout << "creating fake definition file\n";
-        std::ofstream outfile("container.def");
-        outfile << "i'm not really a definition" << std::endl;
-        outfile.close();
         messenger.send_file("./container.def");
 
         // Read the build output until a zero length message is sent

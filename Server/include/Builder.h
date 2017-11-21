@@ -41,7 +41,7 @@ public:
 
         boost::filesystem::create_directory(build_directory);
 
-        boost::filesystem::current_path(build_directory);
+//        boost::filesystem::current_path(build_directory);
 
         logger::write(socket, "New builder: " + build_directory);
     }

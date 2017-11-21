@@ -71,6 +71,7 @@ void Builder::send_image() {
     logger::write(socket, "Sending image");
 
     Messenger messenger(socket);
+
     std::string container_path(build_directory);
     container_path += "/container.img";
     messenger.async_send_file(container_path, yield);

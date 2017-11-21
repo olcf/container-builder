@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Get script directory
+SCRIPT_DIR=$(dirname $0)
+
+# OpenStack credentials
+if [ "$1" != "--no_source" ]; then
+  source ${SCRIPT_DIR}/openrc.sh
+fi
+
+# Remove Keys
+nova keypair-delete BuilderKey
+rm ${SCRIPT_DIR}/BuilderKey
+
+# Remove IP files
+rm ${SCRIPT_DIR}/BuilderIP
+
+# Delete VM
+nova delete BuilderQueue

@@ -13,6 +13,8 @@ namespace asio = boost::asio;
 namespace bp = boost::process;
 using asio::ip::tcp;
 
+using callback_type = std::function<void(const boost::system::error_code&, std::size_t size)>;
+
 int main(int argc, char *argv[]) {
     try {
         // Connect to the queue
@@ -44,7 +46,7 @@ int main(int argc, char *argv[]) {
         client_messenger.receive_file("container.def");
 
         // Create a pipe to communicate with our build subprocess
-        bp::ipstream std_pipe;
+        bp::async_pipe std_pipe(io_service);
 
         // Launch our build as a subprocess
         std::string build_command("sudo singularity build container.img container.def");
@@ -60,10 +62,21 @@ int main(int argc, char *argv[]) {
         asio::streambuf buffer;
         uint64_t pipe_bytes_read;
         boost::regex line_matcher{"\\r|\\n"};
-        do {
-//            pipe_bytes_read = asio::read_until(std_pipe, buffer, line_matcher);
-            client_messenger.send(buffer);
-        } while (pipe_bytes_read > 0);
+
+        // Callback for handling reading from pipe and sending output to client
+        callback_type read_std_pipe = [&](const boost::system::error_code& ec, std::size_t size) {
+            if(size == 0  || ec == asio::error::eof) {
+                return;
+            }
+            else {
+                client_messenger.send(buffer);
+                asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
+            }
+        };
+
+        // Start reading child stdout/err from pipe
+        asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
+        io_service.run();
 
         // Get the return value from the build subprocess
         build_child.wait();

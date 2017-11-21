@@ -11,7 +11,7 @@ using asio::ip::tcp;
 void create_def() {
     std::cout << "creating simple definition file\n";
     std::ofstream outfile("container.def");
-    outfile << "BootStrap: docker\nFrom: ppc64le/ubuntu:zesty" << std::endl;
+    outfile << "BootStrap: docker\nFrom: ubuntu:zesty" << std::endl;
     outfile.close();
 }
 

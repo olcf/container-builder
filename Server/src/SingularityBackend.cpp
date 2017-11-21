@@ -9,7 +9,7 @@ namespace ex = boost::process::extend;
 void SingularityBackend::build_singularity_container() {
 
     std::string singularity_command(
-            "/usr/local/bin/singularity exec --containall /home/builder/singularity_backend.img /home/builder/build.sh ");
+            "/usr/local/bin/singularity exec --containall -B/home/builder /home/builder/singularity_backend.img /home/builder/build.sh ");
     singularity_command += working_directory;
 
     // TODO: find out why OSX still throws an exception if error encountered

@@ -4,4 +4,5 @@
 losetup -f
 
 # Build container
-sudo /usr/local/bin/singularity build $1/container.img $1/container.def
+SINGULARITY_CACHEDIR=$1
+/usr/local/bin/singularity build $1/container.img $1/container.def

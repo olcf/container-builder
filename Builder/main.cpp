@@ -7,7 +7,7 @@
 #include <boost/process.hpp>
 #include <boost/regex.hpp>
 #include "Messenger.h"
-#include "Resource.h"
+#include "Logger.h"
 
 namespace asio = boost::asio;
 namespace bp = boost::process;
@@ -19,35 +19,46 @@ std::string queue_hostname() {
     return std::string(env);
 }
 
+std::string queue_port() {
+    auto env = std::getenv("QUEUE_PORT");
+    return std::string(env);
+}
+
 int main(int argc, char *argv[]) {
     try {
+        // Enable logging
+        logger::init("ContainerBuilder.log");
+
         // Connect to the queue
         asio::io_service io_service;
 
         tcp::socket queue_socket(io_service);
         tcp::resolver queue_resolver(io_service);
-        asio::connect(queue_socket, queue_resolver.resolve({queue_hostname(), std::string("8080")}));
+        asio::connect(queue_socket, queue_resolver.resolve({queue_hostname(), queue_port()}));
         Messenger queue_messenger(queue_socket);
 
         // Request to add this host to the resource queue
+        logger::write("Requesting checkin to ResourceQueue " + queue_hostname() + ":" + queue_port());
         queue_messenger.send("checkin_resource_request");
 
         // Create resource describing this host
         Resource resource;
         resource.host = queue_socket.local_endpoint().address().to_string();
-        resource.port = "8080";
+        resource.port = "8081";
 
         // Send this host as a resource
         queue_messenger.send(resource);
 
         // Accept a connection to use this resource
-        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8080));
+        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), std::stoi(resource.port)));
         tcp::socket socket(io_service);
         acceptor.accept(socket);
 
         // Read the recipe file
         Messenger client_messenger(socket);
         client_messenger.receive_file("container.def");
+
+        logger::write("Recipe file received");
 
         // Create a pipe to communicate with our build subprocess
         bp::async_pipe std_pipe(io_service);
@@ -57,6 +68,8 @@ int main(int argc, char *argv[]) {
         std::error_code ec;
         bp::group group;
         bp::child build_child(build_command, ec, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group);
+
+        logger::write("Running build command: " + build_command);
 
         // Read process pipe output and write it to the client
         // EOF will be returned as an error code when the pipe is closed...I think
@@ -83,16 +96,21 @@ int main(int argc, char *argv[]) {
         build_child.wait();
         int build_code = build_child.exit_code();
 
+        logger::write("Sending image to client");
+
         // Send the container to the client
         if(build_code == 0) {
+            logger::write("Image failed to build");
             client_messenger.send_file("container.img");
         }
+
+        logger::write("Finished sending image to client");
 
         // TODO Do something to rebuild/clean this VM and restart this process
 
     }
     catch (std::exception &e) {
-        std::cerr << "\033[1;31m Failed to build container: " << e.what() << "\033[0m\n";
+        logger::write(std::string("Build error: ") + e.what());
     }
 
     return 0;

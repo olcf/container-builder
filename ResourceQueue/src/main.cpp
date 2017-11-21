@@ -17,7 +17,7 @@ using asio::ip::tcp;
 int main(int argc, char *argv[]) {
 
     // Enable logging
-    logger::init("ResourceManager.log");
+    logger::init("ResourceQueue.log");
 
     try {
         asio::io_service io_service;

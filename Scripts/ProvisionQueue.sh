@@ -3,7 +3,7 @@
 set -e
 
 apt update
-apt upgrade
+apt -y upgrade
 
 # Create non root queue user
 useradd --create-home --home-dir /home/queue --shell /bin/bash queue

@@ -3,7 +3,7 @@
 set -e
 
 apt update
-apt upgrade
+apt -y upgrade
 
 # Create non root builder user
 useradd --create-home --home-dir /home/builder --shell /bin/bash builder

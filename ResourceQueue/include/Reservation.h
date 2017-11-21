@@ -22,8 +22,8 @@ public:
     void ready(Resource acquired_resource);
 
     Resource resource;
-    bool active;
     tcp::socket &socket;
+    bool active;
 private:
     asio::deadline_timer ready_timer;
 };

@@ -246,6 +246,21 @@ Resource Messenger::receive_resource() {
     return resource;
 }
 
+Resource Messenger::async_receive_resource(asio::yield_context yield) {
+    Messenger messenger(socket);
+
+    // Read in the serialized resource as a string
+    auto serialized_resource = messenger.async_receive(yield);
+
+    // de-serialize Resource
+    Resource resource;
+    std::istringstream archive_stream(serialized_resource);
+    boost::archive::text_iarchive archive(archive_stream);
+    archive >> resource;
+
+    return resource;
+}
+
 void Messenger::async_send(Resource resource, asio::yield_context yield) {
     Messenger messenger(socket);
 

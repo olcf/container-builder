@@ -40,7 +40,7 @@ void Connection::checkout_resource(asio::yield_context yield) {
 
 void Connection::checkin_resource(asio::yield_context yield) {
     Messenger messenger(socket);
-    auto resource = messenger.receive_resource();
+    auto resource = messenger.async_receive_resource(yield);
     queue.add_resource(resource);
     logger::write("Checked in new resource: " + resource.host + ":" + resource.port);
 }

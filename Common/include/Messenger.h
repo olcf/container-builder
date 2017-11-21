@@ -14,6 +14,7 @@ using asio::ip::tcp;
 using header_t = std::size_t;
 
 class Messenger {
+
 public:
     explicit Messenger(tcp::socket &socket) : socket(socket) {}
 
@@ -43,8 +44,9 @@ public:
     void async_send(Resource resource, asio::yield_context yield);
     void send(Resource resource);
 
-    // Read a Resource
+    // Receive a Resource
     Resource receive_resource();
+    Resource async_receive_resource(asio::yield_context yield);
 
 private:
     tcp::socket &socket;
@@ -57,7 +59,7 @@ private:
 
     std::size_t async_receive_header(asio::yield_context yield);
 
-    constexpr std::size_t header_size() {
+    static constexpr std::size_t header_size() {
         return sizeof(header_t);
     }
 };

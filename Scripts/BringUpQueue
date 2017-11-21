@@ -49,8 +49,8 @@ VM_UUID=$(nova boot                                          \
     --flavor "${FLAVOR}"                                     \
     --availability-zone "${ZONE}"                            \
     --nic net-name="${NIC}"                                  \
-    --key-name "${KEY}"                                     \
-    --user-data ${SCRIPT_DIR}/ProvisionQueue.sh  \
+    --key-name "${KEY}"                                      \
+    --user-data ${SCRIPT_DIR}/ProvisionQueue.sh              \
     "ResourceQueue" | awk '/id/ {print $4}' | head -n 1);
 
 # Spinner...

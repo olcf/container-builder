@@ -16,12 +16,17 @@ void create_def() {
     outfile.close();
 }
 
+std::string queue_hostname() {
+    auto env = std::getenv("QUEUE_HOSTNAME");
+    return std::string(env);
+}
+
 int main(int argc, char *argv[]) {
     try {
         asio::io_service io_service;
         tcp::socket queue_socket(io_service);
         tcp::resolver queue_resolver(io_service);
-        asio::connect(queue_socket, queue_resolver.resolve({std::string("127.0.0.1"), std::string("8080")}));
+        asio::connect(queue_socket, queue_resolver.resolve({queue_hostname(), std::string("8080")}));
 
         Messenger queue_messenger(queue_socket);
 

@@ -14,6 +14,11 @@ namespace bp = boost::process;
 using asio::ip::tcp;
 using callback_type = std::function<void(const boost::system::error_code&, std::size_t size)>;
 
+std::string queue_hostname() {
+    auto env = std::getenv("QUEUE_HOSTNAME");
+    return std::string(env);
+}
+
 int main(int argc, char *argv[]) {
     try {
         // Connect to the queue
@@ -21,7 +26,7 @@ int main(int argc, char *argv[]) {
 
         tcp::socket queue_socket(io_service);
         tcp::resolver queue_resolver(io_service);
-        asio::connect(queue_socket, queue_resolver.resolve({std::string("127.0.0.1"), std::string("8080")}));
+        asio::connect(queue_socket, queue_resolver.resolve({queue_hostname(), std::string("8080")}));
         Messenger queue_messenger(queue_socket);
 
         // Request to add this host to the resource queue

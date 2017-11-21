@@ -2,6 +2,9 @@
 
 set -e
 
+apt update
+apt upgrade
+
 # Create non root queue user
 useradd --create-home --home-dir /home/queue --shell /bin/bash queue
 
@@ -24,7 +27,6 @@ rm -rf /boost_1_65_1
 
 # Install ContainerBuilder
 cd /
-apt-get install -y pkg-config
 git clone https://github.com/AdamSimpson/ContainerBuilder.git
 cd ContainerBuilder
 mkdir build && cd build
@@ -34,4 +36,4 @@ make install
 rm -rf /ContainerBuilder
 
 # TODO make this service more robust
-sudo su - queue -c "nohup /usr/local/bin/ResourceQueue > /dev/null 2>&1 < /dev/null &"
+su - queue -c "nohup /usr/local/bin/ResourceQueue > /dev/null 2>&1 < /dev/null &"

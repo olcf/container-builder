@@ -2,6 +2,9 @@
 
 set -e
 
+apt update
+apt upgrade
+
 # Create non root builder user
 useradd --create-home --home-dir /home/builder --shell /bin/bash builder
 
@@ -37,7 +40,6 @@ rm -rf /boost_1_65_1
 
 # Install ContainerBuilder
 cd /
-apt-get install -y pkg-config
 git clone https://github.com/AdamSimpson/ContainerBuilder.git
 cd ContainerBuilder
 mkdir build && cd build
@@ -47,4 +49,4 @@ make install
 rm -rf /ContainerBuilder
 
 # TODO make this service more robust
-sudo su - builder -c "nohup /usr/local/bin/ContainerBuilder > /dev/null 2>&1 < /dev/null &"
+su - builder -c "nohup /usr/local/bin/ContainerBuilder > /dev/null 2>&1 < /dev/null &"

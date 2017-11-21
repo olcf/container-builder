@@ -3,6 +3,8 @@
 # Create loop device
 losetup -f
 
+WORKD_DIR=`pwd`
+
 # Build container
-SINGULARITY_CACHEDIR=$1
-/usr/local/bin/singularity build $1/container.img $1/container.def
+SINGULARITY_CACHEDIR=${WORK_DIR}
+/usr/local/bin/singularity build ${WORK_DIR}/container.img ${WORK_DIR}/container.def

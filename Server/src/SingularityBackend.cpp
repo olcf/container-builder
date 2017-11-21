@@ -8,11 +8,15 @@ namespace ex = boost::process::extend;
 
 void SingularityBackend::build_singularity_container() {
 
+    // Run the build script inside a contained container.
+    // Only the backend image, build script, and work path are mounted
     std::string singularity_command(
-            "/usr/local/bin/singularity exec --containall -B/home/builder /home/builder/singularity_backend.img /home/builder/build.sh ");
-    singularity_command += working_directory;
+            "/usr/local/bin/singularity exec --containall "
+                    + "-B /home/builder/singularity_backend.img "
+                    + "-B /home/builder/build.sh "
+                    + "--workdir " + working_directory
+                    + " /home/builder/singularity_backend.img /home/builder/build.sh ");
 
-    // TODO: find out why OSX still throws an exception if error encountered
     std::error_code ec;
     boost::process::child singularity_proc(singularity_command, ec, boost::process::std_in.close(),
                                            (boost::process::std_out & boost::process::std_err) > std_pipe, group);

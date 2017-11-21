@@ -6,6 +6,7 @@
 #include <boost/asio/spawn.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/filesystem.hpp>
+#include "Resource.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -28,17 +29,22 @@ public:
 
     // Send entire contents of streambuf
     void async_send(asio::streambuf &message_body, asio::yield_context yield);
+    void send(asio::streambuf &message_body);
 
     // Send a file in multiple chunk_size peices
     void send_file(boost::filesystem::path file_path, std::size_t chunk_size = 1024);
-
     void async_send_file(boost::filesystem::path file_path, asio::yield_context yield, std::size_t chunk_size = 1024);
 
     // Read a file in multiple chunk_size peices
     void receive_file(boost::filesystem::path file_path, std::size_t chunk_size = 1024);
+    void  async_receive_file(boost::filesystem::path file_path, asio::yield_context yield, std::size_t chunk_size = 1024);
 
-    void
-    async_receive_file(boost::filesystem::path file_path, asio::yield_context yield, std::size_t chunk_size = 1024);
+    // Send a Resource
+    void async_send(Resource resource, asio::yield_context yield);
+    void send(Resource resource);
+
+    // Read a Resource
+    Resource receive_resource();
 
 private:
     tcp::socket &socket;

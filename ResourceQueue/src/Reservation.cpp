@@ -2,6 +2,7 @@
 
 void Reservation::async_wait(asio::yield_context yield) {
     // When entered into the queue the queue will tick and possibly expire call this->ready()
+    // That is the timer will be potentially be fired before async_wait() is called
     // If the timer is expired async_wait will deadlock so we take care to only call it on a valid timer
     if (!active) {
         ready_timer.expires_at(boost::posix_time::pos_infin);

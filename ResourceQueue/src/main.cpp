@@ -11,25 +11,20 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
+// The resource manager is responsible for providing build resources to clients
+// To do so build resources must register that they are available with the resource manager
+// And the resource manager must queue client requests until build resources become available
 int main(int argc, char *argv[]) {
 
     // Enable logging
-    logger::init("ContainerBuilder.log");
+    logger::init("ResourceManager.log");
 
     try {
         asio::io_service io_service;
 
-        // Add a few resources
         ResourceQueue job_queue;
-        Resource resource;
-        resource.loop_device = "/dev/loop0";
-        resource.host = std::string("localhost");
-        resource.num_cores = 1;
-        job_queue.add_resource(resource);
-        resource.loop_device = "/dev/loop1";
-        job_queue.add_resource(resource);
 
-        // Wait for connections
+        // Wait for connections from either Clients or Builders
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
                         tcp::acceptor acceptor(io_service,

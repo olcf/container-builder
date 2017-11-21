@@ -23,9 +23,9 @@ private:
     tcp::socket socket;
     ResourceQueue &queue;
 
-    // Handle a request to build a new container
-    void handle_build_request(asio::yield_context yield);
+    // Checkout a builder resource
+    void checkout_resource(asio::yield_context yield);
 
-    // Send queue diagnostic information
-    void handle_diagnostic_request(asio::yield_context yield);
+    // Make a new builder resource available
+    void checkin_resource(asio::yield_context yield);
 };

@@ -11,16 +11,17 @@ public:
     // Create a new queue reservation and return it to the requester
     void enter(Reservation *reservation);
 
+    // Add a resource to the queue
     void add_resource(Resource resource);
 
-    // On exit release any active resources or remove from pending queue
+    // On exit release remove any outstanding requests from pending queue
     void exit(Reservation *reservation) noexcept;
 
 private:
     std::list<Resource> available_resources;
     std::deque<Reservation *> pending_queue;
 
-    // Advance the queue
+    // Advance the queue to see if a reservation can run
     // Return true if a job was started
     void tick();
 };

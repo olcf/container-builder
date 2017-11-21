@@ -2,7 +2,6 @@
 #include <iostream>
 #include "Logger.h"
 
-// Create a new queue reservation and return it to the requester
 void ResourceQueue::enter(Reservation *reservation) {
     logger::write(reservation->socket, "Entering queue");
     pending_queue.push_back(reservation);
@@ -11,26 +10,16 @@ void ResourceQueue::enter(Reservation *reservation) {
 
 void ResourceQueue::add_resource(Resource resource) {
     available_resources.push_back(resource);
+    tick();
 }
 
 void ResourceQueue::exit(Reservation *reservation) noexcept {
     logger::write(reservation->socket, "Exiting queue");
-    try {
-        if (reservation->active) {
-            add_resource(reservation->resource);
-            tick();
-        } else {
-            auto pending_position = std::find(pending_queue.begin(), pending_queue.end(), reservation);
-            if (pending_position != pending_queue.end())
-                pending_queue.erase(pending_position);
-            else {
-                throw std::system_error(EADDRNOTAVAIL, std::generic_category(),
-                                        "reservation not found in pending or active queues");
-            }
-        }
-    } catch (std::exception const &e) {
-        logger::write(reservation->socket, "Exception:" + std::string(e.what()));
-    }
+
+    // If exit is called on an outstanding reservation remove it from the queue
+    auto pending_position = std::find(pending_queue.begin(), pending_queue.end(), reservation);
+    if (pending_position != pending_queue.end())
+        pending_queue.erase(pending_position);
 }
 
 void ResourceQueue::tick() {

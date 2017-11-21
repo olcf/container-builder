@@ -12,28 +12,16 @@ using asio::ip::tcp;
 
 class Resource {
 public:
-    std::string loop_device;
     std::string host;
-    int num_cores;
-
-    // Async write of a Resource
-    // Send header consisting of 4 byte size, in bytes, of archived Resource
-    // followed by our serialized object
-    void async_write(tcp::socket &socket, asio::yield_context yield);
-
-    // Async read of a Resource
-    // Read header consisting of 4 byte size, in bytes, of archived Resource
-    // followed by our serialized object
-    void read(tcp::socket &socket);
+    std::string port;
 };
 namespace boost {
     namespace serialization {
 
         template<class Archive>
         void serialize(Archive &ar, Resource &res, const unsigned int version) {
-            ar & res.loop_device;
             ar & res.host;
-            ar & res.num_cores;
+            ar & res.port;
         }
     } // namespace serialization
 } // namespace boost

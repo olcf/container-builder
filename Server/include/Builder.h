@@ -13,18 +13,11 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
-static std::string get_home_dir() {
-    const char *home = getenv("HOME");
-    if (home == NULL) {
-        throw std::invalid_argument("ERROR: HOME environment variable not set");
-    }
-    return std::string(home);
-}
-
-// Create build directory consisting of remote endpoint and local enpoint
+// Create build directory insisde of `pwd`/container_scratch consisting of remote endpoint and local enpoint
 // This should uniquely identify the connection as it includes the IP and port
 static std::string get_build_dir(tcp::socket &socket) {
-    std::string build_dir(get_home_dir() + "/container_scratch/");
+    auto pwd = boost::filesystem::current_path();
+    std::string build_dir(pwd.string() + "/container_scratch/");
 
     auto remote_ip = socket.remote_endpoint().address().to_string();
     auto remote_port = std::to_string(socket.remote_endpoint().port());
@@ -45,6 +38,7 @@ public:
                                                    yield(yield),
                                                    build_directory(get_build_dir(socket)),
                                                    messenger(socket) {
+
         boost::filesystem::create_directory(build_directory);
 
         boost::filesystem::current_path(build_directory);
@@ -56,7 +50,8 @@ public:
     ~Builder() {
         boost::system::error_code ec;
 
-        boost::filesystem::current_path(get_home_dir());
+        auto pwd = boost::filesystem::current_path();
+        std::string build_dir(pwd.string() + "/container_scratch/");
 
         boost::filesystem::remove_all(build_directory, ec);
         if (ec) {

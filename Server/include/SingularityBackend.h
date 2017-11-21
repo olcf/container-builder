@@ -15,8 +15,8 @@ class SingularityBackend {
 public:
     explicit SingularityBackend(tcp::socket &socket, Resource resource, boost::process::async_pipe &std_pipe,
                                 std::string definition_filename)
-            : resource(resource),
-              socket(socket),
+            : socket(socket),
+              resource(resource),
               std_pipe(std_pipe),
               definition_filename(definition_filename),
               working_directory(parent_directory(definition_filename)) {};

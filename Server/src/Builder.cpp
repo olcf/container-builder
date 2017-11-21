@@ -61,7 +61,6 @@ void Builder::build_container() {
             logger::write(socket, "Error: build output pipe read error: " + ec.message());
         }
 
-        // Write the output grabbed from std_pipe
         messenger.async_send(buffer, yield);
     } while (pipe_bytes_read > 0);
 

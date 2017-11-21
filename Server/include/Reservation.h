@@ -11,8 +11,9 @@ namespace asio = boost::asio;
 class Reservation {
 public:
     explicit Reservation(tcp::socket &socket) : socket(socket),
-                                                ready_timer(socket.get_io_service()),
-                                                active(false) {}
+                                                active(false),
+                                                ready_timer(socket.get_io_service())
+    {}
 
     // Create an infinite timer that will be cancelled by the queue when the job is ready
     void async_wait(asio::yield_context yield);
@@ -20,8 +21,8 @@ public:
     // Callback used by ResourceQueue to cancel the timer which signals our reservation is ready
     void ready(Resource acquired_resource);
 
-    bool active;
     Resource resource;
+    bool active;
     tcp::socket &socket;
 private:
     asio::deadline_timer ready_timer;

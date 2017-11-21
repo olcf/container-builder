@@ -18,11 +18,8 @@ wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Serve
 mv build.sh /home/builder/build.sh
 chmod +x /home/builder/build.sh
 
-
 # Create builder scratch work directory
 mkdir /home/builder/container_scratch
-chown builder /home/builder/container_scratch
-chgrp builder /home/builder/container_scratch
 
 # Install Singularity
 export VERSION=2.4
@@ -35,8 +32,8 @@ make install
 
 # Create the builder and singularity backend containers
 cd /home/builder
-su builder -c 'sudo singularity build /home/builder/builder.img /home/builder/builder.def'
-su builder -c 'sudo singularity build /home/builder/singularity_backend.img /home/builder/singularity_backend.def'
+sudo singularity build /home/builder/builder.img /home/builder/builder.def
+sudo singularity build /home/builder/singularity_backend.img /home/builder/singularity_backend.def
 
 # Start the container builder service
-su builder -c 'sudo singularity instance.start /home/builder/builder.img builder'
+sudo singularity instance.start -B /home/builder /home/builder/builder.img builder

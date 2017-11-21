@@ -1,16 +1,13 @@
-BootStrap: docker
-From: ubuntu:artful
+#!/usr/bin/env bash
 
-%environment
-export LD_LIBRARY_PATH=/usr/local/lib
-export HOME=/home/builder
+set -e
 
-%post
-apt update
-apt install -y software-properties-common pkg-config wget git apt-transport-https systemd sudo
-apt install -y python squashfs-tools
-apt-add-repository universe
-apt update
+# Create non root builder user
+useradd --create-home --home-dir /home/builder --shell /bin/bash builder
+
+# Allow builder to run singularity as root
+echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/singularity' > /etc/sudoers.d/builder
+chmod 0440 /etc/sudoers.d/builder
 
 # Install Singularity
 export VERSION=2.4
@@ -20,6 +17,15 @@ cd singularity-$VERSION
 ./configure --prefix=/usr/local
 make
 make install
+
+# Update cmake version
+cd /
+apt remove cmake
+wget https://cmake.org/files/v3.9/cmake-3.9.5-Linux-x86_64.sh
+chmod +x ./cmake-3.9.5-Linux-x86_64.sh
+./cmake-3.9.5-Linux-x86_64.sh --skip-license
+ln -s /cmake-3.9.5-Linux-x86_64/bin/* /usr/local/bin
+rm -rf /cmake-3.9.5-Linux-x86_64
 
 # Install a new version of boost
 cd /
@@ -42,6 +48,5 @@ make
 make install
 rm -rf /ContainerBuilder
 
-%startscript
-cd /home/builder
-nohup /usr/local/bin/ContainerBuilderServer > /dev/null 2>&1 < /dev/null &
+# TODO make this service more robust
+sudo su - builder -c "nohup /usr/local/bin/ContainerBuilder > /dev/null 2>&1 < /dev/null &"

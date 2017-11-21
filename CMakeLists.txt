@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 project(ContainerBuilder)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIE -fpie")# -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen")
 
 include_directories(ResourceQueue/include Common/include)

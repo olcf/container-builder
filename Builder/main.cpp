@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
         // Request to add this host to the resource queue
         queue_messenger.send("checkin_resource_request");
 
-        // Create resource
+        // Create resource describing this host
         Resource resource;
         resource.host = queue_socket.local_endpoint().address().to_string();
         resource.port = "8080";

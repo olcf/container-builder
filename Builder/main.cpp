@@ -12,7 +12,6 @@
 namespace asio = boost::asio;
 namespace bp = boost::process;
 using asio::ip::tcp;
-
 using callback_type = std::function<void(const boost::system::error_code&, std::size_t size)>;
 
 int main(int argc, char *argv[]) {
@@ -65,10 +64,7 @@ int main(int argc, char *argv[]) {
 
         // Callback for handling reading from pipe and sending output to client
         callback_type read_std_pipe = [&](const boost::system::error_code& ec, std::size_t size) {
-            if(size == 0  || ec == asio::error::eof) {
-                return;
-            }
-            else {
+            if(size > 0 && !ec) {
                 client_messenger.send(buffer);
                 asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
             }

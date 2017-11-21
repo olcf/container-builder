@@ -16,11 +16,19 @@ using callback_type = std::function<void(const boost::system::error_code&, std::
 
 std::string queue_hostname() {
     auto env = std::getenv("QUEUE_HOSTNAME");
+    if(!env) {
+        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOSTNAME");
+    }
+
     return std::string(env);
 }
 
 std::string queue_port() {
     auto env = std::getenv("QUEUE_PORT");
+    if(!env) {
+        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOSTNAME");
+    }
+
     return std::string(env);
 }
 
@@ -65,9 +73,9 @@ int main(int argc, char *argv[]) {
 
         // Launch our build as a subprocess
         std::string build_command("sudo singularity build container.img container.def");
-        std::error_code ec;
+
         bp::group group;
-        bp::child build_child(build_command, ec, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group);
+        bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group);
 
         logger::write("Running build command: " + build_command);
 
@@ -90,6 +98,7 @@ int main(int argc, char *argv[]) {
 
         // Start reading child stdout/err from pipe
         asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
+
         io_service.run();
 
         // Get the return value from the build subprocess

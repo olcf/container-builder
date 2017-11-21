@@ -20,7 +20,6 @@ make install
 
 # Update cmake version
 cd /
-apt remove cmake
 wget https://cmake.org/files/v3.9/cmake-3.9.5-Linux-x86_64.sh
 chmod +x ./cmake-3.9.5-Linux-x86_64.sh
 ./cmake-3.9.5-Linux-x86_64.sh --skip-license
@@ -29,7 +28,6 @@ rm -rf /cmake-3.9.5-Linux-x86_64
 
 # Install a new version of boost
 cd /
-apt-get install -y cmake
 wget https://dl.bintray.com/boostorg/release/1.65.1/source/boost_1_65_1.tar.gz
 tar xf boost_1_65_1.tar.gz
 cd boost_1_65_1

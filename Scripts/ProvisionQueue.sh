@@ -21,7 +21,7 @@ cd /
 wget https://dl.bintray.com/boostorg/release/1.65.1/source/boost_1_65_1.tar.gz
 tar xf boost_1_65_1.tar.gz
 cd boost_1_65_1
-./bootstrap.sh
+./bootstrap.sh --with-libraries=filesystem,regex,system,coroutine,serialization,log,thread
 ./b2 install || :
 rm -rf /boost_1_65_1
 

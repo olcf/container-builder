@@ -49,4 +49,4 @@ make install
 rm -rf /ContainerBuilder
 
 # TODO make this service more robust
-su - builder -c "nohup /usr/local/bin/ContainerBuilder > /dev/null 2>&1 < /dev/null &"
+su - builder -c "export QUEUE_HOSTNAME=${QUEUE_HOSTNAME}; export QUEUE_PORT=${QUEUE_PORT}; nohup /usr/local/bin/ContainerBuilder > /dev/null 2>&1 < /dev/null &"

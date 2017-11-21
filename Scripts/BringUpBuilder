@@ -8,21 +8,11 @@ echo "using OS_CACERT="$OS_CACERT
 # OpenStack credentials
 source ./openrc.sh
 
+QUEUE_HOSTNAME=`cat ResourceQueueIP`
+QUEUE_PORT="8080"
+
 # Destroy any existing builder if one exists
 ./TearDownBuilder --no_source
-
-# Destry the builder if exiting early
-function null_cleanup {
-  trap null_cleanup HUP INT TERM PIPE QUIT ABRT
-  echo "Attempting cleaning...please wait"
-}
-function cleanup {
-  trap null_cleanup HUP INT TERM PIPE QUIT ABRT
-  echo "Attempting to cleanup...please wait"
-#  ./TearDown --no_source
-  exit
-}
-trap cleanup HUP INT TERM PIPE QUIT ABRT ERR
 
 # Get script directory
 SCRIPT_DIR=$(dirname $0)
@@ -40,6 +30,11 @@ KEY_FILE="${SCRIPT_DIR}/${KEY}"
 nova keypair-add ${KEY} > ${KEY_FILE}
 chmod 600 ${KEY_FILE}
 
+# Insert ResourceQueue infromation into our provisioning script
+cp ${SCRIPT_DIR}/ProvisionBuilder.sh CustomProvisionBuilder.sh
+sed -i "2i2 export QUEUE_HOSTNAME=${QUEUE_HOSTNAME}" ./CustomProvisionBuilder.sh
+sed -i "3i3 export QUEUE_PORT=${QUEUE_PORT}" ./CustomProvisionBuilder.sh
+
 echo "This make take some time."
 
 # Startup new VM
@@ -48,8 +43,8 @@ VM_UUID=$(nova boot                                          \
     --flavor "${FLAVOR}"                                     \
     --availability-zone "${ZONE}"                            \
     --nic net-name="${NIC}"                                  \
-    --key-name "${KEY}"                                     \
-    --user-data ${SCRIPT_DIR}/ProvisionBuilder.sh  \
+    --key-name "${KEY}"                                      \
+    --user-data CustomProvisionBuilder.sh                    \
     "ContainerBuilder" | awk '/id/ {print $4}' | head -n 1);
 
 # Spinner...
@@ -76,6 +71,9 @@ done
 
 # Get external IP address
 VM_IP=`nova show ${VM_UUID} | grep or_provider_general_extnetwork1 | awk '{print $5}'`
+
+# Remove custom provisioning script
+rm ./CustomProvisionBuilder.sh
 
 echo $VM_IP > ${SCRIPT_DIR}/BuilderIP
 

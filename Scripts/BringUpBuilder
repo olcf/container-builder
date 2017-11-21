@@ -9,7 +9,7 @@ echo "using OS_CACERT="$OS_CACERT
 source ./openrc.sh
 
 # Destroy any existing builder if one exists
-./TearDown --no_source
+./TearDownBuilder --no_source
 
 # Destry the builder if exiting early
 function null_cleanup {

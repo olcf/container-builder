@@ -16,4 +16,7 @@ rm ${SCRIPT_DIR}/BuilderKey
 rm ${SCRIPT_DIR}/BuilderIP
 
 # Delete VM
-nova delete BuilderQueue
+nova delete BuilderMaster
+
+# Delete the image(maybe?)
+nova delete BuilderSnapshot

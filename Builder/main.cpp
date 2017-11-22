@@ -115,8 +115,7 @@ int main(int argc, char *argv[]) {
 
         logger::write("Finished sending image to client");
 
-        // TODO Do something to rebuild/clean this VM and restart this process
-
+        // TODO: Let the ResourceQueue know it should nova rebuild this VM
     }
     catch (std::exception &e) {
         logger::write(std::string("Build error: ") + e.what());

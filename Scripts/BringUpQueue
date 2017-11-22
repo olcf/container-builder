@@ -5,7 +5,6 @@
 export OS_CACERT=`pwd`/OpenStack.cer
 echo "using OS_CACERT="$OS_CACERT
 
-
 # OpenStack credentials
 source ./openrc.sh
 

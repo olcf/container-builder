@@ -11,7 +11,11 @@ To bring up a new builder instance:
 ```
 ContainerBuilder/Scripts/BringUpQueue
 ```
-After bringup two files will be created containing the ResourceQueue IP address as well as an SSH keys. `ContainerBuilder` provides access for the cades user for administration of the ResourceQueue and all Builders.
+After bringup two files will be created:
+ * ResourceQueueIP
+ * ContainerBuilderKey
+
+ `ContainerBuilderKey` provides SSH access to the ResourceQueue as well as all of the builders
 
 During bring up `openrc.sh` will be copied to `/home/queue`, these credentials are required to bring up builder resources.
 

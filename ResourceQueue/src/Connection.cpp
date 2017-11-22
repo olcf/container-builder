@@ -15,6 +15,8 @@ void Connection::begin() {
                             checkout_resource(yield);
                         else if (request == "checkin_resource_request")
                             checkin_resource(yield);
+                        else if(request == "create_openstack_builder_request")
+                            create_openstack_builder();
                         else
                             throw std::system_error(EPERM, std::system_category(), request + " not supported");
                     }
@@ -43,4 +45,9 @@ void Connection::checkin_resource(asio::yield_context yield) {
     auto resource = messenger.async_receive_resource(yield);
     queue.add_resource(resource);
     logger::write("Checked in new resource: " + resource.host + ":" + resource.port);
+}
+
+void Connection::create_openstack_builder() {
+    // async spin off a new builder_count + 1 builder subprocess
+
 }

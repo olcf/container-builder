@@ -28,4 +28,7 @@ private:
 
     // Make a new builder resource available
     void checkin_resource(asio::yield_context yield);
+
+    // Create a new builder resource
+    void create_openstack_builder(asio::yield_context yield);
 };

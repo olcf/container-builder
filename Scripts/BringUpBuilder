@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# OpenStack credentials
+source /home/queue/openrc.sh
+
+# General VM settings
+BOOTIMG="BuilderImage"
+ZONE="nova"
+FLAVOR="m1.medium"
+NIC="or_provider_general_extnetwork1"
+KEY="ContainerBuilderKey"
+
+# Startup new VM
+nova boot                          \
+    --image "${BOOTIMG}"           \
+    --flavor "${FLAVOR}"           \
+    --availability-zone "${ZONE}"  \
+    --nic net-name="${NIC}"        \
+    --key-name "${KEY}"            \
+    "Builder"

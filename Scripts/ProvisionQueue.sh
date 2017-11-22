@@ -36,6 +36,13 @@ make
 make install
 rm -rf /ContainerBuilder
 
+# Install NOVA command line client
+pip install python-novaclient
+
+# Fetch Builder script
+wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Scripts/BringUpBuilder
+mv BringUpBuilder /home/queue
+
 # Create systemd script and launch the ResourceQueue daemon
 cat << EOF > /etc/systemd/system/ResourceQueue.service
 [Unit]

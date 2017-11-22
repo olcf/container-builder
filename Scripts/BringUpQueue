@@ -34,9 +34,10 @@ FLAVOR="m1.medium"
 NIC="or_provider_general_extnetwork1"
 
 # Create Keys for cades user
-KEY="ResourceQueueKey"
+KEY="ContainerBuilderKey"
 KEY_FILE="${SCRIPT_DIR}/${KEY}"
 
+# Adding new keypair named ContainerBuilderKey
 nova keypair-add ${KEY} > ${KEY_FILE}
 chmod 600 ${KEY_FILE}
 
@@ -78,5 +79,8 @@ done
 VM_IP=`nova show ${VM_UUID} | grep or_provider_general_extnetwork1 | awk '{print $5}'`
 
 echo $VM_IP > ${SCRIPT_DIR}/ResourceQueueIP
+
+ech "Transfering openrc.sh credentials"
+scp -i ./ContainerBuilderKey ./openrc.sh cades@${VM_IP}:/home/queue
 
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"

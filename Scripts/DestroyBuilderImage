@@ -19,4 +19,4 @@ rm ${SCRIPT_DIR}/BuilderIP
 nova delete BuilderMaster
 
 # Delete the image(maybe?)
-nova delete BuilderSnapshot
+nova delete BuilderImage

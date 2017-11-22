@@ -1,6 +1,7 @@
 #include "Connection.h"
 #include "ReservationRequest.h"
 #include "Messenger.h"
+#include "OpenStackResource.h"
 
 void Connection::begin() {
     auto self(shared_from_this());
@@ -48,6 +49,7 @@ void Connection::checkin_resource(asio::yield_context yield) {
 }
 
 void Connection::create_openstack_builder() {
-    // async spin off a new builder_count + 1 builder subprocess
+    OpenStackResource openstack;
+    openstack.create_new_builder();
 
 }

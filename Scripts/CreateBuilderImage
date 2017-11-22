@@ -30,7 +30,7 @@ KEY_FILE="${SCRIPT_DIR}/${KEY}"
 nova keypair-add ${KEY} > ${KEY_FILE}
 chmod 600 ${KEY_FILE}
 
-# Insert ResourceQueue infromation into our provisioning script
+# Insert ResourceQueue information into our provisioning script
 cp ${SCRIPT_DIR}/ProvisionBuilder.sh CustomProvisionBuilder.sh
 sed -i "2i2 export QUEUE_HOSTNAME=${QUEUE_HOSTNAME}" ./CustomProvisionBuilder.sh
 sed -i "3i3 export QUEUE_PORT=${QUEUE_PORT}" ./CustomProvisionBuilder.sh
@@ -75,11 +75,11 @@ VM_IP=`nova show ${VM_UUID} | grep or_provider_general_extnetwork1 | awk '{print
 # Remove custom provisioning script
 rm ./CustomProvisionBuilder.sh
 
-echo "Creating snapshot"
+echo "Creating builder snapshot image"
 nova stop ${VM_UUID}
-nova image-create --poll ${VM_UUID} "BuilderSnapshot"
+nova image-create --poll ${VM_UUID} "BuilderImage"
 
 echo "Deleting builder master instance"
 nova delete BuilderMaster
 
-echo "Finished creating BuilderSnapshot image"
+echo "Finished creating BuilderImage"

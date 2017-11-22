@@ -13,10 +13,12 @@ set(SOURCE_FILES_QUEUE
         ResourceQueue/src/Reservation.cpp
         ResourceQueue/src/ReservationRequest.cpp
         ResourceQueue/src/ResourceQueue.cpp
+        ResourceQueue/src/OpenStackResource.cpp
         ResourceQueue/include/Connection.h
         ResourceQueue/include/Reservation.h
         ResourceQueue/include/ReservationRequest.h
         ResourceQueue/include/ResourceQueue.h
+        ResourceQueue/include/OpenStackResource.h
         Common/include/Resource.h
         Common/src/Logger.cpp
         Common/include/Logger.h

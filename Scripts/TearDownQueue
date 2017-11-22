@@ -9,8 +9,8 @@ if [ "$1" != "--no_source" ]; then
 fi
 
 # Remove Keys
-nova keypair-delete ResourceQueueKey
-rm ${SCRIPT_DIR}/ResourceQueueKey
+nova keypair-delete ContainerBuilderKey
+rm ${SCRIPT_DIR}/ContainerBuilderKey
 
 # Remove IP files
 rm ${SCRIPT_DIR}/ResourceQueueIP

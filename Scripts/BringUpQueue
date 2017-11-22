@@ -80,7 +80,7 @@ VM_IP=`nova show ${VM_UUID} | grep or_provider_general_extnetwork1 | awk '{print
 
 echo $VM_IP > ${SCRIPT_DIR}/ResourceQueueIP
 
-ech "Transfering openrc.sh credentials"
+echo "Transfering openrc.sh credentials"
 scp -i ./ContainerBuilderKey ./openrc.sh cades@${VM_IP}:/home/queue
 
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"

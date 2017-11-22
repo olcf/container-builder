@@ -38,3 +38,5 @@ rm -rf /ContainerBuilder
 
 # TODO make this service more robust
 su - queue -c 'nohup /usr/local/bin/ResourceQueue > /dev/null 2>&1 < /dev/null &'
+whoami
+ps auxf

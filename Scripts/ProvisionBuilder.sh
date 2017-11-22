@@ -59,6 +59,7 @@ After=network.target
 Type=simple
 User=queue
 WorkingDirectory=/home/builder
+Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
 Environment="QUEUE_HOSTNAME=${QUEUE_HOSTNAME}"
 Environment="QUEUE_PORT=${QUEUE_PORT}"
 ExecStart=/usr/local/bin/ContainerBuilder

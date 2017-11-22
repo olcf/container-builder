@@ -48,9 +48,17 @@ User=queue
 Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
 WorkingDirectory=/home/queue
 ExecStart=/usr/local/bin/ResourceQueue
-Restart=on-abort
+Restart=no
 
 [Install]
 WantedBy=multi-user.target
 EOF
-systemctl start --no-block ResourceQueue
+
+# There appears to be some weird issues with starting systemd services inside of a cloud-init script
+# The heavy handed approach of enabling and reboot works I suppose though
+systemctl enable ResourceQueue
+reboot
+
+# To check that the ResourceQueue is running
+# sudo netstat -plnt | grep ResourceQueue
+# systemctl status

@@ -50,7 +50,7 @@ make install
 rm -rf /ContainerBuilder
 
 # Create systemd script and launch the Builder daemon
-cat << EOF > /etc/systemd/system/Builder.service
+cat << EOF > /etc/systemd/system/ContainerBuilder.service
 [Unit]
 Description=ContainerBuilder daemon
 After=network.target
@@ -68,4 +68,9 @@ Restart=no
 [Install]
 WantedBy=multi-user.target
 EOF
-systemctl start --no-block Builder
+systemctl enable ContainerBuilder
+reboot
+
+# To check that the ResourceQueue is running
+# sudo netstat -plnt | grep ContainerBuilder
+# systemctl status

@@ -53,4 +53,4 @@ Restart=on-abort
 [Install]
 WantedBy=multi-user.target
 EOF
-systemctl start ResourceQueue
+systemctl start --no-block ResourceQueue

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -o xtrace
 
 #apt update
 #apt -y upgrade
@@ -36,4 +37,4 @@ make install
 rm -rf /ContainerBuilder
 
 # TODO make this service more robust
-su - queue -c "nohup /usr/local/bin/ResourceQueue > /dev/null 2>&1 < /dev/null &"
+su - queue -c 'nohup /usr/local/bin/ResourceQueue > /dev/null 2>&1 < /dev/null &'

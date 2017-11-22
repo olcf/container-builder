@@ -49,5 +49,22 @@ make
 make install
 rm -rf /ContainerBuilder
 
-# TODO make this service more robust
-su - builder -c "export QUEUE_HOSTNAME=${QUEUE_HOSTNAME}; export QUEUE_PORT=${QUEUE_PORT}; nohup /usr/local/bin/ContainerBuilder > /dev/null 2>&1 < /dev/null &"
+# Create systemd script and launch the Builder daemon
+cat << EOF > /etc/systemd/system/Builder.service
+[Unit]
+Description=ContainerBuilder daemon
+After=network.target
+
+[Service]
+Type=simple
+User=queue
+WorkingDirectory=/home/builder
+Environment="QUEUE_HOSTNAME=${QUEUE_HOSTNAME}"
+Environment="QUEUE_PORT=${QUEUE_PORT}"
+ExecStart=/usr/local/bin/ContainerBuilder
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl start Builder

@@ -36,7 +36,20 @@ make
 make install
 rm -rf /ContainerBuilder
 
-# TODO make this service more robust
-su - queue -c 'nohup /usr/local/bin/ResourceQueue > /dev/null 2>&1 < /dev/null &'
-whoami
-ps auxf
+# Create systemd script and launch the ResourceQueue daemon
+cat << EOF > /etc/systemd/system/ResourceQueue.service
+[Unit]
+Description=ResourceQueue daemon
+After=network.target
+
+[Service]
+Type=simple
+User=queue
+WorkingDirectory=/home/queue
+ExecStart=/usr/local/bin/ResourceQueue
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl start ResourceQueue

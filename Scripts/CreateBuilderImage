@@ -22,13 +22,7 @@ BOOTIMG="CADES_Ubuntu16.04_v20170804_1"
 ZONE="nova"
 FLAVOR="m1.medium"
 NIC="or_provider_general_extnetwork1"
-
-# Create Keys for cades user
-KEY="BuilderKey"
-KEY_FILE="${SCRIPT_DIR}/${KEY}"
-
-nova keypair-add ${KEY} > ${KEY_FILE}
-chmod 600 ${KEY_FILE}
+KEY="ContainerBuilderKey"
 
 # Insert ResourceQueue information into our provisioning script
 cp ${SCRIPT_DIR}/ProvisionBuilder.sh CustomProvisionBuilder.sh
@@ -77,6 +71,10 @@ rm ./CustomProvisionBuilder.sh
 
 echo "Creating builder snapshot image"
 nova stop ${VM_UUID}
+
+# This is cheap but should work, image-create will only work if the image is shutdown
+sleep 120
+
 nova image-create --poll ${VM_UUID} "BuilderImage"
 
 echo "Deleting builder master instance"

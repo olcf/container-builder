@@ -34,3 +34,7 @@ To destroy a new queue instance:
 ```
 ContainerBuilder/Scripts/TearDownQueue
 ```
+
+Note: Titan doesn't have the SSL certs in place and so before running any nova commands `OS_CACERT` must be set.
+
+Note: `nova list` can be called to show all active OpenStack instances

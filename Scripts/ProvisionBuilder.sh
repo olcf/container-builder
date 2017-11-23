@@ -57,7 +57,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=queue
+User=builder
 WorkingDirectory=/home/builder
 Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
 Environment="QUEUE_HOSTNAME=${QUEUE_HOSTNAME}"

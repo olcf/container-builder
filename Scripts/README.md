@@ -5,12 +5,18 @@ Prerequisite: On Titan
 * pip install --user python-novaclient
 * pip install --user python-glanceclient
 
-To Begin download an OpenStack RC file onto a system on the ORNL network and Titan
+To Begin download an OpenStack RC file onto a system on the ORNL network, or Titan
 * Login to `cloud.cades.ornl.gov`
 * Navigate to `Compute -> Access & Security -> API Access`
 * Click `Download OpenStack RC File v3`
 * Rename downloaded file as openrc.sh and move it to `SingularityTools/Builder/Server/BuilderControl`
-* Modify openrc.sh to hardcode `$OS_PASSWORD_INPUT`
+* Modify openrc.sh to hardcode `$OS_PASSWORD_INPUT` and remove the interactive prompt
+
+To prime the Containerbuilder service several steps are required
+* Bring up the ResourceQueue OpenStack instance
+* Create the Builder master OpenStack image which will be used to quickly spin up builders
+    * The Builder image has the ResourceQueue IP baked into it so must be done seqeuntially
+* Use the `RQdiag` command line tool to create one or more builders
 
 To bring up a new builder instance:
 ```

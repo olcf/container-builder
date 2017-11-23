@@ -63,9 +63,6 @@ until nova console-log ${VM_UUID} | grep "running 'modules:final'" > /dev/null 2
   spin_me_right_round
 done
 
-# Get external IP address
-VM_IP=`nova show ${VM_UUID} | grep or_provider_general_extnetwork1 | awk '{print $5}'`
-
 # Remove custom provisioning script
 rm ./CustomProvisionBuilder.sh
 

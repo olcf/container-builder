@@ -18,5 +18,6 @@ rm ${SCRIPT_DIR}/BuilderIP
 # Delete VM
 nova delete BuilderMaster
 
-# Delete the image(maybe?)
-nova delete BuilderImage
+# Delete the image
+IMAGE_ID=`glance --ca-file=./OpenStack.cer image-list | grep BuilderImage | awk '{print $2}'`
+glance --ca-file=./OpenStack.cer image-delete ${IMAGE_ID}

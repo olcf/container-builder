@@ -82,6 +82,6 @@ echo $VM_IP > ${SCRIPT_DIR}/ResourceQueueIP
 
 echo "Transfering openrc.sh credentials"
 scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ./openrc.sh cades@${VM_IP}:/home/cades
-ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@{VM_IP} 'sudo mv /home/cades/openrc.sh /home/queue/openrc.sh'
+ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/openrc.sh /home/queue/openrc.sh'
 
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"

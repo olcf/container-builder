@@ -24,7 +24,7 @@ After the Queue has been brought up the master builder image must be created:
 ContainerBuilder/Scripts/CreateBuilderImage
 ```
 
-----
+
 To login to the queue
 ```
 ssh -i ./ResourceQueueKey cades@`cat ResourceQueueIP`

@@ -12,7 +12,7 @@ QUEUE_HOSTNAME=`cat ResourceQueueIP`
 QUEUE_PORT="8080"
 
 # Destroy any existing builder if one exists
-./TearDownBuilder --no_source
+./DestroyBuilderImage --no_source
 
 # Get script directory
 SCRIPT_DIR=$(dirname $0)

@@ -17,5 +17,4 @@ openstack sever create                          \
     --availability-zone "${ZONE}"  \
     --nic net-name="${NIC}"        \
     --key-name "${KEY}"            \
-    --wait                         \
     "Builder"

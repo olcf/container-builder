@@ -1,7 +1,6 @@
 #include "Connection.h"
 #include "ReservationRequest.h"
 #include "Messenger.h"
-#include "OpenStackResource.h"
 
 void Connection::begin() {
     auto self(shared_from_this());
@@ -12,12 +11,10 @@ void Connection::begin() {
                         Messenger messenger(socket);
                         auto request = messenger.async_receive(yield);
 
-                        if (request == "checkout_resource_request")
+                        if (request == "checkout_builder_request")
                             checkout_resource(yield);
-                        else if (request == "checkin_resource_request")
+                        else if (request == "checkin_builder_request")
                             checkin_resource(yield);
-                        else if(request == "create_openstack_builder_request")
-                            create_openstack_builder();
                         else
                             throw std::system_error(EPERM, std::system_category(), request + " not supported");
                     }
@@ -29,27 +26,39 @@ void Connection::begin() {
                 });
 }
 
-void Connection::checkout_resource(asio::yield_context yield) {
+// Handle a client builder request
+void Connection::checkout_builder(asio::yield_context yield) {
     logger::write(socket, "Checkout resource request");
 
     Messenger messenger(socket);
 
-    // Wait in the queue for a reservation to begin
+    // Request a builder from the queue
     ReservationRequest reservation(socket, queue);
     auto resource = reservation.async_wait(yield);
 
+    // Send the acquired resource when ready
     messenger.async_send(resource, yield);
 }
 
-void Connection::checkin_resource(asio::yield_context yield) {
-    Messenger messenger(socket);
-    auto resource = messenger.async_receive_resource(yield);
+// Handle checking in a new builder, adding it to the pool of available builders
+// When the build is finished the builder instance is shutdown
+void Connection::checkin_builder(asio::yield_context yield) {
+
+    // Read the builders information
+    Messenger builder_messenger(socket);
+    auto resource = builder_messenger.async_receive_resource(yield);
+
     queue.add_resource(resource);
     logger::write("Checked in new resource: " + resource.host + ":" + resource.port);
-}
 
-void Connection::create_openstack_builder() {
-    OpenStackResource openstack;
-    openstack.create_new_builder();
+    // Wait for the builder to complete
+    try {
+        auto complete = builder_messenger.async_receive(yield);
+        logger::write(socket, "Builder completed");
+    } catch(std::exception& e) {
+        logger::write(socket, "Builder failed to inform Queue of completion");
+    }
 
+    // Remove the builder from available builders
+    queue.remove_resource(resource);
 }

@@ -24,11 +24,8 @@ private:
     ResourceQueue &queue;
 
     // Checkout a builder resource
-    void checkout_resource(asio::yield_context yield);
+    void checkout_builder(asio::yield_context yield);
 
     // Make a new builder resource available
-    void checkin_resource(asio::yield_context yield);
-
-    // Create a new builder resource
-    void create_openstack_builder();
+    void checkin_builder(asio::yield_context yield);
 };

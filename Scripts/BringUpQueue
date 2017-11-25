@@ -36,19 +36,21 @@ KEY="ContainerBuilderKey"
 KEY_FILE="${SCRIPT_DIR}/${KEY}"
 
 # Adding new keypair named ContainerBuilderKey
-nova keypair-add ${KEY} > ${KEY_FILE}
+openstack keypair-add ${KEY} > ${KEY_FILE}
 chmod 600 ${KEY_FILE}
 
 echo "This make take some time."
 
 # Startup new VM
-VM_UUID=$(nova boot                                          \
+VM_UUID=$(openstack server create                            \
     --image "${BOOTIMG}"                                     \
     --flavor "${FLAVOR}"                                     \
     --availability-zone "${ZONE}"                            \
     --nic net-name="${NIC}"                                  \
+    --file ./openrc.sh=/home/cades/openrc.sh                 \
     --key-name "${KEY}"                                      \
     --user-data ${SCRIPT_DIR}/ProvisionQueue.sh              \
+    --wait                                                   \
     "ResourceQueue" | awk '/id/ {print $4}' | head -n 1);
 
 # Spinner...
@@ -63,11 +65,6 @@ function spin_me_right_round() {
   done
 }
 
-# Wait for VM to become active.
-until [[ "$(nova show ${VM_UUID} | awk '/status/ {print $4}')" == "ACTIVE" ]]; do
-  spin_me_right_round
-done
-
 # Wait for SSH to be usable.
 until nova console-log ${VM_UUID} | grep "running 'modules:final'" > /dev/null 2>&1; do
   spin_me_right_round
@@ -77,9 +74,5 @@ done
 VM_IP=`nova show ${VM_UUID} | grep or_provider_general_extnetwork1 | awk '{print $5}'`
 
 echo $VM_IP > ${SCRIPT_DIR}/ResourceQueueIP
-
-echo "Transfering openrc.sh credentials"
-scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ./openrc.sh cades@${VM_IP}:/home/cades
-ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/openrc.sh /home/queue/openrc.sh'
 
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"

@@ -2,8 +2,7 @@
 
 Prerequisite: On Titan
 * module load python
-* pip install --user python-novaclient
-* pip install --user python-glanceclient
+* pip install --user python-openstackclient
 
 To Begin download an OpenStack RC file onto a system on the ORNL network, or Titan
 * Login to `cloud.cades.ornl.gov`
@@ -46,8 +45,8 @@ To destroy a new queue instance:
 ContainerBuilder/Scripts/TearDownQueue
 ```
 
-Note: Titan doesn't have the SSL certs in place and so before running any nova commands `OS_CACERT` must be set. For glance this env variable is ignored and you must used `glance --ca-file=`pwd`/OpenStack.cer ...`
+Note: Titan doesn't have the SSL certs in place and so before running any nova commands `OS_CACERT` must be set.
 
-Note: `nova list` can be called to show all active OpenStack instances including their ID, name, and IP
+Note: `openstack list` can be called to show all active OpenStack instances including their ID, name, and IP
 
 Note: To check if the ResourceQueue and Builder services are running ssh to each node and run `systemctl status`. To diagnose issues use `sudo journalctl`

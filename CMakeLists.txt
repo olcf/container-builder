@@ -18,12 +18,11 @@ set(SOURCE_FILES_QUEUE
         ResourceQueue/include/Reservation.h
         ResourceQueue/include/ReservationRequest.h
         ResourceQueue/include/ResourceQueue.h
-        ResourceQueue/include/OpenStackResource.h
         Common/include/Resource.h
         Common/src/Logger.cpp
         Common/include/Logger.h
         Common/src/Messenger.cpp
-        Common/include/Messenger.h)
+        Common/include/Messenger.h ResourceQueue/include/OpenStack.h)
 
 set(SOURCE_FILES_BUILDER
         Builder/main.cpp

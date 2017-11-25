@@ -11,10 +11,11 @@ NIC="or_provider_general_extnetwork1"
 KEY="ContainerBuilderKey"
 
 # Startup new VM
-nova boot                          \
+openstack sever create                          \
     --image "${BOOTIMG}"           \
     --flavor "${FLAVOR}"           \
     --availability-zone "${ZONE}"  \
     --nic net-name="${NIC}"        \
     --key-name "${KEY}"            \
+    --wait                         \
     "Builder"

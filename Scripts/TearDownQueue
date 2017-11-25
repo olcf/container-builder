@@ -9,11 +9,11 @@ if [ "$1" != "--no_source" ]; then
 fi
 
 # Remove Keys
-nova keypair-delete ContainerBuilderKey
+openstack keypair delete ContainerBuilderKey
 rm ${SCRIPT_DIR}/ContainerBuilderKey
 
 # Remove IP files
 rm ${SCRIPT_DIR}/ResourceQueueIP
 
 # Delete VM
-nova delete ResourceQueue
+openstack server delete ResourceQueue

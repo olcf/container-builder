@@ -19,7 +19,6 @@ std::string queue_hostname() {
     if(!env) {
         throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOSTNAME");
     }
-
     return std::string(env);
 }
 
@@ -28,7 +27,6 @@ std::string queue_port() {
     if(!env) {
         throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOSTNAME");
     }
-
     return std::string(env);
 }
 
@@ -56,6 +54,8 @@ int main(int argc, char *argv[]) {
 
         // Send this host as a resource
         queue_messenger.send(resource);
+
+        // TODO setup a timeout so if this host isn't connected to we shut it down
 
         // Accept a connection to use this resource
         tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), std::stoi(resource.port)));
@@ -114,12 +114,12 @@ int main(int argc, char *argv[]) {
         }
 
         logger::write("Finished sending image to client");
-
-        // TODO: Let the ResourceQueue know it should nova rebuild this VM
     }
     catch (std::exception &e) {
         logger::write(std::string("Build error: ") + e.what());
     }
+
+    // TODO Send completion message to ResourceQueue
 
     return 0;
 }

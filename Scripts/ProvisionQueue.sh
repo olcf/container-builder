@@ -3,9 +3,6 @@
 set -e
 set -o xtrace
 
-#apt update
-#apt -y upgrade
-
 # Create non root queue user
 useradd --create-home --home-dir /home/queue --shell /bin/bash queue
 
@@ -36,8 +33,8 @@ make
 make install
 rm -rf /ContainerBuilder
 
-# Install NOVA command line client
-pip install python-novaclient
+# Install OpenStack command line client
+pip install python-openstackclient
 
 # Fetch Builder script
 wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Scripts/BringUpBuilder
@@ -61,11 +58,10 @@ Restart=no
 WantedBy=multi-user.target
 EOF
 
+# Move the OpenStack credentials to the queue users home
+mv /home/cades/openrc.sh /home/queue/openrc.sh
+
 # There appears to be some weird issues with starting systemd services inside of a cloud-init script
 # The heavy handed approach of enabling and reboot works I suppose though
 systemctl enable ResourceQueue
 reboot
-
-# To check that the ResourceQueue is running
-# sudo netstat -plnt | grep ResourceQueue
-# systemctl status

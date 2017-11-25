@@ -14,6 +14,7 @@ class Resource {
 public:
     std::string host;
     std::string port;
+    std::string ID;
 };
 namespace boost {
     namespace serialization {
@@ -21,6 +22,7 @@ namespace boost {
         template<class Archive>
         void serialize(Archive &ar, Resource &res, const unsigned int version) {
             ar & res.host;
+            ar & res.port;
             ar & res.port;
         }
     } // namespace serialization

@@ -22,11 +22,6 @@ FLAVOR="m1.medium"
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)
 KEY="ContainerBuilderKey"
 
-# Insert ResourceQueue information into our provisioning script
-cp ${SCRIPT_DIR}/ProvisionBuilder.sh CustomProvisionBuilder.sh
-sed -i "2i2 export QUEUE_HOSTNAME=${QUEUE_HOSTNAME}" ./CustomProvisionBuilder.sh
-sed -i "3i3 export QUEUE_PORT=${QUEUE_PORT}" ./CustomProvisionBuilder.sh
-
 echo "This make take some time."
 
 # Startup new VM
@@ -42,6 +37,24 @@ VM_UUID=$(openstack server create                            \
 
 # Remove custom provisioning script
 rm ./CustomProvisionBuilder.sh
+
+# Spinner...
+function spin_me_right_round() {
+  declare -a spin=("-" "\\" "|" "/"
+                   "-" "\\" "|" "/"
+                   "-" "\\" "|" "/")
+  for i in "${spin[@]}"
+  do
+        echo -ne "\b$i"
+        sleep 0.5
+  done
+}
+
+# Even though the server is created we need to wait for the cloud-init scripts to finish running before creating a snapshot
+# Wait for SSH to be usable.
+until openstack console log show ${VM_UUID} | grep "running 'modules:final'" > /dev/null 2>&1; do
+  spin_me_right_round
+done
 
 echo "Creating builder snapshot image"
 openstack server stop --wait ${VM_UUID}

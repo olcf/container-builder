@@ -17,11 +17,9 @@ void request_new_builder() {
 
 void request_destroy_builder() {
     bp::ipstream out_stream;
-    bp::system("/home/queue/DestroyBuilder #builder_ID", (bp::std_out & bp::std_err) > out_stream);
+    bp::system("openstack #builder_ID", (bp::std_out & bp::std_err) > out_stream);
     std::string output_string;
     out_stream >> output_string;
-
-    // Poll until builder is actually shutdown
 
     // Tick as we may have had a request come in between requesting shutdown and actually being shutdown
     tick();
@@ -58,7 +56,7 @@ void ResourceQueue::remove_resource(Resource resource) {
         available_resources.erase(resource_position);
 
     // Shut down the builder
-    request_destroy_builder(resource.ID);
+    request_destroy_builder(resource.id);
 }
 
 // If there is a pending build request either give it a resource or make a request for a new resource to be created

@@ -9,7 +9,12 @@ To Begin download an OpenStack RC file onto a system on the ORNL network, or Tit
 * Navigate to `Compute -> Access & Security -> API Access`
 * Click `Download OpenStack RC File v3`
 * Rename downloaded file as openrc.sh and move it to `SingularityTools/Builder/Server/BuilderControl`
-* Modify openrc.sh to hardcode `$OS_PASSWORD_INPUT` and remove the interactive prompt
+* Modify `openrc.sh` to hardcode `$OS_PASSWORD_INPUT` and remove the interactive prompt
+* Add the following to the bottom of `openrc.sh`
+```
+export OS_PROJECT_DOMAIN_NAME=$OS_USER_DOMAIN_NAME
+export OS_IDENTITY_API_VERSION="3"
+```
 
 To prime the Containerbuilder service several steps are required
 * Bring up the ResourceQueue OpenStack instance

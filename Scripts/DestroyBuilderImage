@@ -9,14 +9,14 @@ if [ "$1" != "--no_source" ]; then
 fi
 
 # Remove Keys
-nova keypair-delete BuilderKey
+openstack keypair delete BuilderKey
 rm ${SCRIPT_DIR}/BuilderKey
 
 # Remove IP files
 rm ${SCRIPT_DIR}/BuilderIP
 
 # Delete VM
-nova delete BuilderMaster
+openstack server delete BuilderMaster
 
 # Delete the image
 openstack image delete "BuilderImage"

@@ -53,25 +53,8 @@ VM_UUID=$(openstack server create                            \
     --wait                                                   \
     "ResourceQueue" | awk '/id/ {print $4}' | head -n 1);
 
-# Spinner...
-function spin_me_right_round() {
-  declare -a spin=("-" "\\" "|" "/"
-                   "-" "\\" "|" "/"
-                   "-" "\\" "|" "/")
-  for i in "${spin[@]}"
-  do
-        echo -ne "\b$i"
-        sleep 0.5
-  done
-}
-
-# Wait for SSH to be usable.
-until nova console-log ${VM_UUID} | grep "running 'modules:final'" > /dev/null 2>&1; do
-  spin_me_right_round
-done
-
 # Get external IP address
-VM_IP=`nova show ${VM_UUID} | grep or_provider_general_extnetwork1 | awk '{print $5}'`
+VM_IP=openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//"
 
 echo $VM_IP > ${SCRIPT_DIR}/ResourceQueueIP
 

@@ -34,7 +34,7 @@ VM_UUID=$(openstack server create                            \
     --image "${BOOTIMG}"                                     \
     --flavor "${FLAVOR}"                                     \
     --availability-zone "${ZONE}"                            \
-    --nic net-id="${NIC}"                                  \
+    --nic net-id="${NIC}"                                    \
     --key-name "${KEY}"                                      \
     --user-data CustomProvisionBuilder.sh                    \
     --wait                                                   \

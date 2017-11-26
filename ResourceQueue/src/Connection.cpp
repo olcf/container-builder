@@ -12,9 +12,9 @@ void Connection::begin() {
                         auto request = messenger.async_receive(yield);
 
                         if (request == "checkout_builder_request")
-                            checkout_resource(yield);
+                            checkout_builder(yield);
                         else if (request == "checkin_builder_request")
-                            checkin_resource(yield);
+                            checkin_builder(yield);
                         else
                             throw std::system_error(EPERM, std::system_category(), request + " not supported");
                     }

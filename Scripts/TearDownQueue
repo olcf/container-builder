@@ -5,15 +5,19 @@ SCRIPT_DIR=$(dirname $0)
 
 # OpenStack credentials
 if [ "$1" != "--no_source" ]; then
-  source ${SCRIPT_DIR}/openrc.sh
+    source ${SCRIPT_DIR}/openrc.sh
 fi
 
 # Remove Keys
-openstack keypair delete ContainerBuilderKey
-rm ${SCRIPT_DIR}/ContainerBuilderKey
+if [ $(openstack keypair list | grep ContainerBuilderKey | wc -l) == 1 ]; then
+    openstack keypair delete ContainerBuilderKey
+    rm ${SCRIPT_DIR}/ContainerBuilderKey
+fi
 
 # Remove IP files
 rm ${SCRIPT_DIR}/ResourceQueueIP
 
 # Delete VM
-openstack server delete ResourceQueue
+if [ $(openstack server list | grep ContainerBuilder | wc -l) == 1 ]; then
+    openstack server delete ResourceQueue
+fi

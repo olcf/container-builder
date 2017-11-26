@@ -9,14 +9,20 @@ if [ "$1" != "--no_source" ]; then
 fi
 
 # Remove Keys
-openstack keypair delete BuilderKey
-rm ${SCRIPT_DIR}/BuilderKey
+if [ $(openstack keypair list | grep "\<BuilderKey\>" | wc -l) == 1 ]; then
+    openstack keypair delete BuilderKey
+    rm ${SCRIPT_DIR}/BuilderKey
+fi
 
 # Remove IP files
 rm ${SCRIPT_DIR}/BuilderIP
 
 # Delete VM
-openstack server delete BuilderMaster
+if [ $(openstack server list | grep "\<Builder\>" | wc -l) == 1 ]; then
+    openstack server stop --wait BuilderMaster
+fi
 
 # Delete the image
-openstack image delete "BuilderImage"
+if [ $(openstack image list | grep "\<Builder\>" | wc -l) == 1 ]; then
+    openstack image delete "BuilderImage"
+fi

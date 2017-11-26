@@ -15,7 +15,6 @@ void request_new_builder() {
     out_stream >> output_string;
 };
 
-// If a builder should be shutdown
 void request_destroy_builder() {
     bp::ipstream out_stream;
     bp::system("/home/queue/DestroyBuilder #builder_ID", (bp::std_out & bp::std_err) > out_stream);

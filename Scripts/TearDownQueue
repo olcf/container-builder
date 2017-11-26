@@ -15,7 +15,7 @@ if [ $(openstack keypair list | grep ContainerBuilderKey | wc -l) == 1 ]; then
 fi
 
 # Remove IP files
-rm ${SCRIPT_DIR}/ResourceQueueIP
+rm -f ${SCRIPT_DIR}/ResourceQueueIP
 
 # Delete VM
 if [ $(openstack server list | grep ContainerBuilder | wc -l) == 1 ]; then

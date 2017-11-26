@@ -15,7 +15,7 @@ if [ $(openstack keypair list | grep "\<BuilderKey\>" | wc -l) == 1 ]; then
 fi
 
 # Remove IP files
-rm ${SCRIPT_DIR}/BuilderIP
+rm -f ${SCRIPT_DIR}/BuilderIP
 
 # Delete VM
 if [ $(openstack server list | grep "\<Builder\>" | wc -l) == 1 ]; then

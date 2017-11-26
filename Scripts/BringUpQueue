@@ -16,7 +16,7 @@ SCRIPT_DIR=$(dirname $0)
 BOOTIMG="CADES_Ubuntu16.04_v20170804_1"
 ZONE="nova"
 FLAVOR="m1.medium"
-NIC="or_provider_general_extnetwork1"
+NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)
 
 # Create Keys for cades user
 KEY="ContainerBuilderKey"
@@ -33,7 +33,7 @@ VM_UUID=$(openstack server create                            \
     --image "${BOOTIMG}"                                     \
     --flavor "${FLAVOR}"                                     \
     --availability-zone "${ZONE}"                            \
-    --nic net-name="${NIC}"                                  \
+    --nic net-id="${NIC}"                                  \
     --file /home/cades/openrc.sh=$(pwd)/openrc.sh            \
     --key-name "${KEY}"                                      \
     --user-data ${SCRIPT_DIR}/ProvisionQueue.sh              \

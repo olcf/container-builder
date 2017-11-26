@@ -10,11 +10,13 @@ FLAVOR="m1.medium"
 NIC="or_provider_general_extnetwork1"
 KEY="ContainerBuilderKey"
 
+NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)
+
 # Startup new VM
-openstack sever create                          \
+openstack sever create             \
     --image "${BOOTIMG}"           \
     --flavor "${FLAVOR}"           \
     --availability-zone "${ZONE}"  \
-    --nic net-name="${NIC}"        \
+    --nic net-id="${NIC}"          \
     --key-name "${KEY}"            \
     "Builder"

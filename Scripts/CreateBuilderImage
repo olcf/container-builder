@@ -19,7 +19,7 @@ SCRIPT_DIR=$(dirname $0)
 BOOTIMG="CADES_Ubuntu16.04_v20170804_1"
 ZONE="nova"
 FLAVOR="m1.medium"
-NIC="or_provider_general_extnetwork1"
+NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)
 KEY="ContainerBuilderKey"
 
 # Insert ResourceQueue information into our provisioning script
@@ -34,7 +34,7 @@ VM_UUID=$(openstack server create                            \
     --image "${BOOTIMG}"                                     \
     --flavor "${FLAVOR}"                                     \
     --availability-zone "${ZONE}"                            \
-    --nic net-name="${NIC}"                                  \
+    --nic net-id="${NIC}"                                  \
     --key-name "${KEY}"                                      \
     --user-data CustomProvisionBuilder.sh                    \
     --wait                                                   \

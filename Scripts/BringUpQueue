@@ -22,8 +22,8 @@ NIC=$(openstack network show -c id --format value or_provider_general_extnetwork
 KEY="ContainerBuilderKey"
 KEY_FILE="${SCRIPT_DIR}/${KEY}"
 
-# Adding new keypair named ContainerBuilderKey
-openstack keypair add ${KEY} > ${KEY_FILE}
+# Create a new keypair named ContainerBuilderKey
+openstack keypair create ${KEY} > ${KEY_FILE}
 chmod 600 ${KEY_FILE}
 
 echo "This make take some time."

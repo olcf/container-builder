@@ -40,14 +40,27 @@ VM_UUID=$(openstack server create                            \
     --wait                                                   \
     "ResourceQueue" | grep "\<id\>" | awk '{print $4}');
 
-# Get external IP address
-VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
+
+# Spinner...
+function spin_me_right_round() {
+  declare -a spin=("-" "\\" "|" "/"
+                   "-" "\\" "|" "/"
+                   "-" "\\" "|" "/")
+  for i in "${spin[@]}"
+  do
+        echo -ne "\b$i"
+        sleep 0.5
+  done
+}
 
 # Even though the server is created we need to wait for the cloud-init scripts to finish running before creating a snapshot
 # Wait for SSH to be usable.
 until openstack console log show ${VM_UUID} | grep "running 'modules:final'" > /dev/null 2>&1; do
   spin_me_right_round
 done
+
+# Get external IP address
+VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
 
 echo $VM_IP > ${SCRIPT_DIR}/ResourceQueueIP
 

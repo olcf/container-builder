@@ -8,12 +8,6 @@ if [ "$1" != "--no_source" ]; then
   source ${SCRIPT_DIR}/openrc.sh
 fi
 
-# Remove Keys
-if [ $(openstack keypair list | grep "\<BuilderKey\>" | wc -l) == 1 ]; then
-    openstack keypair delete BuilderKey
-    rm ${SCRIPT_DIR}/BuilderKey
-fi
-
 # Remove IP files
 rm -f ${SCRIPT_DIR}/BuilderIP
 

@@ -38,7 +38,7 @@ VM_UUID=$(openstack server create                            \
     --key-name "${KEY}"                                      \
     --user-data CustomProvisionBuilder.sh                    \
     --wait                                                   \
-    "BuilderMaster" | awk '/id/ {print $4}' | head -n 1);
+    "BuilderMaster" | grep "\<id\>" | awk '{print $4}');
 
 # Remove custom provisioning script
 rm ./CustomProvisionBuilder.sh

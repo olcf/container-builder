@@ -38,7 +38,7 @@ VM_UUID=$(openstack server create                            \
     --key-name "${KEY}"                                      \
     --user-data ${SCRIPT_DIR}/ProvisionQueue.sh              \
     --wait                                                   \
-    "ResourceQueue" | awk '/id/ {print $4}' | head -n 1);
+    "ResourceQueue" | grep "\<id\>" | awk '{print $4}');
 
 # Get external IP address
 VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")

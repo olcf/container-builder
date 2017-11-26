@@ -18,6 +18,6 @@ fi
 rm -f ${SCRIPT_DIR}/ResourceQueueIP
 
 # Delete VM
-if [ $(openstack server list | ResourceQueue | wc -l) == 1 ]; then
+if [ $(openstack server list | grep ResourceQueue | wc -l) == 1 ]; then
     openstack server delete ResourceQueue
 fi

@@ -29,15 +29,17 @@ chmod 600 ${KEY_FILE}
 echo "This make take some time."
 
 # Startup new VM
-VM_UUID=$(openstack server create                            \
-    --image "${BOOTIMG}"                                     \
-    --flavor "${FLAVOR}"                                     \
-    --availability-zone "${ZONE}"                            \
-    --nic net-id="${NIC}"                                    \
-    --file /home/cades/openrc.sh=$(pwd)/openrc.sh            \
-    --key-name "${KEY}"                                      \
-    --user-data ${SCRIPT_DIR}/ProvisionQueue.sh              \
-    --wait                                                   \
+VM_UUID=$(openstack server create                                       \
+    --image "${BOOTIMG}"                                                \
+    --flavor "${FLAVOR}"                                                \
+    --availability-zone "${ZONE}"                                       \
+    --nic net-id="${NIC}"                                               \
+    --file /home/cades/openrc.sh=$(pwd)/openrc.sh                       \
+    --file /home/cades/RequestCreateBuilder=$(pwd)/RequestCreateBuilder \
+    --file /home/cades/DestroyBuilder=$(pwd)/DestroyBuilder             \
+    --key-name "${KEY}"                                                 \
+    --user-data ${SCRIPT_DIR}/ProvisionQueue.sh                         \
+    --wait                                                              \
     "BuilderQueue" | grep "\<id\>" | awk '{print $4}');
 
 

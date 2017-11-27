@@ -44,12 +44,12 @@ int main(int argc, char *argv[]) {
         Messenger queue_messenger(queue_socket);
 
         // Initiate a build request
-        queue_messenger.send("checkout_resource_request");
+        queue_messenger.send("checkout_builder_request");
 
-        // Receive an available build resource
+        // Receive an available builder
         auto builder = queue_messenger.receive_builder();
 
-        // Connect to the builder resource
+        // Connect to the builder builder
         tcp::socket builder_socket(io_service);
         tcp::resolver builder_resolver(io_service);
         asio::connect(builder_socket, builder_resolver.resolve({builder.host, builder.port}));
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
         std::cout << "Container built!\n";
 
         // Inform the queue we're done
-        queue_messenger.send("checkout_resource_complete");
+        queue_messenger.send("checkout_builder_complete");
     }
     catch (std::exception &e) {
         std::cerr << "\033[1;31m Failed to build container: " << e.what() << "\033[0m\n";

@@ -3,11 +3,11 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/spawn.hpp>
 #include <boost/asio/deadline_timer.hpp>
-#include "Resource.h"
+#include "Builder.h"
 
 namespace asio = boost::asio;
 
-// Reservations are handled by the queue and assigned resources as available
+// Reservations are handled by the queue and assigned builders as available
 class Reservation {
 public:
     explicit Reservation(tcp::socket &socket) : socket(socket),
@@ -18,10 +18,10 @@ public:
     // Create an infinite timer that will be cancelled by the queue when the job is ready
     void async_wait(asio::yield_context yield);
 
-    // Callback used by ResourceQueue to cancel the timer which signals our reservation is ready
-    void ready(Resource acquired_resource);
+    // Callback used by BuilderQueue to cancel the timer which signals our reservation is ready
+    void ready(Builder acquired_builder);
 
-    Resource resource;
+    Builder builder;
     tcp::socket &socket;
     bool active;
 private:

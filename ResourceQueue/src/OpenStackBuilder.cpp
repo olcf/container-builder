@@ -4,13 +4,13 @@
 namespace bp = boost::process;
 
 namespace OpenStackBuilder {
-    boost::optional<Resource> request_create(asio::yield_context) {
+    boost::optional<Builder> request_create(asio::yield_context) {
       // Create builder
         // Read async output untill finished
         // finish thread
     }
 
-    void destroy(Resource builder, asio::yield_context) {
+    void destroy(Builder builder, asio::yield_context) {
       // Destroy builder
         // read until output finished
     }

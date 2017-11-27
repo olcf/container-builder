@@ -32,15 +32,15 @@ void Connection::checkout_builder(asio::yield_context yield) {
 
     // Request a builder from the queue
     ReservationRequest reservation(socket, queue, yield);
-    auto resource = reservation.async_wait();
+    auto builder = reservation.async_wait();
 
-    // Send the acquired resource when ready
-    messenger.async_send(resource, yield);
+    // Send the acquired builder when ready
+    messenger.async_send(builder, yield);
 
     // Wait for the client connection to end
     try {
         auto complete = messenger.async_receive(yield);
-        if (complete == "checkout_resource_complete")
+        if (complete == "checkout_builder_complete")
             logger::write(socket, "Client completed");
         else
             logger::write(socket, "Client complete error: " + complete);

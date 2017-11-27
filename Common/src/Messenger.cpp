@@ -231,56 +231,56 @@ void Messenger::async_receive_file(boost::filesystem::path file_path, asio::yiel
     file.close();
 }
 
-Resource Messenger::receive_resource() {
+Builder Messenger::receive_builder() {
     Messenger messenger(socket);
 
-    // Read in the serialized resource as a string
-    auto serialized_resource = messenger.receive();
+    // Read in the serialized builder as a string
+    auto serialized_builder = messenger.receive();
 
-    // de-serialize Resource
-    Resource resource;
-    std::istringstream archive_stream(serialized_resource);
+    // de-serialize Builder
+    Builder builder;
+    std::istringstream archive_stream(serialized_builder);
     boost::archive::text_iarchive archive(archive_stream);
-    archive >> resource;
+    archive >> builder;
 
-    return resource;
+    return builder;
 }
 
-Resource Messenger::async_receive_resource(asio::yield_context yield) {
+Builder Messenger::async_receive_builder(asio::yield_context yield) {
     Messenger messenger(socket);
 
-    // Read in the serialized resource as a string
-    auto serialized_resource = messenger.async_receive(yield);
+    // Read in the serialized builder as a string
+    auto serialized_builder = messenger.async_receive(yield);
 
-    // de-serialize Resource
-    Resource resource;
-    std::istringstream archive_stream(serialized_resource);
+    // de-serialize Builder
+    Builder builder;
+    std::istringstream archive_stream(serialized_builder);
     boost::archive::text_iarchive archive(archive_stream);
-    archive >> resource;
+    archive >> builder;
 
-    return resource;
+    return builder;
 }
 
-void Messenger::async_send(Resource resource, asio::yield_context yield) {
+void Messenger::async_send(Builder builder, asio::yield_context yield) {
     Messenger messenger(socket);
 
-    // Serialize the resource into a string
+    // Serialize the builder into a string
     std::ostringstream archive_stream;
     boost::archive::text_oarchive archive(archive_stream);
-    archive << resource;
-    auto serialized_resource = archive_stream.str();
+    archive << builder;
+    auto serialized_builder = archive_stream.str();
 
-    messenger.async_send(serialized_resource, yield);
+    messenger.async_send(serialized_builder, yield);
 }
 
-void Messenger::send(Resource resource) {
+void Messenger::send(Builder builder) {
     Messenger messenger(socket);
 
-    // Serialize the resource into a string
+    // Serialize the builder into a string
     std::ostringstream archive_stream;
     boost::archive::text_oarchive archive(archive_stream);
-    archive << resource;
-    auto serialized_resource = archive_stream.str();
+    archive << builder;
+    auto serialized_builder = archive_stream.str();
 
-    messenger.send(serialized_resource);
+    messenger.send(serialized_builder);
 }

@@ -15,8 +15,8 @@ void Reservation::async_wait(asio::yield_context yield) {
     }
 }
 
-void Reservation::ready(Resource acquired_resource) {
-    resource = acquired_resource;
+void Reservation::ready(Builder acquired_builder) {
+    builder = acquired_builder;
     active = true;
     ready_timer.cancel();
 }

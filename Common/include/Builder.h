@@ -10,7 +10,7 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
-class Resource {
+class Builder {
 public:
     std::string host;
     std::string port;
@@ -20,10 +20,10 @@ namespace boost {
     namespace serialization {
 
         template<class Archive>
-        void serialize(Archive &ar, Resource &res, const unsigned int version) {
-            ar & res.host;
-            ar & res.port;
-            ar & res.id;
+        void serialize(Archive &ar, Builder &builder, const unsigned int version) {
+            ar & builder.host;
+            ar & builder.port;
+            ar & builder.id;
         }
     } // namespace serialization
 } // namespace boost

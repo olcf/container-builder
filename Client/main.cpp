@@ -4,7 +4,7 @@
 #include <fstream>
 #include <boost/asio.hpp>
 #include "Messenger.h"
-#include "Resource.h"
+#include "Builder.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
         queue_messenger.send("checkout_resource_request");
 
         // Receive an available build resource
-        auto builder = queue_messenger.receive_resource();
+        auto builder = queue_messenger.receive_builder();
 
         // Connect to the builder resource
         tcp::socket builder_socket(io_service);

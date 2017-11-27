@@ -2,11 +2,11 @@
 
 #include "boost/asio/spawn.hpp"
 #include "boost/optional.hpp"
-#include "Resource.h"
+#include "Builder.h"
 
 namespace asio = boost::asio;
 
 namespace OpenStackBuilder {
-    boost::optional<Resource> request_create(asio::yield_context);
-    void destroy(Resource builder, asio::yield_context);
+    boost::optional<Builder> request_create(asio::yield_context);
+    void destroy(Builder builder, asio::yield_context);
 };

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Resource.h"
+#include "Builder.h"
 #include "Reservation.h"
 #include "boost/optional.hpp"
 #include <list>
 #include <deque>
 
 // Execute queued callback functions as resources allow
-class ResourceQueue {
+class BuilderQueue {
 public:
     // Create a new queue reservation and return it to the requester
     void enter(Reservation *reservation, asio::yield_context yield);

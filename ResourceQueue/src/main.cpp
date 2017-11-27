@@ -2,27 +2,24 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/spawn.hpp>
 #include <iostream>
-#include "Resource.h"
+#include "Builder.h"
 #include "Reservation.h"
-#include "ResourceQueue.h"
+#include "BuilderQueue.h"
 #include "Connection.h"
 #include "Logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
-// The resource manager is responsible for providing build resources to clients
-// To do so build resources must register that they are available with the resource manager
-// And the resource manager must queue client requests until build resources become available
 int main(int argc, char *argv[]) {
 
     // Enable logging
-    logger::init("ResourceQueue.log");
+    logger::init("BuilderQueue.log");
 
     try {
         asio::io_service io_service;
 
-        ResourceQueue job_queue;
+        BuilderQueue job_queue;
 
         // Wait for connections from either Clients or Builders
         asio::spawn(io_service,

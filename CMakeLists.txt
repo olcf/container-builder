@@ -12,12 +12,12 @@ set(SOURCE_FILES_QUEUE
         ResourceQueue/src/Connection.cpp
         ResourceQueue/src/Reservation.cpp
         ResourceQueue/src/ReservationRequest.cpp
-        ResourceQueue/src/ResourceQueue.cpp
+        ResourceQueue/src/BuilderQueue.cpp
         ResourceQueue/include/Connection.h
         ResourceQueue/include/Reservation.h
         ResourceQueue/include/ReservationRequest.h
-        ResourceQueue/include/ResourceQueue.h
-        Common/include/Resource.h
+        ResourceQueue/include/BuilderQueue.h
+        Common/include/Builder.h
         Common/src/Logger.cpp
         Common/include/Logger.h
         Common/src/Messenger.cpp
@@ -27,7 +27,7 @@ set(SOURCE_FILES_QUEUE
 
 set(SOURCE_FILES_BUILDER
         Builder/main.cpp
-        Common/include/Resource.h
+        Common/include/Builder.h
         Common/src/Logger.cpp
         Common/include/Logger.h
         Common/src/Messenger.cpp
@@ -35,7 +35,7 @@ set(SOURCE_FILES_BUILDER
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT Client/main.cpp
-        Common/include/Resource.h
+        Common/include/Builder.h
         Common/src/Logger.cpp
         Common/include/Logger.h
         Common/src/Messenger.cpp

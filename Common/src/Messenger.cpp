@@ -5,8 +5,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
-// TODO: move this into .cpp as it's not templated!
-
 // Send the header, which is the size of the message that will immediately follow
 void Messenger::send_header(header_t message_size) {
     auto header = asio::buffer(&message_size, header_size());

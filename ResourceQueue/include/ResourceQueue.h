@@ -2,6 +2,7 @@
 
 #include "Resource.h"
 #include "Reservation.h"
+#include "boost/optional.hpp"
 #include <list>
 #include <deque>
 
@@ -9,32 +10,20 @@
 class ResourceQueue {
 public:
     // Create a new queue reservation and return it to the requester
-    void enter(Reservation *reservation);
-
-    // Add a resource to the queue
-    void add_resource(Resource resource);
-
-    // Remove a resource from the list of available resources
-    void remove_resource(Resource resource);
+    void enter(Reservation *reservation, asio::yield_context yield);
 
     // On exit release remove any outstanding requests from pending queue
-    void exit(Reservation *reservation) noexcept;
+    void exit(Reservation *reservation, asio::yield_context yield) noexcept;
 
-    // Return true if any resources are available
-    bool resource_available() {
-        return available_resources.size() > 0;
-    }
+    // Return the next reservation, if one is available
+    boost::optional<Reservation*> get_next_reservation(asio::yield_context yield);
 
-    // Return true if any requests are pending
-    bool pending_requests() {
-        return pending_queue.size() > 0;
-    }
+    // Attempt to process the queue after an event that adds/removes builders or requests
+    void tick(asio::yield_context yield);
+
+    // Return the next reservation in the queue, if one is available
+    boost::optional<Reservation *> ResourceQueue::get_next_reservation();
+
 private:
-    // TODO : Review these types to see which is better
-    std::list<Resource> available_resources;
     std::deque<Reservation *> pending_queue;
-
-    // Advance the queue to see if a reservation can run
-    // Return true if a job was started
-    void tick();
 };

@@ -13,8 +13,6 @@ void Connection::begin() {
 
                         if (request == "checkout_builder_request")
                             checkout_builder(yield);
-                        else if (request == "checkin_builder_request")
-                            checkin_builder(yield);
                         else
                             throw std::system_error(EPERM, std::system_category(), request + " not supported");
                     }
@@ -33,32 +31,20 @@ void Connection::checkout_builder(asio::yield_context yield) {
     Messenger messenger(socket);
 
     // Request a builder from the queue
-    ReservationRequest reservation(socket, queue);
-    auto resource = reservation.async_wait(yield);
+    ReservationRequest reservation(socket, queue, yield);
+    auto resource = reservation.async_wait();
 
     // Send the acquired resource when ready
     messenger.async_send(resource, yield);
-}
 
-// Handle checking in a new builder, adding it to the pool of available builders
-// When the build is finished the builder instance is shutdown
-void Connection::checkin_builder(asio::yield_context yield) {
-
-    // Read the builders information
-    Messenger builder_messenger(socket);
-    auto resource = builder_messenger.async_receive_resource(yield);
-
-    queue.add_resource(resource);
-    logger::write("Checked in new resource: " + resource.host + ":" + resource.port);
-
-    // Wait for the builder to complete
+    // Wait for the client connection to end
     try {
-        auto complete = builder_messenger.async_receive(yield);
-        logger::write(socket, "Builder completed");
+        auto complete = messenger.async_receive(yield);
+        if (complete == "checkout_resource_complete")
+            logger::write(socket, "Client completed");
+        else
+            logger::write(socket, "Client complete error: " + complete);
     } catch(std::exception& e) {
-        logger::write(socket, "Builder failed to inform Queue of completion");
+        logger::write(socket, "Client disconnect");
     }
-
-    // Remove the builder from available builders
-    queue.remove_resource(resource);
 }

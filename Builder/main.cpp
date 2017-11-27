@@ -14,51 +14,14 @@ namespace bp = boost::process;
 using asio::ip::tcp;
 using callback_type = std::function<void(const boost::system::error_code&, std::size_t size)>;
 
-std::string queue_hostname() {
-    auto env = std::getenv("QUEUE_HOSTNAME");
-    if(!env) {
-        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOSTNAME");
-    }
-    return std::string(env);
-}
-
-std::string queue_port() {
-    auto env = std::getenv("QUEUE_PORT");
-    if(!env) {
-        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOSTNAME");
-    }
-    return std::string(env);
-}
-
 int main(int argc, char *argv[]) {
     try {
         // Enable logging
         logger::init("ContainerBuilder.log");
 
-        // Connect to the queue
-        asio::io_service io_service;
-
-        tcp::socket queue_socket(io_service);
-        tcp::resolver queue_resolver(io_service);
-        asio::connect(queue_socket, queue_resolver.resolve({queue_hostname(), queue_port()}));
-        Messenger queue_messenger(queue_socket);
-
-        // Request to add this host to the resource queue
-        logger::write("Requesting checkin to ResourceQueue " + queue_hostname() + ":" + queue_port());
-        queue_messenger.send("checkin_resource_request");
-
-        // Create resource describing this host
-        Resource resource;
-        resource.host = queue_socket.local_endpoint().address().to_string();
-        resource.port = "8081";
-
-        // Send this host as a resource
-        queue_messenger.send(resource);
-
-        // TODO setup a timeout so if this host isn't connected to we shut it down
-
         // Accept a connection to use this resource
-        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), std::stoi(resource.port)));
+        asio::io_service io_service;
+        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8081));
         tcp::socket socket(io_service);
         acceptor.accept(socket);
 
@@ -85,7 +48,6 @@ int main(int argc, char *argv[]) {
         // NOTE: read_until will fill buffer until line_matcher is satisfied but generally will contain additional data.
         // This is fine as all we care about is dumping everything from std_pipe to our buffer and don't require exact line buffering
         asio::streambuf buffer;
-        uint64_t pipe_bytes_read;
         boost::regex line_matcher{"\\r|\\n"};
 
         // Callback for handling reading from pipe and sending output to client
@@ -118,8 +80,6 @@ int main(int argc, char *argv[]) {
     catch (std::exception &e) {
         logger::write(std::string("Build error: ") + e.what());
     }
-
-    // TODO Send completion message to ResourceQueue
 
     return 0;
 }

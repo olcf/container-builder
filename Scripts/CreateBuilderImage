@@ -6,9 +6,6 @@ echo "using OS_CACERT="$OS_CACERT
 # OpenStack credentials
 source ./openrc.sh
 
-QUEUE_HOSTNAME=`cat ResourceQueueIP`
-QUEUE_PORT="8080"
-
 # Destroy any existing builder if one exists
 ./DestroyBuilderImage --no_source
 
@@ -21,23 +18,17 @@ ZONE="nova"
 FLAVOR="m1.medium"
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)
 KEY="ContainerBuilderKey"
-
-# Insert ResourceQueue information into our provisioning script
-cp ${SCRIPT_DIR}/ProvisionBuilder.sh CustomProvisionBuilder.sh
-sed -i "2i2 export QUEUE_HOSTNAME=${QUEUE_HOSTNAME}" ./CustomProvisionBuilder.sh
-sed -i "3i3 export QUEUE_PORT=${QUEUE_PORT}" ./CustomProvisionBuilder.sh
-
 echo "This make take some time."
 
 # Startup new VM
-VM_UUID=$(openstack server create                            \
-    --image "${BOOTIMG}"                                     \
-    --flavor "${FLAVOR}"                                     \
-    --availability-zone "${ZONE}"                            \
-    --nic net-id="${NIC}"                                    \
-    --key-name "${KEY}"                                      \
-    --user-data CustomProvisionBuilder.sh                    \
-    --wait                                                   \
+VM_UUID=$(openstack server create                        \
+    --image "${BOOTIMG}"                                 \
+    --flavor "${FLAVOR}"                                 \
+    --availability-zone "${ZONE}"                        \
+    --nic net-id="${NIC}"                                \
+    --key-name "${KEY}"                                  \
+    --user-data ProvisionBuilder.sh                      \
+    --wait                                               \
     "BuilderMaster" | grep "\<id\>" | awk '{print $4}');
 
 # Remove custom provisioning script

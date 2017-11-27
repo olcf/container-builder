@@ -17,22 +17,18 @@ export OS_IDENTITY_API_VERSION="3"
 ```
 
 To prime the Containerbuilder service several steps are required
-* Bring up the ResourceQueue OpenStack instance
+* Bring up the BuilderQueue OpenStack instance
 * Create the Builder master OpenStack image which will be used to quickly spin up builders
-    * The Builder image has the ResourceQueue IP baked into it so must be done seqeuntially
-* Use the `RQdiag` command line tool to create one or more builders
 
 To bring up a new builder instance:
 ```
 ContainerBuilder/Scripts/BringUpQueue
 ```
-After bringup two files will be created:
- * ResourceQueueIP
- * ContainerBuilderKey
+After bringup an SSH key will be created: `ContainerBuilderKey`
 
- `ContainerBuilderKey` provides SSH access to the ResourceQueue as well as all of the builders
+ `ContainerBuilderKey` provides SSH access to the BuilderQueue as well as all of the builders
 
-During bring up `openrc.sh` will be copied to `/home/queue`, these credentials are required to bring up builder resources.
+During bring up `openrc.sh` will be copied to `/home/queue`, these credentials are required to bring up builders.
 
 After the Queue has been brought up the master builder image must be created:
 ```
@@ -40,9 +36,9 @@ ContainerBuilder/Scripts/CreateBuilderImage
 ```
 
 
-To login to the queue
+To login to the queue or a builder:
 ```
-ssh -i ./ContainerBuilder cades@`cat ResourceQueueIP`
+ssh -i ./ContainerBuilder cades@`BuilderQueueIP/Builder`
 ```
 
 To destroy a new queue instance:
@@ -54,4 +50,4 @@ Note: Titan doesn't have the SSL certs in place and so before running any nova c
 
 Note: `openstack list` can be called to show all active OpenStack instances including their ID, name, and IP
 
-Note: To check if the ResourceQueue and Builder services are running ssh to each node and run `systemctl status`. To diagnose issues use `sudo journalctl`
+Note: To check if the BuilderQueue and Builder services are running ssh to each node and run `systemctl status`. To diagnose issues use `sudo journalctl`

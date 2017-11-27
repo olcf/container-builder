@@ -7,7 +7,6 @@ source /home/queue/openrc.sh
 BOOTIMG="BuilderImage"
 ZONE="nova"
 FLAVOR="m1.medium"
-NIC="or_provider_general_extnetwork1"
 KEY="ContainerBuilderKey"
 
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)

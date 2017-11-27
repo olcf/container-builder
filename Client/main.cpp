@@ -73,6 +73,8 @@ int main(int argc, char *argv[]) {
 
         std::cout << "Container built!\n";
 
+        // Inform the queue we're done
+        queue_messenger.send("checkout_resource_complete");
     }
     catch (std::exception &e) {
         std::cerr << "\033[1;31m Failed to build container: " << e.what() << "\033[0m\n";

@@ -3,9 +3,6 @@
 set -e
 set -o xtrace
 
-#apt update
-#apt -y upgrade
-
 # Create non root builder user
 useradd --create-home --home-dir /home/builder --shell /bin/bash builder
 
@@ -60,8 +57,6 @@ Type=simple
 User=builder
 WorkingDirectory=/home/builder
 Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
-Environment="QUEUE_HOSTNAME=${QUEUE_HOSTNAME}"
-Environment="QUEUE_PORT=${QUEUE_PORT}"
 ExecStart=/usr/local/bin/ContainerBuilder
 Restart=no
 
@@ -71,6 +66,6 @@ EOF
 systemctl enable ContainerBuilder
 reboot
 
-# To check that the ResourceQueue is running
+# To check that the Builder service is running
 # sudo netstat -plnt | grep ContainerBuilder
 # systemctl status

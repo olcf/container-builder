@@ -22,7 +22,7 @@ set(SOURCE_FILES_QUEUE
         Common/src/Logger.cpp
         Common/include/Logger.h
         Common/src/Messenger.cpp
-        Common/include/Messenger.h ResourceQueue/include/OpenStack.h)
+        Common/include/Messenger.h ResourceQueue/include/OpenStack.h ResourceQueue/src/OpenStackBuilder.cpp ResourceQueue/include/OpenStackBuilder.h)
 
 set(SOURCE_FILES_BUILDER
         Builder/main.cpp

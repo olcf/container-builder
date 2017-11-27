@@ -40,10 +40,10 @@ pip install python-openstackclient
 wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Scripts/BringUpBuilder
 mv BringUpBuilder /home/queue
 
-# Create systemd script and launch the ResourceQueue daemon
-cat << EOF > /etc/systemd/system/ResourceQueue.service
+# Create systemd script and launch the BuilderQueue daemon
+cat << EOF > /etc/systemd/system/BuilderQueue.service
 [Unit]
-Description=ResourceQueue daemon
+Description=BuilderQueue daemon
 After=network.target
 
 [Service]
@@ -51,7 +51,7 @@ Type=simple
 User=queue
 Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
 WorkingDirectory=/home/queue
-ExecStart=/usr/local/bin/ResourceQueue
+ExecStart=/usr/local/bin/BuilderQueue
 Restart=no
 
 [Install]
@@ -63,5 +63,5 @@ mv /home/cades/openrc.sh /home/queue/openrc.sh
 
 # There appears to be some weird issues with starting systemd services inside of a cloud-init script
 # The heavy handed approach of enabling and reboot works I suppose though
-systemctl enable ResourceQueue
+systemctl enable BuilderQueue
 reboot

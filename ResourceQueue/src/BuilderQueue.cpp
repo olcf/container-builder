@@ -3,6 +3,9 @@
 #include "Logger.h"
 #include "OpenStackBuilder.h"
 
+void BuilderQueue::tick(asio::yield_context yield) {}
+
+/*
 // Attempt to process the queue after an event that adds/removes builders or requests
 void BuilderQueue::tick(asio::yield_context yield) {
 
@@ -31,6 +34,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
         }
     }
 }
+
 
 void BuilderQueue::enter(Reservation *reservation, asio::yield_context yield) {
     logger::write(reservation->socket, "Entering queue");

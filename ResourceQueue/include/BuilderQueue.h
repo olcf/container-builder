@@ -9,7 +9,7 @@
 // Execute queued callback functions as resources allow
 class BuilderQueue {
 public:
-    explicit BuilderQueue(asio::io_service& io_service) : io_service(io_service) {};
+    explicit BuilderQueue(asio::io_service& io_service) : io_service(io_service) {}
 
     // Create a new queue reservation and return it to the requester
     void enter(Reservation *reservation, asio::yield_context yield);

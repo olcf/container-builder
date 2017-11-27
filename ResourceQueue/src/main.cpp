@@ -6,6 +6,7 @@
 #include "Reservation.h"
 #include "BuilderQueue.h"
 #include "Connection.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "Logger.h"
 
 namespace asio = boost::asio;
@@ -20,6 +21,10 @@ int main(int argc, char *argv[]) {
         asio::io_service io_service;
 
         BuilderQueue job_queue(io_service);
+        boost::asio::deadline_timer timer;
+
+
+        // TODO use strand instead of io_service directly?
 
         // Wait for connections from either Clients or Builders
         asio::spawn(io_service,
@@ -36,6 +41,16 @@ int main(int argc, char *argv[]) {
                             } else {
                                 logger::write("New connection error: " + ec.message());
                             }
+                        }
+                    });
+
+        // Start the queue which ticks at the specified interval
+        asio::spawn(io_service,
+                    [&](asio::yield_context yield) {
+                        for (;;) {
+                            job_queue.tick(yield);
+                            timer.expires_from_now(boost::posix_time::seconds(5));
+                            timer.async_wait(yield);
                         }
                     });
 

@@ -20,10 +20,3 @@ fi
 if [ $(openstack image list | grep "\<Builder\>" | wc -l) == 1 ]; then
     openstack image delete --wait "BuilderImage"
 fi
-
-#TODO I don't think this will work if multiple builders are spunup - need to use UUID
-
-# Delete any builders that exist
-if [ $(openstack server list | grep "\<Builder\>" | wc -l) > 0 ]; then
-    openstack server delete Builder
-fi

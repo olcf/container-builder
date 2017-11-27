@@ -47,7 +47,7 @@ namespace OpenStackBuilder {
     }
 
     void destroy(Builder builder, asio::io_service& io_service, asio::yield_context yield) {
-        std::string destroy_command("/home/builder/DestroyBuilder");
+        std::string destroy_command("/home/builder/DestroyBuilder " + builder.id);
         bp::group group;
         bp::async_pipe std_pipe(io_service);
         asio::streambuf buffer;

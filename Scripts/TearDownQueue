@@ -14,7 +14,6 @@ if [ $(openstack keypair list | grep ContainerBuilderKey | wc -l) == 1 ]; then
     rm ${SCRIPT_DIR}/ContainerBuilderKey
 fi
 
-
 # Delete VM
 if [ $(openstack server list | grep BuilderQueue | wc -l) == 1 ]; then
     openstack server delete --wait BuilderQueue

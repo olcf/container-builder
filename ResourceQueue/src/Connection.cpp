@@ -31,8 +31,8 @@ void Connection::checkout_builder(asio::yield_context yield) {
     Messenger messenger(socket);
 
     // Request a builder from the queue
-    ReservationRequest reservation(socket, queue, yield);
-    auto builder = reservation.async_wait();
+    ReservationRequest reservation(socket, queue);
+    auto builder = reservation.async_wait(yield);
 
     // Send the acquired builder when ready
     messenger.async_send(builder, yield);

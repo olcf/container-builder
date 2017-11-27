@@ -6,8 +6,6 @@
 #include "Reservation.h"
 #include "BuilderQueue.h"
 #include "Connection.h"
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include "Logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -21,10 +19,10 @@ int main(int argc, char *argv[]) {
         asio::io_service io_service;
 
         BuilderQueue job_queue(io_service);
-        boost::asio::deadline_timer timer;
+        boost::asio::deadline_timer timer(io_service);
 
 
-        // TODO use strand instead of io_service directly?
+        // TODO understand why the spawn examples use a strand, I don't believe it's required
 
         // Wait for connections from either Clients or Builders
         asio::spawn(io_service,
@@ -54,6 +52,7 @@ int main(int argc, char *argv[]) {
                         }
                     });
 
+        // Begin processing our connections and queue
         io_service.run();
     }
     catch (std::exception &e) {

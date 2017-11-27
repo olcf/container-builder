@@ -8,22 +8,21 @@
 // The reservation to have a handle to the queue, else we have a weird circular dependency: reservation<-->queue
 class ReservationRequest {
 public:
-    ReservationRequest(tcp::socket &socket, BuilderQueue &queue, asio::yield_context yield) : socket(socket),
-                                                                                              reservation(socket),
-                                                                                              queue(queue),
-                                                                                               yield(yield){
-        queue.enter(&reservation, yield);
+    ReservationRequest(tcp::socket &socket, BuilderQueue &queue) : socket(socket),
+                                                                   reservation(socket),
+                                                                   queue(queue)
+    {
+        queue.enter(&reservation);
     }
 
     ~ReservationRequest() {
-        queue.exit(&reservation, yield);
+        queue.exit(&reservation);
     }
 
-    Builder async_wait();
+    Builder async_wait(asio::yield_context yield);
 
     tcp::socket &socket;
 private:
     Reservation reservation;
     BuilderQueue &queue;
-    asio::yield_context yield;
 };

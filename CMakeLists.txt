@@ -13,7 +13,6 @@ set(SOURCE_FILES_QUEUE
         ResourceQueue/src/Reservation.cpp
         ResourceQueue/src/ReservationRequest.cpp
         ResourceQueue/src/ResourceQueue.cpp
-        ResourceQueue/src/OpenStackResource.cpp
         ResourceQueue/include/Connection.h
         ResourceQueue/include/Reservation.h
         ResourceQueue/include/ReservationRequest.h
@@ -22,7 +21,9 @@ set(SOURCE_FILES_QUEUE
         Common/src/Logger.cpp
         Common/include/Logger.h
         Common/src/Messenger.cpp
-        Common/include/Messenger.h ResourceQueue/include/OpenStack.h ResourceQueue/src/OpenStackBuilder.cpp ResourceQueue/include/OpenStackBuilder.h)
+        Common/include/Messenger.h
+        ResourceQueue/src/OpenStackBuilder.cpp
+        ResourceQueue/include/OpenStackBuilder.h)
 
 set(SOURCE_FILES_BUILDER
         Builder/main.cpp

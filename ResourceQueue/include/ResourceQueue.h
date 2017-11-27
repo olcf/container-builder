@@ -22,7 +22,7 @@ public:
     void tick(asio::yield_context yield);
 
     // Return the next reservation in the queue, if one is available
-    boost::optional<Reservation *> ResourceQueue::get_next_reservation();
+    boost::optional<Reservation *> get_next_reservation();
 
 private:
     std::deque<Reservation *> pending_queue;

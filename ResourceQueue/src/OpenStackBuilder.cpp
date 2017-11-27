@@ -1,5 +1,5 @@
 #include "OpenStackBuilder.h"
-#include "boost/process"
+#include "boost/process.hpp"
 
 namespace bp = boost::process;
 

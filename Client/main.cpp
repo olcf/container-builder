@@ -49,11 +49,14 @@ int main(int argc, char *argv[]) {
         // Receive an available builder
         auto builder = queue_messenger.receive_builder();
 
-        // Connect to the builder builder
-        // TODO this must be done in a loop as the builder may take some time to become completely active
+        // Connect to the builder
+        // The builder isn't guaranteed to be reachable immediately and may take some time to full get stood up
         tcp::socket builder_socket(io_service);
         tcp::resolver builder_resolver(io_service);
-        asio::connect(builder_socket, builder_resolver.resolve({builder.host, builder.port}));
+        boost::system::error_code ec;
+        do {
+          asio::connect(builder_socket, builder_resolver.resolve({builder.host, builder.port}), ec);
+        } while(ec != boost::system::errc::success);
 
         Messenger builder_messenger(builder_socket);
 

@@ -17,6 +17,6 @@ if [ $(openstack server list | grep "\<BuilderMaster\>" | wc -l) == 1 ]; then
 fi
 
 # Delete master image if it exists
-if [ $(openstack image list | grep "\<Builder\>" | wc -l) == 1 ]; then
-    openstack image delete --wait "BuilderImage"
+if [ $(openstack image list | grep "\<BuilderMaster\>" | wc -l) == 1 ]; then
+    openstack image delete --wait "BuilderMaster"
 fi

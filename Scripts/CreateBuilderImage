@@ -48,12 +48,18 @@ function spin_me_right_round() {
 until openstack console log show ${VM_UUID} | grep "running 'modules:final'" > /dev/null 2>&1; do
   spin_me_right_round
 done
+echo -ne "\b"
+
+echo "Shutting down server"
+openstack server stop ${VM_UUID}
+until openstack server list --status SHUTOFF | grep ${VM_UUID} > /dev/null 2>&1; do
+  spin_me_right_round
+done
 
 echo "Creating builder snapshot image"
-openstack server stop --wait ${VM_UUID}
-openstack server image create --name BuilderImage --wait ${VM_UUID}
+openstack server image create --wait --name BuilderImage ${VM_UUID}
 
 echo "Deleting builder master instance"
 openstack server delete --wait BuilderMaster
 
-echo "Finished creating BuilderImage"
+echo "Finished creating BuilderMaster"

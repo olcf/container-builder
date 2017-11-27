@@ -27,7 +27,7 @@ VM_UUID=$(openstack server create                        \
     --availability-zone "${ZONE}"                        \
     --nic net-id="${NIC}"                                \
     --key-name "${KEY}"                                  \
-    --user-data ProvisionBuilder.sh                      \
+    --user-data ProvisionBuilder                         \
     --wait                                               \
     "BuilderMaster" | grep "\<id\>" | awk '{print $4}');
 

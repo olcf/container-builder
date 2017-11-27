@@ -38,7 +38,7 @@ VM_UUID=$(openstack server create                                       \
     --file /home/cades/RequestCreateBuilder=$(pwd)/RequestCreateBuilder \
     --file /home/cades/DestroyBuilder=$(pwd)/DestroyBuilder             \
     --key-name "${KEY}"                                                 \
-    --user-data ${SCRIPT_DIR}/ProvisionQueue.sh                         \
+    --user-data ${SCRIPT_DIR}/ProvisionQueue                            \
     --wait                                                              \
     "BuilderQueue" | grep "\<id\>" | awk '{print $4}');
 

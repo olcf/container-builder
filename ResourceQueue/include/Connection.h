@@ -25,7 +25,4 @@ private:
 
     // Checkout a builder
     void checkout_builder(asio::yield_context yield);
-
-    // Make a new builder available
-    void checkin_builder(asio::yield_context yield);
 };

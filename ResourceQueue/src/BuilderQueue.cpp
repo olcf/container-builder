@@ -12,7 +12,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
     }
 
     // Attempt to create a new builder
-    auto opt_builder = OpenStackBuilder::request_create(yield);
+    auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
 
     // If a builder was created attempt to assign it to an outstanding reservation
     if(opt_builder) {
@@ -25,7 +25,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
             next_reservation->ready(builder);
         } else {
             // Destroy the builder
-            OpenStackBuilder::destroy(builder, yield);
+            OpenStackBuilder::destroy(builder, io_service, yield);
             // Tick incase anything changed during the destruction process
             tick(yield);
         }
@@ -48,18 +48,18 @@ void BuilderQueue::exit(Reservation *reservation, asio::yield_context yield) noe
     if (pending_position != pending_queue.end()) {
         pending_queue.erase(pending_position);
     } else {     // If the reservation has been fulfilled destroy the builder
-        OpenStackBuilder::destroy(reservation->builder, yield);
+        OpenStackBuilder::destroy(reservation->builder, io_service, yield);
         tick(yield);
     }
 }
 
 boost::optional<Reservation *> BuilderQueue::get_next_reservation() {
-    boost::optional<Reservation *> next_reservation;
+    boost::optional<Reservation *> opt_reservation;
 
     if (!pending_queue.empty()) {
-        next_reservation = pending_queue.front();
+        opt_reservation = pending_queue.front();
         pending_queue.pop_front();
     }
 
-    return next_reservation;
+    return opt_reservation;
 }

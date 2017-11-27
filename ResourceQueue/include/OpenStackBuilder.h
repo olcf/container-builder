@@ -7,6 +7,6 @@
 namespace asio = boost::asio;
 
 namespace OpenStackBuilder {
-    boost::optional<Builder> request_create(asio::yield_context);
-    void destroy(Builder builder, asio::yield_context);
+    boost::optional<Builder> request_create(asio::io_service& io_service, asio::yield_context yield);
+    void destroy(Builder builder, asio::io_service& io_service, asio::yield_context yield );
 };

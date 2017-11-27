@@ -9,7 +9,7 @@ using asio::ip::tcp;
 class Connection : public std::enable_shared_from_this<Connection> {
 public:
     explicit Connection(tcp::socket socket, BuilderQueue &queue) : socket(std::move(socket)),
-                                                                    queue(queue) {
+                                                                                              queue(queue) {
         logger::write(this->socket, "Established connection");
     }
 

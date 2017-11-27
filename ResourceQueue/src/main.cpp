@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     try {
         asio::io_service io_service;
 
-        BuilderQueue job_queue;
+        BuilderQueue job_queue(io_service);
 
         // Wait for connections from either Clients or Builders
         asio::spawn(io_service,

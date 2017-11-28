@@ -55,9 +55,10 @@ openstack server stop ${VM_UUID}
 until openstack server list --status SHUTOFF | grep ${VM_UUID} > /dev/null 2>&1; do
   spin_me_right_round
 done
+echo -ne "\b"
 
 echo "Creating builder snapshot image"
-openstack server image create --wait --name BuilderImage ${VM_UUID}
+openstack server image create --wait --name BuilderImage ${VM_UUID} &> /dev/null
 
 echo "Deleting builder master instance"
 openstack server delete --wait BuilderMaster

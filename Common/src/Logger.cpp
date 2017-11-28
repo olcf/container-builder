@@ -1,7 +1,7 @@
 #define BOOST_LOG_DYN_LINK 1
 
 #include "Logger.h"
-#include <boost/lexical_cast.hpp>
+#include <boost/log/sources/exception_handler_feature.hpp>
 
 namespace logger {
     BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(global_log, src::logger_mt)

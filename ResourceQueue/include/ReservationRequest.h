@@ -10,13 +10,16 @@ class ReservationRequest {
 public:
     ReservationRequest(tcp::socket &socket, BuilderQueue &queue) : socket(socket),
                                                                    reservation(socket),
-                                                                   queue(queue)
-    {
+                                                                   queue(queue) {
         queue.enter(&reservation);
     }
 
     ~ReservationRequest() {
-        queue.exit(&reservation);
+        try {
+            queue.exit(&reservation);
+        } catch (...) {
+
+        }
     }
 
     Builder async_wait(asio::yield_context yield);

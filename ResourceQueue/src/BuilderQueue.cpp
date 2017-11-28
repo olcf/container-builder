@@ -8,8 +8,7 @@ void BuilderQueue::enter(Reservation *reservation) {
     pending_reservations.push_back(reservation);
 }
 
-// TODO make this actually noexcept
-void BuilderQueue::exit(Reservation *reservation) noexcept {
+void BuilderQueue::exit(Reservation *reservation) {
     auto pending_position = std::find(pending_reservations.begin(), pending_reservations.end(), reservation);
     if (pending_position != pending_reservations.end()) {
         pending_reservations.erase(pending_position);
@@ -25,19 +24,19 @@ void BuilderQueue::tick(asio::yield_context yield) {
 
     // Destroy any builders that are completed
     auto opt_completed_builder = get_next_completed_builder();
-    if(opt_completed_builder) {
+    if (opt_completed_builder) {
         auto completed_builder = opt_completed_builder.get();
         OpenStackBuilder::destroy(completed_builder, io_service, yield);
         logger::write("destroying builder: " + completed_builder.id);
     }
 
     // If there is currently an outstanding request attempt to create a new builder
-    if(pending_reservations_available()) {
+    if (pending_reservations_available()) {
         // Attempt to create builder
         auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
 
         // If a builder was created attempt to assign it to an outstanding reservation
-        if(opt_builder) {
+        if (opt_builder) {
             auto builder = opt_builder.get();
             auto opt_reservation = get_next_reservation();
             // If a reservation is still available provide it the resource

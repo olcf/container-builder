@@ -21,9 +21,6 @@ int main(int argc, char *argv[]) {
         BuilderQueue job_queue(io_service);
         boost::asio::deadline_timer timer(io_service);
 
-
-        // TODO understand why the spawn examples use a strand, I don't believe it's required
-
         // Wait for connections from either Clients or Builders
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {

@@ -2,7 +2,7 @@
 #include "Logger.h"
 
 void Reservation::async_wait(asio::yield_context yield) {
-    // When entered into the queue the queue will tick and possibly expire call this->ready()
+    // The queue may tick and call ready() before async_wait() is called
     // That is the timer will be potentially be fired before async_wait() is called
     // If the timer is expired async_wait will deadlock so we take care to only call it on a valid timer
     if (!active) {

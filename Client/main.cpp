@@ -27,6 +27,15 @@ std::string queue_port() {
 
 int main(int argc, char *argv[]) {
     try {
+
+        // Check for correct number of arguments
+        if(argc != 3) {
+            std::cerr<<"Usage: ContainerBuilder <definition path> <container path>\n";
+            return 1;
+        }
+        std::string definition_path(argv[1]);
+        std::string container_path(argv[2]);
+
         asio::io_service io_service;
         tcp::socket queue_socket(io_service);
         tcp::resolver queue_resolver(io_service);
@@ -52,7 +61,7 @@ int main(int argc, char *argv[]) {
         Messenger builder_messenger(builder_socket);
 
         // Send the definition file
-        builder_messenger.send_file("./recipe.def");
+        builder_messenger.send_file(definition_path);
 
         // Read the build output until a zero length message is sent
         std::string line;
@@ -62,7 +71,7 @@ int main(int argc, char *argv[]) {
         } while (!line.empty());
 
         // Read the container image
-        builder_messenger.receive_file("./container.img");
+        builder_messenger.receive_file(container_path);
 
         std::cout << "Container built!\n";
 

@@ -15,7 +15,7 @@ public:
     void enter(Reservation *reservation);
 
     // On exit release remove any outstanding requests from pending queue
-    void exit(Reservation *reservation) noexcept;
+    void exit(Reservation *reservation);
 
     // Attempt to process the queue after an event that adds/removes builders or requests
     void tick(asio::yield_context yield);
@@ -33,6 +33,6 @@ private:
     // Hold builder requests that are to be fulfilled
     std::deque<Reservation *> pending_reservations;
 
-    // Hold resources that need to be cleaned up
+    // Hold builders that need to be cleaned up
     std::deque<Builder> completed_builders;
 };

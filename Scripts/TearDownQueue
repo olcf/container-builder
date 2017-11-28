@@ -9,12 +9,12 @@ if [ "$1" != "--no_source" ]; then
 fi
 
 # Remove Keys
-if [ $(openstack keypair list | grep ContainerBuilderKey | wc -l) == 1 ]; then
+if [ $(openstack keypair list | grep ContainerBuilderKey | wc -l) != 0 ]; then
     openstack keypair delete ContainerBuilderKey
     rm ${SCRIPT_DIR}/ContainerBuilderKey
 fi
 
 # Delete VM
-if [ $(openstack server list | grep BuilderQueue | wc -l) == 1 ]; then
+if [ $(openstack server list | grep BuilderQueue | wc -l) != 0 ]; then
     openstack server delete --wait BuilderQueue
 fi

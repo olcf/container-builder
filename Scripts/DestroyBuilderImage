@@ -12,11 +12,11 @@ fi
 rm -f ${SCRIPT_DIR}/BuilderIP
 
 # Delete master image server if exists
-if [ $(openstack server list | grep "\<BuilderMaster\>" | wc -l) == 1 ]; then
+if [ $(openstack server list | grep "\<BuilderMaster\>" | wc -l) != 0 ]; then
     openstack server delete --wait BuilderMaster
 fi
 
 # Delete master image if it exists
-if [ $(openstack image list | grep "\<BuilderMaster\>" | wc -l) == 1 ]; then
+if [ $(openstack image list | grep "\<BuilderMaster\>" | wc -l) != 0 ]; then
     openstack image delete --wait "BuilderMaster"
 fi

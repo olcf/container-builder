@@ -8,13 +8,6 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
-void create_def() {
-    std::cout << "creating simple definition file\n";
-    std::ofstream outfile("recipe.def");
-    outfile << "BootStrap: docker\nFrom: ubuntu:zesty" << std::endl;
-    outfile.close();
-}
-
 std::string queue_hostname() {
     auto env = std::getenv("QUEUE_HOSTNAME");
     if(!env) {
@@ -31,7 +24,6 @@ std::string queue_port() {
     }
     return std::string(env);
 }
-
 
 int main(int argc, char *argv[]) {
     try {
@@ -59,8 +51,6 @@ int main(int argc, char *argv[]) {
 
         Messenger builder_messenger(builder_socket);
 
-        // Create a fake definition for testing
-        create_def();
         // Send the definition file
         builder_messenger.send_file("./recipe.def");
 

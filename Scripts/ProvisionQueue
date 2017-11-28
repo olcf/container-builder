@@ -12,15 +12,16 @@ wget https://cmake.org/files/v3.9/cmake-3.9.5-Linux-x86_64.sh
 chmod +x ./cmake-3.9.5-Linux-x86_64.sh
 ./cmake-3.9.5-Linux-x86_64.sh --skip-license
 ln -s /cmake-3.9.5-Linux-x86_64/bin/* /usr/local/bin
+cd /
 rm -rf /cmake-3.9.5-Linux-x86_64
 
 # Install a new version of boost
-cd /
 wget https://dl.bintray.com/boostorg/release/1.65.1/source/boost_1_65_1.tar.gz
 tar xf boost_1_65_1.tar.gz
 cd boost_1_65_1
 ./bootstrap.sh --with-libraries=filesystem,regex,system,coroutine,serialization,log,thread
 ./b2 install || :
+cd /
 rm -rf /boost_1_65_1
 
 # Install ContainerBuilder
@@ -31,14 +32,11 @@ mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTAL_PREFIX="/usr/local" ..
 make
 make install
+cd /
 rm -rf /ContainerBuilder
 
 # Install OpenStack command line client
 pip install python-openstackclient
-
-# Fetch Builder script
-wget https://raw.githubusercontent.com/AdamSimpson/ContainerBuilder/master/Scripts/BringUpBuilder
-mv BringUpBuilder /home/queue
 
 # Create systemd script and launch the BuilderQueue daemon
 cat << EOF > /etc/systemd/system/BuilderQueue.service

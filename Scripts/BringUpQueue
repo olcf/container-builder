@@ -60,6 +60,7 @@ function spin_me_right_round() {
 until openstack console log show ${VM_UUID} | grep "running 'modules:final'" > /dev/null 2>&1; do
   spin_me_right_round
 done
+echo -ne "\b"
 
 # Get external IP address
 VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")

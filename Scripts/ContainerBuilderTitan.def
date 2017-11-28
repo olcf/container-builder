@@ -1,0 +1,43 @@
+BootStrap: docker
+From: ubuntu:latest
+
+%environment
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
+
+%post
+# Install basic system software
+apt update
+apt install -y software-properties-common wget pkg-config git cmake
+apt-add-repository universe
+apt update
+
+# Install a new version of boost
+wget https://dl.bintray.com/boostorg/release/1.65.1/source/boost_1_65_1.tar.gz
+tar xf boost_1_65_1.tar.gz
+cd boost_1_65_1
+./bootstrap.sh --with-libraries=filesystem,regex,system,coroutine,serialization,log,thread
+./b2 install || :
+cd /
+rm -rf /boost_1_65_1
+
+# Install ContainerBuilder
+cd /
+git clone https://github.com/AdamSimpson/ContainerBuilder.git
+cd ContainerBuilder
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTAL_PREFIX="/usr/local" ..
+make
+make install
+cd /
+rm -rf /ContainerBuilder
+
+# Install OpenStack command line client
+pip install python-openstackclient
+
+# Patch container to work on Titan
+wget https://raw.githubusercontent.com/olcf/SingularityTools/master/Titan/TitanBootstrap.sh
+sh TitanBootstrap.sh
+rm TitanBootstrap.sh
+
+%runscript
+/usr/local/bin/ContainerBuilderClient "$@"

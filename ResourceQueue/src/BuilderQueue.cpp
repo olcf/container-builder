@@ -12,11 +12,11 @@ void BuilderQueue::enter(Reservation *reservation) {
 void BuilderQueue::exit(Reservation *reservation) noexcept {
     auto pending_position = std::find(pending_reservations.begin(), pending_reservations.end(), reservation);
     if (pending_position != pending_reservations.end()) {
-        logger::write(reservation->socket, "Exiting queue without fulfilling request");
         pending_reservations.erase(pending_position);
+        logger::write(reservation->socket, "Exited queue without fulfilling request");
     } else {
-        logger::write(reservation->socket, "Exiting queue");
         completed_builders.push_back(reservation->builder);
+        logger::write(reservation->socket, "Exited queue");
     }
 }
 
@@ -28,6 +28,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
     if(opt_completed_builder) {
         auto completed_builder = opt_completed_builder.get();
         OpenStackBuilder::destroy(completed_builder, io_service, yield);
+        logger::write("destroying builder: " + completed_builder.id);
     }
 
     // If there is currently an outstanding request attempt to create a new builder
@@ -46,6 +47,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
                 next_reservation->ready(builder);
             } else { // Mark the builder as completed if it wasn't assigned to a builder
                 completed_builders.push_back(builder);
+                logger::write("Builder failed to be assigned to resource");
             }
         }
     }

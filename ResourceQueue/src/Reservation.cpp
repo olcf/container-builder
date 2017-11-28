@@ -1,4 +1,5 @@
 #include "Reservation.h"
+#include "Logger.h"
 
 void Reservation::async_wait(asio::yield_context yield) {
     // When entered into the queue the queue will tick and possibly expire call this->ready()
@@ -16,6 +17,7 @@ void Reservation::async_wait(asio::yield_context yield) {
 }
 
 void Reservation::ready(Builder acquired_builder) {
+    logger::write(socket, "Acquired builder: " + acquired_builder.id);
     builder = acquired_builder;
     active = true;
     ready_timer.cancel();

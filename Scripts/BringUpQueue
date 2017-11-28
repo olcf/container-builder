@@ -62,8 +62,14 @@ echo -ne "\b"
 
 VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
 
-scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/openrc.sh cades@${VM_IP}:/home/queue/openrc.sh
-scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/RequestCreateBuilder cades@${VM_IP}:/home/queue/RequestCreateBuilder
-scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/DestroyBuilder cades@${VM_IP}:/home/queue/DestroyBuilder
+# Copy files to VM and then move to correct directory
+scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/openrc.sh cades@${VM_IP}:/home/cades/openrc.sh
+scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/RequestCreateBuilder cades@${VM_IP}:/home/cades/RequestCreateBuilder
+scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/DestroyBuilder cades@${VM_IP}:/home/cades/DestroyBuilder
+
+ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/openrc.sh /home/queue/openrc.sh'
+ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/RequestCreateBuilder /home/queue/RequestCreateBuilder'
+ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/DestroyBuilder /home/queue/DestroyBuilder'
+
 
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"

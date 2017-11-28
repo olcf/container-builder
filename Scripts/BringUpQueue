@@ -37,7 +37,9 @@ VM_UUID=$(openstack server create                                       \
     --key-name "${KEY}"                                                 \
     --user-data ${SCRIPT_DIR}/ProvisionQueue                            \
     --wait                                                              \
-    "BuilderQueue" | grep "\<id\>" | awk '{print $4}');
+    -c id                                                               \
+    -f value                                                            \
+    "BuilderQueue");
 
 # Spinner...
 function spin_me_right_round() {
@@ -58,10 +60,10 @@ until openstack console log show ${VM_UUID} | grep "running 'modules:final'" > /
 done
 echo -ne "\b"
 
-scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/openrc.sh /home/queue/openrc.sh
-scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/RequestCreateBuilder /home/queue/RequestCreateBuilder
-scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/DestroyBuilder /home/queue/DestroyBuilder
-
-# Get external IP address
 VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
+
+scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/openrc.sh cades@${VM_IP}:/home/queue/openrc.sh
+scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/RequestCreateBuilder cades@${VM_IP}:/home/queue/RequestCreateBuilder
+scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/DestroyBuilder cades@${VM_IP}:/home/queue/DestroyBuilder
+
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"

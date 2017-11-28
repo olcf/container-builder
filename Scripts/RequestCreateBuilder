@@ -15,17 +15,18 @@ KEY="ContainerBuilderKey"
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)
 
 # Startup new VM
-OUTPUT=$(openstack sever create   \
+ID=$(openstack sever create   \
     --image "${BOOTIMG}"          \
     --flavor "${FLAVOR}"          \
     --availability-zone "${ZONE}" \
     --nic net-id="${NIC}"         \
     --key-name "${KEY}"           \
     --wait                        \
+    -c id                         \
+    -f value                      \
     "Builder");
 
 # If the build doesn't return a failure code echo the ID, IP address, and port of the builder service
-ID=$(echo ${OUTPUT} | grep "\<id\>" | awk '{print $4}')
 IP=$(openstack server show -c addresses --format value ${ID} | sed -e "s/^or_provider_general_extnetwork1=//")
 PORT="8080"
 echo ID

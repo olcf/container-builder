@@ -29,7 +29,9 @@ VM_UUID=$(openstack server create                        \
     --key-name "${KEY}"                                  \
     --user-data ProvisionBuilder                         \
     --wait                                               \
-    "BuilderMaster" | grep "\<id\>" | awk '{print $4}');
+    -c id                                                \
+    -f value                                             \
+    "BuilderMaster");
 
 # Spinner...
 function spin_me_right_round() {

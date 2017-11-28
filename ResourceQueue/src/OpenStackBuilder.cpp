@@ -6,7 +6,7 @@ namespace bp = boost::process;
 
 namespace OpenStackBuilder {
     boost::optional<Builder> request_create(asio::io_service& io_service, asio::yield_context yield) {
-        std::string create_command("/home/builder/RequestCreateBuilder");
+        std::string create_command("/home/queue/RequestCreateBuilder");
         bp::group group;
         bp::async_pipe std_pipe(io_service);
         asio::streambuf buffer;
@@ -47,7 +47,7 @@ namespace OpenStackBuilder {
     }
 
     void destroy(Builder builder, asio::io_service& io_service, asio::yield_context yield) {
-        std::string destroy_command("/home/builder/DestroyBuilder " + builder.id);
+        std::string destroy_command("/home/queue/DestroyBuilder " + builder.id);
         bp::group group;
         bp::async_pipe std_pipe(io_service);
         asio::streambuf buffer;

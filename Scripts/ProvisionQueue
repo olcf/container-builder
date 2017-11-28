@@ -56,9 +56,6 @@ Restart=no
 WantedBy=multi-user.target
 EOF
 
-# Move the OpenStack credentials to the queue users home
-mv /home/cades/openrc.sh /home/queue/openrc.sh
-
 # There appears to be some weird issues with starting systemd services inside of a cloud-init script
 # The heavy handed approach of enabling and reboot works I suppose though
 systemctl enable BuilderQueue

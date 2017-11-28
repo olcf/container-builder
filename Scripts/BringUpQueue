@@ -58,10 +58,9 @@ until openstack console log show ${VM_UUID} | grep "running 'modules:final'" > /
 done
 echo -ne "\b"
 
-scp
-    --file /home/cades/openrc.sh=${SCRIPT_DIR}/openrc.sh                       \
-    --file /home/cades/RequestCreateBuilder=${SCRIPT_DIR}/RequestCreateBuilder \
-    --file /home/cades/DestroyBuilder=${SCRIPT_DIR}/DestroyBuilder             \
+scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/openrc.sh /home/queue/openrc.sh
+scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/RequestCreateBuilder /home/queue/RequestCreateBuilder
+scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/DestroyBuilder /home/queue/DestroyBuilder
 
 # Get external IP address
 VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")

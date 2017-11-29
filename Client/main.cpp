@@ -36,10 +36,14 @@ int main(int argc, char *argv[]) {
         std::string definition_path(argv[1]);
         std::string container_path(argv[2]);
 
+        std::cout<<"Attempting to connect to BuilderQueue: "<<queue_hostname() <<":"<<queue_port()<<std::endl;
+
         asio::io_service io_service;
         tcp::socket queue_socket(io_service);
         tcp::resolver queue_resolver(io_service);
         asio::connect(queue_socket, queue_resolver.resolve({queue_hostname(), queue_port()}));
+
+        std::cout<<"Connected to BuilderQueue: "<<queue_hostname() <<":"<<queue_port()<<std::endl;
 
         Messenger queue_messenger(queue_socket);
 

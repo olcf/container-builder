@@ -36,6 +36,7 @@ void Connection::checkout_builder(asio::yield_context yield) {
 
     // Send the acquired builder when ready
     messenger.async_send(builder, yield);
+    logger::write(socket, "sent builder " + builder.host);
 
     // Wait for the client connection to end
     try {

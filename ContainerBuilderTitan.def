@@ -1,5 +1,5 @@
 BootStrap: docker
-From: ubuntu:latest
+From: ubuntu:zesty
 
 %environment
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
@@ -7,9 +7,18 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
 %post
 # Install basic system software
 apt update
-apt install -y software-properties-common wget pkg-config git cmake
+apt install -y software-properties-common wget pkg-config git python python-pip
 apt-add-repository universe
 apt update
+
+# Install up to date cmake version
+cd /
+wget https://cmake.org/files/v3.9/cmake-3.9.5-Linux-x86_64.sh
+chmod +x ./cmake-3.9.5-Linux-x86_64.sh
+./cmake-3.9.5-Linux-x86_64.sh --skip-license
+ln -s /cmake-3.9.5-Linux-x86_64/bin/* /usr/local/bin
+cd /
+rm -rf /cmake-3.9.5-Linux-x86_64
 
 # Install a new version of boost
 wget https://dl.bintray.com/boostorg/release/1.65.1/source/boost_1_65_1.tar.gz

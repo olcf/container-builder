@@ -1,0 +1,15 @@
+class Containerbuilder(Package):
+    """ContainerBuilder Client"""
+
+    homepage = "https://github.com/AdamSimpson/ContainerBuilder"
+    url      = "https://github.com/AdamSimpson/ContainerBuilder/archive/master.zip"
+
+    version('0.0.0')
+
+    depends_on('boost@1.65.1+coroutine')
+
+    def install(self, spec, prefix):
+        with working_dir('build', create=True):
+            cmake('..', *std_cmake_args)
+            make()
+            make('install')

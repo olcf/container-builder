@@ -53,6 +53,8 @@ int main(int argc, char *argv[]) {
         // Receive an available builder
         auto builder = queue_messenger.receive_builder();
 
+        std::cout<<"Received build host: "<< builder.host <<":"<< builder.port <<std::endl;
+
         // Connect to the builder
         // The builder isn't guaranteed to be reachable immediately and may take some time to full get stood up
         tcp::socket builder_socket(io_service);
@@ -62,7 +64,7 @@ int main(int argc, char *argv[]) {
           asio::connect(builder_socket, builder_resolver.resolve({builder.host, builder.port}), ec);
         } while(ec != boost::system::errc::success);
 
-        std::cout<<"Connected to builder: "<< builder.host <<":"<< builder.port <<std::endl;
+        std::cout<<"Connected to builder host: "<< builder.host <<":"<< builder.port <<std::endl;
 
         Messenger builder_messenger(builder_socket);
 

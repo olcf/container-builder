@@ -17,7 +17,7 @@ void Reservation::async_wait(asio::yield_context yield) {
 }
 
 void Reservation::ready(Builder acquired_builder) {
-    logger::write(socket, "Acquired builder: " + acquired_builder.id);
+    logger::write(socket, "Reservation read with builder: " + acquired_builder.id);
     builder = acquired_builder;
     active = true;
     ready_timer.cancel();

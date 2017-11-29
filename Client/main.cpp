@@ -62,6 +62,8 @@ int main(int argc, char *argv[]) {
           asio::connect(builder_socket, builder_resolver.resolve({builder.host, builder.port}), ec);
         } while(ec != boost::system::errc::success);
 
+        std::cout<<"Connected to builder: "<< builder.host <<":"<< builder.port <<std::endl;
+
         Messenger builder_messenger(builder_socket);
 
         // Send the definition file

@@ -25,6 +25,8 @@ int main(int argc, char *argv[]) {
         tcp::socket socket(io_service);
         acceptor.accept(socket);
 
+        logger::write("Received connection from: " + boost::lexical_cast(socket.remote_endpoint()));
+
         // Read the recipe file
         Messenger client_messenger(socket);
         client_messenger.receive_file("container.def");

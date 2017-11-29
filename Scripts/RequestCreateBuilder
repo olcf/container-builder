@@ -15,7 +15,7 @@ KEY="ContainerBuilderKey"
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)
 
 # Startup new VM
-ID=$(openstack server create       \
+ID=$(openstack server create      \
     --image "${BOOTIMG}"          \
     --flavor "${FLAVOR}"          \
     --availability-zone "${ZONE}" \

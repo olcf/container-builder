@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 
         // Accept a connection to use this builder
         asio::io_service io_service;
-        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8081));
+        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8080));
         tcp::socket socket(io_service);
         acceptor.accept(socket);
 

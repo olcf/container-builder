@@ -65,4 +65,4 @@ openstack server image create --wait --name BuilderImage ${VM_UUID} &> /dev/null
 echo "Deleting builder master instance"
 openstack server delete --wait BuilderMaster
 
-echo "Finished creating BuilderMaster"
+echo "Finished creating BuilderImage"

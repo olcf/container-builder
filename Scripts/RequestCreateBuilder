@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# If a failure is encountered return immediately
-set -e
-
 # OpenStack credentials
 source /home/queue/openrc.sh
 

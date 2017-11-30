@@ -3,77 +3,42 @@
 #include "Logger.h"
 #include "OpenStackBuilder.h"
 
-void BuilderQueue::enter(Reservation *reservation) {
-    logger::write(reservation->socket, "Entering queue");
-    pending_reservations.push_back(reservation);
+Reservation& BuilderQueue::enter() {
+    reservations.emplace_back(io_service, ReservationStatus::pending);
+    return reservations.back();
 }
 
-void BuilderQueue::exit(Reservation *reservation) {
-    auto pending_position = std::find(pending_reservations.begin(), pending_reservations.end(), reservation);
-    if (pending_position != pending_reservations.end()) {
-        pending_reservations.erase(pending_position);
-        logger::write(reservation->socket, "Exited queue without fulfilling request");
-    } else {
-        completed_builders.push_back(reservation->builder);
-        logger::write(reservation->socket, "Exited queue");
-    }
+void BuilderQueue::exit(Reservation& reservation) {
+    reservation.status = ReservationStatus::cleanup;
 }
 
-// Attempt to process the queue after an event that adds/removes builders or requests
 void BuilderQueue::tick(asio::yield_context yield) {
-
-    // Destroy any builders that are completed
-    auto opt_completed_builder = get_next_completed_builder();
-    if (opt_completed_builder) {
-        auto completed_builder = opt_completed_builder.get();
-        OpenStackBuilder::destroy(completed_builder, io_service, yield);
-        logger::write("destroying builder: " + completed_builder.id);
-    }
-
-    // If there is currently an outstanding request attempt to create a new builder
-    if (pending_reservations_available()) {
-        // Attempt to create builder
-        auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
-
-        // If a builder was created attempt to assign it to an outstanding reservation
-        if (opt_builder) {
-            auto builder = opt_builder.get();
-            auto opt_reservation = get_next_reservation();
-            // If a reservation is still available provide it the resource
-            if (opt_reservation) {
-                auto next_reservation = opt_reservation.get();
-                // Assign the builder to the reservation
-                next_reservation->ready(builder);
-            } else { // Mark the builder as completed if it wasn't assigned to a builder
-                completed_builders.push_back(builder);
-                logger::write("Builder failed to be assigned to resource");
-            }
+    // Attempt to destroy all completed builders OpenStack instances
+    for (auto &reservation : reservations) {
+        if (reservation.status == ReservationStatus::cleanup && reservation.builder) {
+            OpenStackBuilder::destroy(reservation.builder.get(), io_service, yield);
+            reservation.status = ReservationStatus::complete;
         }
     }
-}
 
-bool BuilderQueue::pending_reservations_available() {
-    return !pending_reservations.empty();
-}
-
-boost::optional<Reservation *> BuilderQueue::get_next_reservation() {
-    boost::optional<Reservation *> opt_reservation;
-
-    if (!pending_reservations.empty()) {
-        opt_reservation = pending_reservations.front();
-        pending_reservations.pop_front();
+    // If the first element is complete pop it off
+    // We only pop the first element as to not invalidate the reservation references
+    if(!reservations.empty() && reservations.front().status == ReservationStatus::complete) {
+        reservations.pop_front();
     }
 
-    return opt_reservation;
-}
-
-boost::optional<Builder> BuilderQueue::get_next_completed_builder() {
-    boost::optional<Builder> opt_reservation;
-
-    if (!completed_builders.empty()) {
-        opt_reservation = completed_builders.front();
-        completed_builders.pop_front();
+    // Attempt to spin up a VM for the next pending reservation
+    // Care must be taken here as during request_create the reservation could be exited
+    for (auto &reservation : reservations) {
+        if (reservation.status == ReservationStatus::pending) {
+            auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
+            if (opt_builder) {
+                reservation.ready(opt_builder.get());
+                if(reservation.status == ReservationStatus::pending) {
+                    reservation.status = ReservationStatus::active;
+                }
+            }
+            break;
+        }
     }
-
-    return opt_reservation;
 }

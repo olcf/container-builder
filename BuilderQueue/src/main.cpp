@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
                                 acceptor.async_accept(socket, yield[ec]);
                                 std::make_shared<Connection>(std::move(socket), builder_queue)->begin();
                             } catch (std::exception &e) {
-                                logger::write("New connection error: "s + e.what());
+                                logger::write(std::string() + "New connection error: " + e.what());
                             }
                         }
                     });
@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
                                 timer.expires_from_now(boost::posix_time::seconds(5));
                                 timer.async_wait(yield);
                             } catch (std::exception &e) {
-                                logger::write("Queue tick error: "s + e.what());
+                                logger::write(std::string() + "Queue tick error: " + e.what());
                             }
                         }
                     });
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
         io_service.run();
     }
     catch (std::exception &e) {
-        logger::write("Server Exception: "s + e.what());
+        logger::write(std::string() + "Server Exception: " + e.what());
     }
 
     logger::write("Server shutting down");

@@ -17,7 +17,7 @@ void Connection::begin() {
                             throw std::system_error(EPERM, std::system_category(), request + " not supported");
                     }
                     catch (std::exception &e) {
-                        logger::write(socket, "Connection initial request error "s + e.what());
+                        logger::write(socket, std::string() + "Connection initial request error " + e.what());
                     }
                 });
 }
@@ -30,7 +30,7 @@ void Connection::checkout_builder(asio::yield_context yield) {
         Messenger messenger(socket);
 
         logger::write(socket, "Requesting resource from the queue");
-        ReservationRequest reservation(socket, queue);
+        ReservationRequest reservation(queue);
         auto builder = reservation.async_wait(yield);
 
         messenger.async_send(builder, yield);

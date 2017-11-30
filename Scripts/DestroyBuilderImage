@@ -18,5 +18,5 @@ fi
 
 # Delete master image if it exists
 if [ $(openstack image list | grep "\<BuilderImage\>" | wc -l) != 0 ]; then
-    openstack image delete --wait "BuilderImage"
+    openstack image delete "BuilderImage"
 fi

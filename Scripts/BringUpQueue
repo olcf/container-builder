@@ -55,11 +55,10 @@ function spin_me_right_round() {
 
 # Even though the server is created we need to wait for the cloud-init scripts to finish running before creating a snapshot
 # Wait for SSH to be usable.
-until openstack console log show ${VM_UUID} | grep "running 'modules:final'" > /dev/null 2>&1; do
+until openstack console log show ${VM_UUID} | grep "finish: modules-final" > /dev/null 2>&1; do
   spin_me_right_round
 done
 echo -ne "\b"
-sleep 60
 
 VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
 

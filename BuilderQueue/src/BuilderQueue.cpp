@@ -9,23 +9,22 @@ Reservation& BuilderQueue::enter() {
 }
 
 void BuilderQueue::exit(Reservation& reservation) {
-    reservation.status = ReservationStatus::cleanup;
+    reservation.status = ReservationStatus::complete;
 }
 
 void BuilderQueue::tick(asio::yield_context yield) {
-    // Attempt to destroy all completed builders OpenStack instances
+    // Destroy all completed builder OpenStack instances
     for (auto &reservation : reservations) {
-        if (reservation.status == ReservationStatus::cleanup && reservation.builder) {
+        if (reservation.status == ReservationStatus::complete && reservation.builder) {
             OpenStackBuilder::destroy(reservation.builder.get(), io_service, yield);
             reservation.status = ReservationStatus::complete;
         }
     }
 
-    // If the first element is complete pop it off
-    // We only pop the first element as to not invalidate the reservation references
-    if(!reservations.empty() && reservations.front().status == ReservationStatus::complete) {
-        reservations.pop_front();
-    }
+    // Remove all completed reservations
+   reservations.remove_if([](const auto& res){
+       return res.status == ReservationStatus::complete;
+   });
 
     // Attempt to spin up a VM for the next pending reservation
     // Care must be taken here as during request_create the reservation could be exited

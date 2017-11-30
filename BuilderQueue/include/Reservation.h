@@ -11,7 +11,6 @@ namespace asio = boost::asio;
 enum class ReservationStatus {
     pending,
     active,
-    cleanup,
     complete
 };
 

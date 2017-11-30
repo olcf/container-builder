@@ -59,6 +59,7 @@ until openstack console log show ${VM_UUID} | grep "running 'modules:final'" > /
   spin_me_right_round
 done
 echo -ne "\b"
+sleep 60
 
 VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
 

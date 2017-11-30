@@ -8,10 +8,10 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
-std::string queue_hostname() {
-    auto env = std::getenv("QUEUE_HOSTNAME");
+std::string queue_host() {
+    auto env = std::getenv("QUEUE_HOST");
     if(!env) {
-        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOSTNAME");
+        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOST");
     }
 
     return std::string(env);
@@ -20,7 +20,7 @@ std::string queue_hostname() {
 std::string queue_port() {
     auto env = std::getenv("QUEUE_PORT");
     if(!env) {
-        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOSTNAME");
+        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_PORT");
     }
     return std::string(env);
 }
@@ -36,14 +36,14 @@ int main(int argc, char *argv[]) {
         std::string definition_path(argv[1]);
         std::string container_path(argv[2]);
 
-        std::cout<<"Attempting to connect to BuilderQueue: "<<queue_hostname() <<":"<<queue_port()<<std::endl;
+        std::cout<<"Attempting to connect to BuilderQueue: "<<queue_host() <<":"<<queue_port()<<std::endl;
 
         asio::io_service io_service;
         tcp::socket queue_socket(io_service);
         tcp::resolver queue_resolver(io_service);
-        asio::connect(queue_socket, queue_resolver.resolve({queue_hostname(), queue_port()}));
+        asio::connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}));
 
-        std::cout<<"Connected to BuilderQueue: "<<queue_hostname() <<":"<<queue_port()<<std::endl;
+        std::cout<<"Connected to BuilderQueue: "<<queue_host() <<":"<<queue_port()<<std::endl;
 
         Messenger queue_messenger(queue_socket);
 

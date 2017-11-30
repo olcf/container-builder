@@ -2,12 +2,12 @@
 #include "ReservationRequest.h"
 #include "Messenger.h"
 
+// Handle the initial request
 void Connection::begin() {
     auto self(shared_from_this());
     asio::spawn(socket.get_io_service(),
                 [this, self](asio::yield_context yield) {
                     try {
-                        // Handle request type
                         Messenger messenger(socket);
                         auto request = messenger.async_receive(yield);
 
@@ -17,35 +17,32 @@ void Connection::begin() {
                             throw std::system_error(EPERM, std::system_category(), request + " not supported");
                     }
                     catch (std::exception &e) {
-                        std::string except("Exception: ");
-                        except += e.what();
-                        logger::write(socket, except);
+                        logger::write(socket, "Connection initial request error "s + e.what());
                     }
                 });
 }
 
 // Handle a client builder request
 void Connection::checkout_builder(asio::yield_context yield) {
-    logger::write(socket, "Checkout resource request");
-
-    Messenger messenger(socket);
-
-    // Request a builder from the queue
-    ReservationRequest reservation(socket, queue);
-    auto builder = reservation.async_wait(yield);
-
-    // Send the acquired builder when ready
-    messenger.async_send(builder, yield);
-    logger::write(socket, "sent builder " + builder.host);
-
-    // Wait for the client connection to end
     try {
+        logger::write(socket, "Checkout resource request");
+
+        Messenger messenger(socket);
+
+        logger::write(socket, "Requesting resource from the queue");
+        ReservationRequest reservation(socket, queue);
+        auto builder = reservation.async_wait(yield);
+
+        messenger.async_send(builder, yield);
+        logger::write(socket, "sent builder: " + builder.id + "(" + builder.host + ")");
+
+
         auto complete = messenger.async_receive(yield);
         if (complete == "checkout_builder_complete")
             logger::write(socket, "Client completed");
         else
             logger::write(socket, "Client complete error: " + complete);
-    } catch(std::exception& e) {
-        logger::write(socket, "Client disconnect");
+    } catch (std::exception &e) {
+        logger::write(socket, "checkout_builder disconnect");
     }
 }

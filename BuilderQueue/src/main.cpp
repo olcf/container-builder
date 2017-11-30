@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     try {
         asio::io_service io_service;
 
-        BuilderQueue job_queue(io_service);
+        BuilderQueue builder_queue(io_service);
         boost::asio::deadline_timer timer(io_service);
 
         // Wait for connections from either Clients or Builders
@@ -28,13 +28,13 @@ int main(int argc, char *argv[]) {
                                                tcp::endpoint(tcp::v4(), 8080));
 
                         for (;;) {
-                            boost::system::error_code ec;
-                            tcp::socket socket(io_service);
-                            acceptor.async_accept(socket, yield[ec]);
-                            if (!ec) {
-                                std::make_shared<Connection>(std::move(socket), job_queue)->begin();
-                            } else {
-                                logger::write("New connection error: " + ec.message());
+                            try {
+                                boost::system::error_code ec;
+                                tcp::socket socket(io_service);
+                                acceptor.async_accept(socket, yield[ec]);
+                                std::make_shared<Connection>(std::move(socket), builder_queue)->begin();
+                            } catch (std::exception &e) {
+                                logger::write("New connection error: "s + e.what());
                             }
                         }
                     });
@@ -43,9 +43,13 @@ int main(int argc, char *argv[]) {
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
                         for (;;) {
-                            job_queue.tick(yield);
-                            timer.expires_from_now(boost::posix_time::seconds(5));
-                            timer.async_wait(yield);
+                            try {
+                                builder_queue.tick(yield);
+                                timer.expires_from_now(boost::posix_time::seconds(5));
+                                timer.async_wait(yield);
+                            } catch (std::exception &e) {
+                                logger::write("Queue tick error: "s + e.what());
+                            }
                         }
                     });
 
@@ -53,9 +57,10 @@ int main(int argc, char *argv[]) {
         io_service.run();
     }
     catch (std::exception &e) {
-        logger::write("Server Exception: " + std::string(e.what()));
+        logger::write("Server Exception: "s + e.what());
     }
 
     logger::write("Server shutting down");
+
     return 0;
 }

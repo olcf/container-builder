@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(ContainerBuilder)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIE -fpie")# -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen")
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(BuilderQueue/include Common/include)
 
@@ -33,7 +33,8 @@ set(SOURCE_FILES_BUILDER
         Common/include/Messenger.h)
 
 # Files related to the API
-set(SOURCE_FILES_CLIENT Client/main.cpp
+set(SOURCE_FILES_CLIENT
+        Client/main.cpp
         Common/include/Builder.h
         Common/src/Logger.cpp
         Common/include/Logger.h
@@ -44,6 +45,20 @@ set(SOURCE_FILES_CLIENT Client/main.cpp
 add_executable(BuilderQueue ${SOURCE_FILES_QUEUE})
 add_executable(ContainerBuilder ${SOURCE_FILES_BUILDER})
 add_executable(ContainerBuilderClient ${SOURCE_FILES_CLIENT})
+
+set(HARDENING_FLAGS "-Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIE -fpie -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen -fsanitize=address,undefined -fno-sanitize=vptr -fno-omit-frame-pointer")
+
+set_target_properties(BuilderQueue PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(BuilderQueue
+        PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(ContainerBuilder
+        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(ContainerBuilder
+        PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(ContainerBuilderClient
+        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(ContainerBuilderClient
+        PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)

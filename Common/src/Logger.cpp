@@ -7,11 +7,13 @@ namespace logger {
     BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(global_log, src::logger_mt)
 
     void init(std::string log_filename) {
+
         logging::add_file_log(log_filename,
                               keywords::auto_flush = true,
                               keywords::open_mode = (std::ios::out | std::ios::app),
                               keywords::format = "%TimeStamp% (%LineID%) %Message%");
         logging::add_common_attributes();
+
         logger::write("Initializing logger\n");
     }
 

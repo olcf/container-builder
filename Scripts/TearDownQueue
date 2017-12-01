@@ -18,3 +18,8 @@ fi
 if [ $(openstack server list | grep BuilderQueue | wc -l) != 0 ]; then
     openstack server delete --wait BuilderQueue
 fi
+
+# Delete the security group
+if [ $(openstack security group list | grep container_builder | wc -l) != 0 ]; then
+    openstack security group delete container_builder
+fi

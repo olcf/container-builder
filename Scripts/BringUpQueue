@@ -18,6 +18,11 @@ ZONE="nova"
 FLAVOR="m1.medium"
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)
 
+# Create ContainerBuilder security group
+openstack security group create container_builder --description "Allow ContainerBuilder communication"
+openstack security group rule create container_builder --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0
+openstack security group rule create container_builder --protocol tcp --dst-port 8080:8080 --remote-ip 0.0.0.0/0
+
 # Create Keys for cades user
 KEY="ContainerBuilderKey"
 KEY_FILE="${SCRIPT_DIR}/${KEY}"
@@ -38,6 +43,7 @@ VM_UUID=$(openstack server create                                       \
     --user-data ${SCRIPT_DIR}/ProvisionQueue                            \
     --wait                                                              \
     -c id                                                               \
+    --security-group container_builder                                  \
     -f value                                                            \
     "BuilderQueue");
 

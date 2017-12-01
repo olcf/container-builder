@@ -26,18 +26,22 @@ void BuilderQueue::tick(asio::yield_context yield) {
        return res.status == ReservationStatus::complete;
    });
 
-    // Attempt to spin up a VM for the next pending reservation
-    // Care must be taken here as during request_create the reservation could be exited
+    // Assign any available builders to outstanding reservations
     for (auto &reservation : reservations) {
-        if (reservation.status == ReservationStatus::pending) {
-            auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
-            if (opt_builder) {
-                reservation.ready(opt_builder.get());
-                if(reservation.status == ReservationStatus::pending) {
-                    reservation.status = ReservationStatus::active;
-                }
-            }
+        // When we're out of available builders break
+        if(available_builders.empty()) {
             break;
         }
+        else if (reservation.status == ReservationStatus::pending) {
+            reservation.ready(available_builders.front());
+            available_builders.pop();
+        }
+    }
+
+    // Attempt to create a new builder if there is space
+    if(available_builders.size() < max_available_builders) {
+        auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
+        if(opt_builder)
+            available_builders.push(opt_builder.get());
     }
 }

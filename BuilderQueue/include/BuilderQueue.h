@@ -4,6 +4,7 @@
 #include "Reservation.h"
 #include "boost/optional.hpp"
 #include <list>
+#include <queue>
 
 class BuilderQueue {
 public:
@@ -22,4 +23,8 @@ private:
 
     // Hold reservations that are to be fulfilled
     std::list<Reservation> reservations;
+
+    // Queue of available builders
+    std::queue<Builder> available_builders;
+    std::queue<Builder>::size_type max_available_builders;
 };

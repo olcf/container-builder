@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
                         tcp::acceptor acceptor(io_service,
-                                               tcp::endpoint(tcp::v4(), 8083));
+                                               tcp::endpoint(tcp::v6(), 8083));
 
                         for (;;) {
                             try {

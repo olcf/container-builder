@@ -16,9 +16,6 @@ using callback_type = std::function<void(const boost::system::error_code&, std::
 
 int main(int argc, char *argv[]) {
     try {
-        // Enable logging
-        logger::init("ContainerBuilder.log");
-
         // Accept a connection to use this builder
         asio::io_service io_service;
         tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8080));

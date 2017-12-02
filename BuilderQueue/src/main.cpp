@@ -12,9 +12,6 @@ using asio::ip::tcp;
 
 int main(int argc, char *argv[]) {
 
-    // Enable logging
-    logger::init("BuilderQueue.log");
-
     try {
         asio::io_service io_service;
 

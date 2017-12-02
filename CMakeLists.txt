@@ -46,8 +46,10 @@ add_executable(BuilderQueue ${SOURCE_FILES_QUEUE})
 add_executable(ContainerBuilder ${SOURCE_FILES_BUILDER})
 add_executable(ContainerBuilderClient ${SOURCE_FILES_CLIENT})
 
-set(HARDENING_FLAGS "-Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIE -fpie -Wl, -fsanitize=address,undefined -fno-sanitize=vptr -fno-omit-frame-pointer")
-# flags that don't work with clang: -z,noexecstack,-z,now,-z,relro,-z,nodlopen
+set(HARDENING_FLAGS "-Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIE -fpie -fno-omit-frame-pointer")
+# https://github.com/boostorg/coroutine/issues/30
+# -fsanitize=address,undefined -fno-sanitize=vptr -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen
+
 
 set_target_properties(BuilderQueue PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(BuilderQueue

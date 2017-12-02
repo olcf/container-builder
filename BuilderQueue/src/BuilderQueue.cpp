@@ -13,7 +13,6 @@ void BuilderQueue::exit(Reservation &reservation) {
 }
 
 void BuilderQueue::tick(asio::yield_context yield) {
-
     // Destroy all completed builder OpenStack instances
     for (auto &reservation : reservations) {
         if (reservation.status == ReservationStatus::complete && reservation.builder) {
@@ -45,4 +44,6 @@ void BuilderQueue::tick(asio::yield_context yield) {
         if (opt_builder)
             available_builders.push(opt_builder.get());
     }
+}
+
 }

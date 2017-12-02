@@ -24,6 +24,8 @@ namespace src = boost::log::sources;
 namespace keywords = boost::log::keywords;
 using boost::asio::ip::tcp;
 
+BOOST_LOG_GLOBAL_LOGGER(global_log, src::logger)
+
 namespace logger {
     void init(std::string log_filename);
 

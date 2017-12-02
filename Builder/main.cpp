@@ -34,7 +34,10 @@ int main(int argc, char *argv[]) {
         bp::async_pipe std_pipe(io_service);
 
         // Launch our build as a subprocess
-        std::string build_command("sudo singularity build container.img container.def");
+        // We use "script" to fake the build into thinking it has a real TTY, which the command output eventually will
+        // This causes things like wget and color ls to work nicely
+        // TODO : perhaps set TERM as well to something like xterm ?
+        std::string build_command("/usr/bin/sudo /usr/bin/script -q -e -c '/usr/local/bin/singularity build ./container.img ./container.def' /dev/null");
 
         bp::group group;
         bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group);

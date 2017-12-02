@@ -45,5 +45,3 @@ void BuilderQueue::tick(asio::yield_context yield) {
             available_builders.push(opt_builder.get());
     }
 }
-
-}

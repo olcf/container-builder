@@ -57,6 +57,5 @@ WantedBy=multi-user.target
 EOF
 
 # There appears to be some weird issues with starting systemd services inside of a cloud-init script
-# The heavy handed approach of enabling and reboot works I suppose though
+# The easiest thing to do is just reboot after enabling the service
 systemctl enable BuilderQueue
-reboot

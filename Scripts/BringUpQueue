@@ -77,5 +77,7 @@ ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv
 ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/RequestCreateBuilder /home/queue/RequestCreateBuilder'
 ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/DestroyBuilder /home/queue/DestroyBuilder'
 
+# Reboot to ensure Queue service, added in provisioning, is started
+openstack server reboot --wait ${VM_UUID}
 
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"

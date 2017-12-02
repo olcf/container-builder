@@ -11,6 +11,10 @@ public:
     ReservationRequest(BuilderQueue &queue) :  queue(queue),
                                                reservation(queue.enter()){}
 
+    ~ReservationRequest() {
+        reservation.set_complete();
+    }
+
     Builder async_wait(asio::yield_context yield);
 private:
     BuilderQueue &queue;

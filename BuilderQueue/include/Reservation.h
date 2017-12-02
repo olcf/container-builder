@@ -38,6 +38,10 @@ public:
         return status == ReservationStatus::complete;
     }
 
+    void set_complete() {
+        status = ReservationStatus::complete;
+    }
+
     boost::optional<Builder> builder;
     ReservationStatus status;
 private:

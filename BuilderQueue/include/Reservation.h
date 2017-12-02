@@ -17,8 +17,7 @@ enum class ReservationStatus {
 // Reservations are handled by the queue and assigned builders as available
 class Reservation {
 public:
-    explicit Reservation(asio::io_service& io_service) : status(status),
-                                                         status(ReservationStatus::pending),
+    explicit Reservation(asio::io_service& io_service) : status(ReservationStatus::pending),
                                                          ready_timer(io_service) {}
 
     ~Reservation() {
@@ -31,11 +30,11 @@ public:
     // Callback used by BuilderQueue to cancel the timer which signals our reservation is ready
     void ready(Builder acquired_builder);
 
-    bool pending() {
+    bool pending() const {
         return status == ReservationStatus::pending;
     }
 
-    bool complete() {
+    bool complete() const {
         return status == ReservationStatus::complete;
     }
 

@@ -28,10 +28,10 @@ void BuilderQueue::tick(asio::yield_context yield) {
 
     // Assign any available builders to outstanding reservations
     for (auto &reservation : reservations) {
-        // When we're out of available builders break
         if (available_builders.empty()) {
             break;
-        } else if (reservation.status == ReservationStatus::pending) {
+        }
+        if (reservation.status == ReservationStatus::pending) {
             reservation.ready(available_builders.front());
             available_builders.pop();
         }

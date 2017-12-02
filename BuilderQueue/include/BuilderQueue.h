@@ -13,9 +13,6 @@ public:
     // Create a new queue reservation and return it to the requester
     Reservation& enter();
 
-    // On exit release remove any outstanding requests from pending queue
-    void exit(Reservation& reservation);
-
     // Attempt to process the queue after an event that adds/removes builders or requests
     void tick(asio::yield_context yield);
 private:

@@ -9,11 +9,7 @@
 class ReservationRequest {
 public:
     ReservationRequest(BuilderQueue &queue) :  queue(queue),
-                                                                    reservation(queue.enter()){}
-
-    ~ReservationRequest() {
-        queue.exit(reservation);
-    }
+                                               reservation(queue.enter()){}
 
     Builder async_wait(asio::yield_context yield);
 private:

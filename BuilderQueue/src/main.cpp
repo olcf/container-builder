@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
                         for (;;) {
                             try {
                                 builder_queue.tick(yield);
-                                timer.expires_from_now(boost::posix_time::seconds(5));
+                                timer.expires_from_now(boost::posix_time::seconds(1));
                                 timer.async_wait(yield);
                             } catch (std::exception &e) {
                                 logger::write(std::string() + "Queue tick error: " + e.what());

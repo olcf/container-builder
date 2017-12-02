@@ -8,8 +8,6 @@ Reservation &BuilderQueue::enter() {
 }
 
 void BuilderQueue::tick(asio::yield_context yield) {
-    logger::write("tick");
-
     // Destroy all completed builder OpenStack instances
     for (auto &reservation : reservations) {
         if (reservation.complete() && reservation.builder) {
@@ -34,7 +32,6 @@ void BuilderQueue::tick(asio::yield_context yield) {
     }
 
     // Attempt to create a new builder if there is space
-    // Should we completely fill the builder reserve each tick?
     if (available_builders.size() < max_available_builders) {
         auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
         if (opt_builder)

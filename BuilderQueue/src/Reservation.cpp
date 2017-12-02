@@ -17,6 +17,7 @@ void Reservation::async_wait(asio::yield_context yield) {
 }
 
 void Reservation::ready(Builder acquired_builder) {
+    status = ReservationStatus::active;
     builder = acquired_builder;
     ready_timer.cancel();
 }

@@ -1,29 +1,25 @@
 #include "BuilderQueue.h"
-#include <iostream>
 #include "Logger.h"
 #include "OpenStackBuilder.h"
 
 Reservation &BuilderQueue::enter() {
-    reservations.emplace_back(io_service, ReservationStatus::pending);
+    reservations.emplace_back(io_service);
     return reservations.back();
 }
 
-void BuilderQueue::exit(Reservation &reservation) {
-    reservation.status = ReservationStatus::complete;
-}
-
 void BuilderQueue::tick(asio::yield_context yield) {
+    logger::write("tick");
+
     // Destroy all completed builder OpenStack instances
     for (auto &reservation : reservations) {
-        if (reservation.status == ReservationStatus::complete && reservation.builder) {
+        if (reservation.complete() && reservation.builder) {
             OpenStackBuilder::destroy(reservation.builder.get(), io_service, yield);
-            reservation.status = ReservationStatus::complete;
         }
     }
 
     // Remove all completed reservations
     reservations.remove_if([](const auto &res) {
-        return res.status == ReservationStatus::complete;
+        return res.complete();
     });
 
     // Assign any available builders to outstanding reservations
@@ -31,7 +27,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
         if (available_builders.empty()) {
             break;
         }
-        if (reservation.status == ReservationStatus::pending) {
+        if (reservation.pending()) {
             reservation.ready(available_builders.front());
             available_builders.pop();
         }

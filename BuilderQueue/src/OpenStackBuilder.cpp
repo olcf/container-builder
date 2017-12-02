@@ -12,14 +12,18 @@ namespace OpenStackBuilder {
         asio::streambuf buffer;
 
         // Asynchronously launch the create command
-        boost::system::error_code ec;
+        std::error_code create_ec;
         logger::write("Running command: " + create_command);
-        bp::child build_child(create_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group);
+        bp::child build_child(create_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group, create_ec);
+        if(create_ec) {
+            logger::write("subprocess error: " + create_ec.message());
+        }
 
         // Read the create_command output until we reach EOF, which is returned as an error
-        boost::asio::async_read(std_pipe, buffer, yield[ec]);
-        if(ec != asio::error::eof) {
-            logger::write("OpenStack create error: " + ec.message());
+        boost::system::error_code read_ec;
+        boost::asio::async_read(std_pipe, buffer, yield[read_ec]);
+        if(read_ec != asio::error::eof) {
+            logger::write("OpenStack create error: " + read_ec.message());
         }
 
         // Grab exit code  from builder
@@ -60,12 +64,16 @@ namespace OpenStackBuilder {
         asio::streambuf buffer;
 
         // Asynchronously launch the destroy command
-        boost::system::error_code ec;
+        std::error_code destroy_ec;
         logger::write("Running command: " + destroy_command);
-        bp::child destroy_child(destroy_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group);
-        boost::asio::async_read(std_pipe, buffer, yield[ec]);
+        bp::child destroy_child(destroy_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group, destroy_ec);
+        if(destroy_ec) {
+            logger::write("subprocess error: " + destroy_ec.message());
+        }
 
         // Read the destroy_command output until we reach EOF, which is returned as an error
+        boost::system::error_code ec;
+        boost::asio::async_read(std_pipe, buffer, yield[ec]);
         if(ec != asio::error::eof) {
             logger::write("OpenStack destroy error: " + ec.message());
         }

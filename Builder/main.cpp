@@ -34,14 +34,14 @@ int main(int argc, char *argv[]) {
         bp::async_pipe std_pipe(io_service);
 
         // Launch our build as a subprocess
-        // We use "script" to fake the build into thinking it has a real TTY, which the command output eventually will
+        // We use "unbuffer" to fake the build into thinking it has a real TTY, which the command output eventually will
         // This causes things like wget and color ls to work nicely
         // TODO : perhaps set TERM as well to something like xterm ?
-        std::string build_command("/usr/bin/sudo /usr/bin/script -f -q -e -c \"/usr/local/bin/singularity build ./container.img ./container.def\" /dev/null");
+        std::string build_command("/usr/bin/sudo /usr/bin/unbuffer /usr/local/bin/singularity build ./container.img ./container.def");
 
         bp::group group;
         std::error_code build_ec;
-        bp::child build_child(build_command, (bp::std_out & bp::std_err) > std_pipe, group, build_ec);
+        bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group, build_ec);
         if(build_ec) {
             logger::write("subprocess error: " + build_ec.message());
         }
@@ -66,7 +66,6 @@ int main(int argc, char *argv[]) {
                 logger::write(std::string("Error reading builder output: ") + ec.message());
             }
         };
-
         // Start reading child stdout/err from pipe
         asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
 

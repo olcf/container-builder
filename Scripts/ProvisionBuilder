@@ -8,8 +8,10 @@ useradd --create-home --home-dir /home/builder --shell /bin/bash builder
 
 # Allow builder to run singularity as root
 echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/singularity' > /etc/sudoers.d/builder
-echo 'builder ALL=(ALL) NOPASSWD: /usr/bin/script' >> /etc/sudoers.d/builder
+echo 'builder ALL=(ALL) NOPASSWD: /usr/bin/unbuffer' >> /etc/sudoers.d/builder
 chmod 0440 /etc/sudoers.d/builder
+
+apt-get install expect
 
 # Install Singularity
 export VERSION=2.4

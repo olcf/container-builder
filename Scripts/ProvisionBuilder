@@ -11,7 +11,7 @@ echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/singularity' > /etc/sudoers.d/b
 echo 'builder ALL=(ALL) NOPASSWD: /usr/bin/unbuffer' >> /etc/sudoers.d/builder
 chmod 0440 /etc/sudoers.d/builder
 
-apt-get install expect
+apt-get -y install expect
 
 # Install Singularity
 export VERSION=2.4

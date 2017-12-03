@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
         // This is fine as all we care about is dumping everything from std_pipe to our buffer and don't require exact line buffering
         // TODO: just call read_some perhaps?
         asio::streambuf buffer;
-        boost::regex line_matcher{"\\r|\\n"};
+        boost::regex line_matcher{"\\r|\\n|\\b"};
 
         // Callback for handling reading from pipe and sending output to client
         callback_type read_std_pipe = [&](const boost::system::error_code& ec, std::size_t size) {

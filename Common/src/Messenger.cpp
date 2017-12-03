@@ -4,7 +4,6 @@
 #include <iostream>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <system_error>
 
 // Send the header, which is the size and type of the message that will immediately follow
 void Messenger::send_header(std::size_t message_size, MessageType type) {
@@ -25,7 +24,10 @@ Header Messenger::receive_header(const MessageType& type) {
     Header header;
     auto header_buffer = asio::buffer(&header, header_size());
     asio::read(socket, header_buffer, asio::transfer_exactly(header_size()));
-    if(type != header.type) {
+    if(header.type == MessageType::error) {
+        throw std::system_error(EBADMSG, std::generic_category(), "received message error!");
+    }
+    else if(type != header.type) {
         throw std::system_error(EBADMSG, std::generic_category(), "received bad message type");
     }
     return header;
@@ -36,7 +38,10 @@ Header Messenger::async_receive_header(const MessageType& type, asio::yield_cont
     Header header;
     auto header_buffer = asio::buffer(&header, header_size());
     asio::async_read(socket, header_buffer, asio::transfer_exactly(header_size()), yield);
-    if(type != header.type) {
+    if(header.type == MessageType::error) {
+        throw std::system_error(EBADMSG, std::generic_category(), "received message error!");
+    }
+    else if(type != header.type) {
         throw std::system_error(EBADMSG, std::generic_category(), "received bad message type");
     }
     return header;

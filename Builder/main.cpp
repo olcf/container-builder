@@ -59,10 +59,14 @@ int main(int argc, char *argv[]) {
         // Callback for handling reading from pipe and sending output to client
         callback_type read_std_pipe = [&](const boost::system::error_code& ec, std::size_t size) {
             client_messenger.send(buffer);
-            if(size > 0) {
+
+            if(size > 0 && ec != asio::error::eof) {
                 asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
             }
-            if(ec && ec != asio::error::eof) {
+            else if(size == 0 && ec == asio::error::eof) {
+                logger::write("Read 0 bytes and EOF");
+            }
+            else {
                 logger::write(std::string("Error reading builder output: ") + ec.message());
             }
         };

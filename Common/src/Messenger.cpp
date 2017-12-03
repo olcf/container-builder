@@ -1,6 +1,6 @@
 #include "Messenger.h"
-#include <boost/asio/write.hpp>
 #include <boost/asio/read.hpp>
+#include <boost/asio/write.hpp>
 #include <iostream>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>

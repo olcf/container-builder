@@ -11,7 +11,19 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
-using header_t = std::size_t;
+// Enum to handle message type, used to ensure
+enum class MessageType : unsigned char {
+    string,
+    builder,
+    file,
+    error
+};
+
+// Message header
+struct Header {
+    std::size_t size;
+    MessageType type;
+};
 
 class Messenger {
 
@@ -19,14 +31,14 @@ public:
     explicit Messenger(tcp::socket &socket) : socket(socket) {}
 
     // Send a string as a message
-    void send(const std::string &message);
+    void send(const std::string &message, MessageType type=MessageType::string);
 
-    void async_send(const std::string &message, asio::yield_context yield);
+    void async_send(const std::string &message, asio::yield_context yield, MessageType type=MessageType::string);
 
     // Receive message as a string
-    std::string receive();
+    std::string receive(MessageType type=MessageType::string);
 
-    std::string async_receive(asio::yield_context yield);
+    std::string async_receive(asio::yield_context yield, MessageType type=MessageType::string);
 
     // Send entire contents of streambuf
     void async_send(asio::streambuf &message_body, asio::yield_context yield);
@@ -51,15 +63,15 @@ public:
 private:
     tcp::socket &socket;
 
-    void send_header(std::size_t message_size);
+    void send_header(std::size_t message_size, MessageType type);
 
-    void async_send_header(std::size_t message_size, asio::yield_context yield);
+    void async_send_header(std::size_t message_size, MessageType type, asio::yield_context yield);
 
-    std::size_t receive_header();
+    Header receive_header(const MessageType& type);
 
-    std::size_t async_receive_header(asio::yield_context yield);
+    Header async_receive_header(const MessageType& type, asio::yield_context yield);
 
     static constexpr std::size_t header_size() {
-        return sizeof(header_t);
+        return sizeof(Header);
     }
 };

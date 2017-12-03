@@ -40,7 +40,11 @@ int main(int argc, char *argv[]) {
         std::string build_command("/usr/bin/sudo /usr/bin/script -q -e -c '/usr/local/bin/singularity build ./container.img ./container.def' /dev/null");
 
         bp::group group;
-        bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group);
+        std::error_code build_ec;
+        bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group, build_ec);
+        if(build_ec) {
+            logger::write("subprocess error: " + build_ec.message());
+        }
 
         logger::write("Running build command: " + build_command);
 

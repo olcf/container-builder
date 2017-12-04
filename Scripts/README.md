@@ -14,7 +14,6 @@ Servers may be spun up anywhere on the ORNL network and also the Titan login nod
 ```
 export OS_PROJECT_DOMAIN_NAME=$OS_USER_DOMAIN_NAME
 export OS_IDENTITY_API_VERSION="3"
-export OS_CACERT=$(pwd)/OpenStack.cer
 ```
 
 To initiate the Containerbuilder service several steps are required
@@ -50,6 +49,8 @@ ContainerBuilder/Scripts/TearDownQueue
 ```
 
 ---
+Note: To use the openstack client from Titan yo must export `OS_CACERT=$(pwd)/OpenStack.cer`
+
 Note: `openstack list` can be called to show all active OpenStack instances including their ID, name, and IP
 
 Note: To check if the BuilderQueue and Builder services are running ssh to each node and run `systemctl status`. To diagnose issues use `sudo journalctl`

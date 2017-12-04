@@ -78,6 +78,9 @@ int main(int argc, char *argv[]) {
             std::cout << line;
         } while (!line.empty());
 
+        // Receiving file
+        std::cout << "Container built!\n";
+
         // Read the container image
         builder_messenger.receive_file(container_path);
 

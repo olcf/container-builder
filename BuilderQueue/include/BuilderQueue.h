@@ -8,7 +8,8 @@
 
 class BuilderQueue {
 public:
-    explicit BuilderQueue(asio::io_service &io_service) : io_service(io_service) {}
+    explicit BuilderQueue(asio::io_service &io_service) : io_service(io_service),
+                                                          max_available_builders(1) {}
 
     // Create a new queue reservation and return it to the requester
     Reservation& enter();

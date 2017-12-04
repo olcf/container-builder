@@ -60,14 +60,14 @@ int main(int argc, char *argv[]) {
         callback_type read_std_pipe = [&](const boost::system::error_code& ec, std::size_t size) {
             client_messenger.send(buffer);
 
-            if(size > 0 && ec != asio::error::eof) {
+            if(size > 0 && ec == boost::system::errc::success) {
                 asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
             }
             else if(size == 0 && ec == asio::error::eof) {
-                logger::write("Read 0 bytes and EOF");
+                logger::write("build output EOF");
             }
             else {
-                logger::write(std::string("Error reading builder output: ") + ec.message());
+                throw std::system_error(EBADMSG, std::generic_category(), "Error reading build output" + ec.message());
             }
         };
         // Start reading child stdout/err from pipe

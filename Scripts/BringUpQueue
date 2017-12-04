@@ -18,19 +18,6 @@ ZONE="nova"
 FLAVOR="m1.medium"
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)
 
-# Create ContainerBuilder security group
-openstack security group create container_builder --description "Allow ContainerBuilder communication"           &> /dev/null
-openstack security group rule create container_builder --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0     &> /dev/null
-openstack security group rule create container_builder --protocol tcp --dst-port 8080:8080 --remote-ip 0.0.0.0/0 &> /dev/null
-
-# Create Keys for cades user
-KEY="ContainerBuilderKey"
-KEY_FILE="${SCRIPT_DIR}/${KEY}"
-
-# Create a new keypair named ContainerBuilderKey
-openstack keypair create ${KEY} > ${KEY_FILE}
-chmod 600 ${KEY_FILE}
-
 echo "This make take some time."
 
 # Startup new VM

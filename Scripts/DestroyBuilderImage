@@ -8,6 +8,21 @@ if [ "$1" != "--no_source" ]; then
   source ${SCRIPT_DIR}/openrc.sh
 fi
 
+# Remove Key
+if [ $(openstack keypair list | grep ContainerBuilderKey | wc -l) != 0 ]; then
+    echo "Deleting ContainerBuilderKey"
+    openstack keypair delete ContainerBuilderKey
+    rm ${SCRIPT_DIR}/ContainerBuilderKey
+fi
+
+# Delete the security group
+openstack security group list -f value | grep container_builder | while read LINE; do
+  ARR_LINE=($LINE)
+  ID=${ARR_LINE[0]}
+  echo "Deleting security group ${ID}"
+  openstack security group delete ${ID}
+done
+
 # Remove IP files
 rm -f ${SCRIPT_DIR}/BuilderIP
 

@@ -12,6 +12,19 @@ source ./openrc.sh
 # Get script directory
 SCRIPT_DIR=$(dirname $0)
 
+# Create ContainerBuilder security group
+openstack security group create container_builder --description "Allow ContainerBuilder communication"           &> /dev/null
+openstack security group rule create container_builder --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0     &> /dev/null
+openstack security group rule create container_builder --protocol tcp --dst-port 8080:8080 --remote-ip 0.0.0.0/0 &> /dev/null
+
+# Create Keys for cades user
+KEY="ContainerBuilderKey"
+KEY_FILE="${SCRIPT_DIR}/${KEY}"
+
+# Create a new keypair named ContainerBuilderKey
+openstack keypair create ${KEY} > ${KEY_FILE}
+chmod 600 ${KEY_FILE}
+
 # General VM settings
 BOOTIMG="CADES_Ubuntu16.04_v20170804_1"
 ZONE="nova"

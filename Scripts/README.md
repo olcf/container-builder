@@ -16,24 +16,26 @@ export OS_PROJECT_DOMAIN_NAME=$OS_USER_DOMAIN_NAME
 export OS_IDENTITY_API_VERSION="3"
 ```
 
-To initiate the Containerbuilder service several steps are required
-* Bring up the BuilderQueue OpenStack instance
+To initiate the Containerbuilder service several steps are required.
 * Create the Builder master OpenStack image which will be used by the Builder Queue
+* Bring up the BuilderQueue OpenStack instance
 
-To bring up a new builder instance:
-```
-ContainerBuilder/Scripts/BringUpQueue
-```
-After bringup an SSH key will be created: `ContainerBuilderKey`
-
- `ContainerBuilderKey` provides SSH access to the BuilderQueue as well as all of the builders
-
-During bring up `openrc.sh` will be copied to `/home/queue` on the `BuilderQueue` host, these credentials are required to bring up builders.
-
-After the Queue has been brought up the master builder image must be created:
+First the builder master image must be created.
 ```
 ContainerBuilder/Scripts/CreateBuilderImage
 ```
+After creation an SSH key will be created: `ContainerBuilderKey`
+
+`ContainerBuilderKey` provides SSH access to the BuilderQueue as well as all of the builders
+
+
+Once the builder master image has been created the queue can be safely brought up.
+```
+ContainerBuilder/Scripts/BringUpQueue
+```
+
+During bring up `openrc.sh` will be copied to `/home/queue` on the `BuilderQueue` host, these credentials are required to bring up builders.
+
 
 `ContainerBuilder` should now be functional
 

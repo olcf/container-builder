@@ -46,7 +46,7 @@ cd /
 git clone https://github.com/AdamSimpson/ContainerBuilder.git
 cd ContainerBuilder
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTAL_PREFIX="/usr/local" ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr/local" ..
 make
 make install
 rm -rf /ContainerBuilder

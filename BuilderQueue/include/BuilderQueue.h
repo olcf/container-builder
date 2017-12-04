@@ -24,5 +24,5 @@ private:
 
     // Queue of available builders
     std::queue<Builder> available_builders;
-    const std::queue<Builder>::size_type max_available_builders = 1;
+    const std::queue<Builder>::size_type max_available_builders = 5;
 };

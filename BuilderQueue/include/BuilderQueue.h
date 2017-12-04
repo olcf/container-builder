@@ -9,7 +9,7 @@
 class BuilderQueue {
 public:
     explicit BuilderQueue(asio::io_service &io_service) : io_service(io_service),
-                                                          max_available_builders(1) {}
+                                                          max_available_builders(10) {}
 
     // Create a new queue reservation and return it to the requester
     Reservation& enter();
@@ -24,5 +24,5 @@ private:
 
     // Queue of available builders
     std::queue<Builder> available_builders;
-    const std::queue<Builder>::size_type max_available_builders = 5;
+    const std::queue<Builder>::size_type max_available_builders;
 };

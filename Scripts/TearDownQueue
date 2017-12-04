@@ -8,18 +8,23 @@ if [ "$1" != "--no_source" ]; then
     source ${SCRIPT_DIR}/openrc.sh
 fi
 
-# Remove Keys
+# Remove Key
 if [ $(openstack keypair list | grep ContainerBuilderKey | wc -l) != 0 ]; then
+    echo "Deleting ContainerBuilderKey"
     openstack keypair delete ContainerBuilderKey
     rm ${SCRIPT_DIR}/ContainerBuilderKey
 fi
 
-# Delete VM
-if [ $(openstack server list | grep BuilderQueue | wc -l) != 0 ]; then
-    openstack server delete --wait BuilderQueue
-fi
+# Delete VMs
+openstack server list -f value --instance-name BuilderQueue -c ID | while read ID; do
+  echo "Deleting server ${ID}"
+  openstack server delete --wait ${ID}
+done
 
 # Delete the security group
-if [ $(openstack security group list | grep container_builder | wc -l) != 0 ]; then
-    openstack security group delete container_builder
-fi
+openstack security group list -f value | grep container_builder | while read LINE; do
+  ARR_LINE=($LINE)
+  ID=${ARR_LINE[0]}
+  echo "Deleting security group ${ID}"
+  openstack security group delete ${ID}
+done

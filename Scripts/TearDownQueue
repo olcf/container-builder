@@ -16,7 +16,7 @@ if [ $(openstack keypair list | grep ContainerBuilderKey | wc -l) != 0 ]; then
 fi
 
 # Delete VMs
-openstack server list -f value --instance-name BuilderQueue -c ID | while read ID; do
+openstack server list -f value --name BuilderQueue -c ID | while read ID; do
   echo "Deleting server ${ID}"
   openstack server delete --wait ${ID}
 done

@@ -60,10 +60,10 @@ int main(int argc, char *argv[]) {
         callback_type read_std_pipe = [&](const boost::system::error_code& ec, std::size_t size) {
             client_messenger.send(buffer);
 
-            if(size > 0 && !ec) {
+            if(size > 0) {
                 asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
             }
-            else if(size == 0 && ec == asio::error::eof) {
+            else if(ec == asio::error::eof) {
                 logger::write("build output EOF");
             }
             else {
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
             }
         };
         // Start reading child stdout/err from pipe
-        asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
+         asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
 
         io_service.run();
 

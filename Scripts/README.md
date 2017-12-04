@@ -40,7 +40,7 @@ ContainerBuilder/Scripts/CreateBuilderImage
 
 To login to the queue or a builder:
 ```
-ssh -i ./ContainerBuilder cades@<BuilderQueueIP/BuilderIP>
+ssh -i ./ContainerBuilderKey cades@<BuilderQueueIP/BuilderIP>
 ```
 
 To destroy a new queue instance:

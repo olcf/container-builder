@@ -38,6 +38,10 @@ public:
         return status == ReservationStatus::complete;
     }
 
+    bool active() const {
+        return status == ReservationStatus::active;
+    }
+
     void set_complete() {
         status = ReservationStatus::complete;
     }

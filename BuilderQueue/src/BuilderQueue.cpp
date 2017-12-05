@@ -8,15 +8,18 @@ Reservation &BuilderQueue::enter() {
 }
 
 void BuilderQueue::tick(asio::yield_context yield) {
+    int active_builder_count = 0;
+
     // Go through reservations and check for any that are completed
     // Spin down any completed VM's and remove them from the list of active builders
     for (auto &reservation : reservations) {
         if (reservation.complete() && reservation.builder) {
-            OpenStackBuilder::destroy(reservation.builder.get(), io_service, yield);
-
-            active_builders.remove_if([&](const auto &builder) {
-                return builder.id == reservation.builder.get().id;
-            });
+            asio::spawn(io_service,
+                        [&](asio::yield_context yield) {
+                            OpenStackBuilder::destroy(reservation.builder.get(), io_service, yield);
+                        });
+        } else if (reservation.active() && reservation.builder) {
+            active_builder_count++;
         }
     }
 
@@ -33,16 +36,16 @@ void BuilderQueue::tick(asio::yield_context yield) {
         if (reservation.pending()) {
             auto builder = unused_builders.front();
             reservation.ready(builder);
-            active_builders.push_back(builder);
             unused_builders.pop();
         }
     }
 
     // Attempt to create a new builder if there is space
     // Requesting a new builder may take quite a bit of time so it's done in a coroutine
-
-    auto builder_space_left = max_builders - (builder_count() + outstanding_builder_requests);
-    if (builder_space_left && unused_builders.size() < max_unused_builders) {
+    auto used_builder_count = active_builder_count + unused_builders.size() + outstanding_builder_requests;
+    auto total_builder_space_left = max_builders - used_builder_count;
+    auto unused_builder_space = unused_builders.size() < max_unused_builders;
+    if (total_builder_space_left > 0 && unused_builder_space > 0) {
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
                         outstanding_builder_requests++;

@@ -28,13 +28,6 @@ private:
     // Queue of unused builders
     std::queue<Builder> unused_builders;
 
-    // Queue of builders which are currently checked out
-    std::list<Builder> active_builders;
-
-    std::queue<Builder>::size_type builder_count() const {
-        return unused_builders.size() + active_builders.size();
-    }
-
     // Maximum number of active and unused builders
     const std::size_t max_builders;
 

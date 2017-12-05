@@ -13,6 +13,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
     for (auto &reservation : reservations) {
         if (reservation.complete() && reservation.builder) {
             OpenStackBuilder::destroy(reservation.builder.get(), io_service, yield);
+
             active_builders.remove_if([&](const auto &builder) {
                 return builder.id == reservation.builder.get().id;
             });
@@ -24,24 +25,32 @@ void BuilderQueue::tick(asio::yield_context yield) {
         return res.complete();
     });
 
-    // Assign any available builders to outstanding reservations
+    // Assign any unused builders to outstanding reservations
     for (auto &reservation : reservations) {
-        if (available_builders.empty()) {
+        if (unused_builders.empty()) {
             break;
         }
         if (reservation.pending()) {
-            auto builder = available_builders.front();
+            auto builder = unused_builders.front();
             reservation.ready(builder);
             active_builders.push_back(builder);
-            available_builders.pop();
+            unused_builders.pop();
         }
     }
 
     // Attempt to create a new builder if there is space
-    // TODO make request_create spawn so it can go do its thing
-    if (builder_count() < max_builders && available_builders.size() < max_available_builders) {
-        auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
-        if (opt_builder)
-            available_builders.push(opt_builder.get());
+    // Requesting a new builder may take quite a bit of time so it's done in a coroutine
+
+    auto builder_space_left = max_builders - (builder_count() + outstanding_builder_requests);
+    if (builder_space_left && unused_builders.size() < max_unused_builders) {
+        asio::spawn(io_service,
+                    [&](asio::yield_context yield) {
+                        outstanding_builder_requests++;
+                        auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
+                        if (opt_builder) {
+                            unused_builders.push(opt_builder.get());
+                        }
+                        outstanding_builder_requests--;
+                    });
     }
 }

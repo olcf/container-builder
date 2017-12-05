@@ -29,21 +29,21 @@ int main(int argc, char *argv[]) {
     try {
 
         // Check for correct number of arguments
-        if(argc != 3) {
-            std::cerr<<"Usage: ContainerBuilder <definition path> <container path>\n";
+        if (argc != 3) {
+            std::cerr << "Usage: ContainerBuilder <definition path> <container path>\n";
             return 1;
         }
         std::string definition_path(argv[1]);
         std::string container_path(argv[2]);
 
-        std::cout<<"Attempting to connect to BuilderQueue: "<<queue_host() <<":"<<queue_port()<<std::endl;
+        std::cout << "Attempting to connect to BuilderQueue: " << queue_host() << ":" << queue_port() << std::endl;
 
         asio::io_service io_service;
         tcp::socket queue_socket(io_service);
         tcp::resolver queue_resolver(io_service);
         asio::connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}));
 
-        std::cout<<"Connected to BuilderQueue: "<<queue_host() <<":"<<queue_port()<<std::endl;
+        std::cout << "Connected to BuilderQueue: " << queue_host() << ":" << queue_port() << std::endl;
 
         Messenger queue_messenger(queue_socket);
 
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
         // Receive an available builder
         auto builder = queue_messenger.receive_builder();
 
-        std::cout<<"Received build host: "<< builder.host <<":"<< builder.port <<std::endl;
+        std::cout << "Received build host: " << builder.host << ":" << builder.port << std::endl;
 
         // Connect to the builder
         // The builder isn't guaranteed to be reachable immediately and may take some time to full get stood up
@@ -61,10 +61,10 @@ int main(int argc, char *argv[]) {
         tcp::resolver builder_resolver(io_service);
         boost::system::error_code ec;
         do {
-          asio::connect(builder_socket, builder_resolver.resolve({builder.host, builder.port}), ec);
-        } while(ec != boost::system::errc::success);
+            asio::connect(builder_socket, builder_resolver.resolve({builder.host, builder.port}), ec);
+        } while (ec != boost::system::errc::success);
 
-        std::cout<<"Connected to builder host: "<< builder.host <<":"<< builder.port <<std::endl;
+        std::cout << "Connected to builder host: " << builder.host << ":" << builder.port << std::endl;
 
         Messenger builder_messenger(builder_socket);
 
@@ -74,9 +74,10 @@ int main(int argc, char *argv[]) {
         // Read the build output until a zero length message is sent
         std::string line;
         do {
-            line = builder_messenger.receive();
+            line = builder_messenger.receive(10, 0);
             std::cout << line;
         } while (!line.empty());
+
 
         // Receiving file
         std::cout << "Container built!\n";

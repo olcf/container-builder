@@ -11,6 +11,9 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
+using receive_callback_t = std::function<void(const boost::system::error_code&, std::size_t size)>;
+using timer_callback_t = std::function<void(const boost::system::error_code&)>;
+
 // Enum to handle message type, used to ensure
 enum class MessageType : unsigned char {
     string,
@@ -60,6 +63,7 @@ public:
     Builder receive_builder();
     Builder async_receive_builder(asio::yield_context yield);
 
+    std::string receive(int timeout, int max_retries, MessageType type=MessageType::string);
 private:
     tcp::socket &socket;
 

@@ -231,6 +231,7 @@ std::string Messenger::receive(int timeout, int max_retries, MessageType type) {
         }
         else {
             header_watchdog.cancel();
+            body_watchdog.expires_from_now(boost::posix_time::seconds(timeout));
             body_watchdog.async_wait(body_timed_out);
             asio::async_read(socket, message_buffer, asio::transfer_exactly(header.size), received_body);
         }
@@ -243,6 +244,7 @@ std::string Messenger::receive(int timeout, int max_retries, MessageType type) {
 
     // Wait for all async operations to finish
     socket.get_io_service().run();
+    socket.get_io_service().reset();
 
     return message;
 }

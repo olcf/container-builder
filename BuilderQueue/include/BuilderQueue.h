@@ -11,7 +11,8 @@ public:
     explicit BuilderQueue(asio::io_service &io_service) : io_service(io_service),
                                                           max_builders(10),
                                                           max_unused_builders(max_builders),
-                                                          outstanding_builder_requests(0)
+                                                          outstanding_builder_requests(0),
+                                                          active_builders(0)
                                                           {}
 
     // Create a new queue reservation and return it to the requester
@@ -31,8 +32,12 @@ private:
     // Maximum number of active and unused builders
     const std::size_t max_builders;
 
-    // Maximum number of builders to spin up and keep up and running in reserve
+    // Maximum number of builders to spin and keep up in reserve
     const std::size_t max_unused_builders;
 
+    // Builders that have ben requested but not yet returned
     std::size_t outstanding_builder_requests;
+
+    // Number of active, and in the process of shutting down after being active, builders
+    std::size_t active_builders;
 };

@@ -7,9 +7,8 @@ Reservation &BuilderQueue::enter() {
     return reservations.back();
 }
 
-void BuilderQueue::tick(asio::yield_context yield) {
-    int active_builder_count = 0;
 
+void BuilderQueue::tick(asio::yield_context yield) {
     // Go through reservations and check for any that are completed
     // Spin down any completed VM's and remove them from the list of active builders
     for (auto &reservation : reservations) {
@@ -17,9 +16,9 @@ void BuilderQueue::tick(asio::yield_context yield) {
             asio::spawn(io_service,
                         [&](asio::yield_context yield) {
                             OpenStackBuilder::destroy(reservation.builder.get(), io_service, yield);
+                            //TODO check if the builder was actually destroyed
+                            active_builders--;
                         });
-        } else if (reservation.active() && reservation.builder) {
-            active_builder_count++;
         }
     }
 
@@ -37,12 +36,13 @@ void BuilderQueue::tick(asio::yield_context yield) {
             auto builder = unused_builders.front();
             reservation.ready(builder);
             unused_builders.pop();
+            active_builders++;
         }
     }
 
     // Attempt to create a new builder if there is space
     // Requesting a new builder may take quite a bit of time so it's done in a coroutine
-    auto used_builder_count = active_builder_count + unused_builders.size() + outstanding_builder_requests;
+    auto used_builder_count = active_builders + unused_builders.size() + outstanding_builder_requests;
     auto total_builder_space_left = max_builders - used_builder_count;
     auto unused_builder_space = unused_builders.size() < max_unused_builders;
     if (total_builder_space_left > 0 && unused_builder_space > 0) {

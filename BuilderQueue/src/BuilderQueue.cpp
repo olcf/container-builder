@@ -8,10 +8,14 @@ Reservation &BuilderQueue::enter() {
 }
 
 void BuilderQueue::tick(asio::yield_context yield) {
-    // Destroy all completed builder OpenStack instances
+    // Go through reservations and check for any that are completed
+    // Spin down any completed VM's and remove them from the list of active builders
     for (auto &reservation : reservations) {
         if (reservation.complete() && reservation.builder) {
             OpenStackBuilder::destroy(reservation.builder.get(), io_service, yield);
+            active_builders.remove_if([&](const auto &builder) {
+                return builder.id == reservation.builder.get().id;
+            });
         }
     }
 
@@ -26,13 +30,16 @@ void BuilderQueue::tick(asio::yield_context yield) {
             break;
         }
         if (reservation.pending()) {
-            reservation.ready(available_builders.front());
+            auto builder = available_builders.front();
+            reservation.ready(builder);
+            active_builders.push_back(builder);
             available_builders.pop();
         }
     }
 
     // Attempt to create a new builder if there is space
-    if (available_builders.size() < max_available_builders) {
+    // TODO make request_create spawn so it can go do its thing
+    if (builder_count() < max_builders && available_builders.size() < max_available_builders) {
         auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
         if (opt_builder)
             available_builders.push(opt_builder.get());

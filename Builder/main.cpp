@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
             }
         };
         // Start reading child stdout/err from pipe
-         asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
+        asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
 
         io_service.run();
 

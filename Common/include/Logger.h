@@ -27,8 +27,6 @@ using boost::asio::ip::tcp;
 BOOST_LOG_GLOBAL_LOGGER(global_log, src::logger)
 
 namespace logger {
-    void init(std::string log_filename);
-
     void write(const std::string &message);
 
     void write(const tcp::socket &socket, const std::string &message);

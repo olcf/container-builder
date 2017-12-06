@@ -16,11 +16,13 @@ namespace bp = boost::process;
 int main(int argc, char *argv[]) {
 
     try {
-        // Block until the initial connection is made
+        // Block until the initial client connects
         asio::io_service io_service;
         tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8080));
         std::shared_ptr<tcp::socket> socket = std::make_shared<tcp::socket>(io_service);
         acceptor.accept(*socket);
+
+        logger::write(*socket, "Client connected");
 
         std::shared_ptr<Messenger> messenger = std::make_shared<Messenger>(*socket);
 
@@ -29,6 +31,8 @@ int main(int argc, char *argv[]) {
                     [&](asio::yield_context yield) {
                         // Receive the definition file from the client
                         messenger->async_receive_file("container.def", yield);
+
+                        logger::write(*socket, "Received container.def");
 
                         // Create a pipe to communicate with our build subprocess
                         bp::async_pipe std_pipe(io_service);
@@ -44,8 +48,10 @@ int main(int argc, char *argv[]) {
                         bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe,
                                               group, build_ec);
                         if (build_ec) {
-                            logger::write("subprocess error: " + build_ec.message());
+                            logger::write(*socket, "subprocess error: " + build_ec.message());
                         }
+
+                        logger::write(*socket, "launched build process: " + build_command);
 
                         // Read process pipe output and write it to the client
                         // line buffer(ish) by reading from the pipe until we hit \n, \r
@@ -64,18 +70,19 @@ int main(int argc, char *argv[]) {
                         } while (read_size > 0);
 
                         // Get the return value from the build subprocess
+                        logger::write(*socket, "Waiting on build process to exit");
                         build_child.wait();
                         int build_code = build_child.exit_code();
-
-                        logger::write("Sending image to client");
 
                         // Send the container to the client
                         // TODO we send the file in a blocking manner so the heartbeat doesn't process - fix file transfer
                         // TODO to handle heartbeat/resume
                         if (build_code == 0) {
-                            logger::write("Image failed to build");
+                            logger::write(*socket, "Build complete, sending container");
                             messenger->send_file("container.img");
-                        };
+                        } else {
+                            logger::write(*socket, "Build failed, not sending container");
+                        }
                     });
 
         // Start the heartbeat which will let the client know we're alive every `pulse` seconds
@@ -93,14 +100,21 @@ int main(int argc, char *argv[]) {
                 return;
             }
 
+            logger::write(*socket, "killing socket due to heartbeat hang");
+
             // Destroy the current socket
             socket->cancel();
             socket->close();
+
+            logger::write(*socket, "accepting a reconnect");
+
 
             // Accept a new connection and reset the socket and messenger
             socket = std::make_shared<tcp::socket>(io_service);
             acceptor.accept(*socket);
             messenger = std::make_shared<Messenger>(*socket);
+
+            logger::write(*socket, "opened new socket");
         };
 
         asio::spawn(io_service,
@@ -111,7 +125,9 @@ int main(int argc, char *argv[]) {
                             watchdog.async_wait(heartbeat_hung);
 
                             // Try to send our heartbeat
+                            logger::write("Attempt to send heartbeat");
                             messenger->async_send_heartbeat(yield);
+                            logger::write("heartbeat sent");
 
                             // Set the next heartbeat
                             heartbeat.expires_from_now(pulse);
@@ -127,7 +143,7 @@ int main(int argc, char *argv[]) {
         logger::write(std::string() + "Build server exception: " + e.what());
     }
 
-    logger::write("Server shutting down");
+    logger::write("Builder shutting down");
 
     return 0;
 }

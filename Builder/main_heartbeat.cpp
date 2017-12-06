@@ -61,12 +61,20 @@ int main(int argc, char *argv[]) {
                         asio::streambuf buffer;
                         boost::regex line_matcher{"\\r|\\n"};
                         std::size_t read_size = 0;
+                        boost::system::error_code read_ec;
+                        boost::system::error_code write_ec;
+
                         do {
                             // Read from the pipe into a buffer
-                            read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield);
+                            read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield[read_ec]);
+                            if (read_ec != boost::system::errc::success) {
+                                logger::write(*socket, "Error reading builder output");
+                            }
                             // Write the buffer to our socket
-                            // TODO, test if we receive a cancel, if so resend the buffer
-                            messenger->async_send(buffer, yield);
+                            // If the connection is aborted we retry assuming we have a fresh socket
+                            do {
+                                messenger->async_send(buffer, yield[write_ec]);
+                            } while(write_ec == boost::asio::error::connection_aborted);
                         } while (read_size > 0);
 
                         // Get the return value from the build subprocess
@@ -94,7 +102,7 @@ int main(int argc, char *argv[]) {
 
         // When a hang is detected we destroy the socket and attempt to create a new one
         // This is handled outside of the heartbeat coroutine as if it fires that coroutine will be jammed up
-        timer_callback_t heartbeat_hung = [&](const boost::system::error_code& ec) {
+        timer_callback_t heartbeat_hung = [&](const boost::system::error_code &ec) {
             // Ignore the timer being canceled
             if (ec != boost::system::errc::success) {
                 return;
@@ -108,7 +116,6 @@ int main(int argc, char *argv[]) {
 
             logger::write(*socket, "accepting a reconnect");
 
-
             // Accept a new connection and reset the socket and messenger
             socket = std::make_shared<tcp::socket>(io_service);
             acceptor.accept(*socket);
@@ -119,7 +126,7 @@ int main(int argc, char *argv[]) {
 
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
-                        for(;;) {
+                        for (;;) {
                             // arm the watchdog
                             watchdog.expires_from_now(timeout);
                             watchdog.async_wait(heartbeat_hung);

@@ -34,53 +34,222 @@ class Messenger {
 public:
     explicit Messenger(tcp::socket &socket) : socket(socket) {}
 
-    // Send/receive a heartbeat message
-    void async_send_heartbeat(asio::yield_context yield);
-    void async_receive_heartbeat(asio::yield_context yield);
+    // Send/Receive heartbeat
+    template <typename Handler>
+    void Messenger::async_send_heartbeat(const Handler& handler) {
+        async_send_header(0, MessageType::heartbeat, handler);
+    }
+    template <typename Handler>
+    void Messenger::async_receive_heartbeat(const Handler& handler) {
+        async_receive_header(MessageType::heartbeat, handler);
+    }
+
+    // Receive a string message asynchronously of the specified type
+    template <typename Handler>
+    std::string Messenger::async_receive(const Handler& handler, MessageType type) {
+        auto header = async_receive_header(type, handler);
+
+        // Read the message body
+        asio::streambuf buffer;
+        asio::async_read(socket, buffer, asio::transfer_exactly(header.size), handler);
+
+        // Construct a string from the message body
+        std::string body((std::istreambuf_iterator<char>(&buffer)),
+                         std::istreambuf_iterator<char>());
+
+        return body;
+    }
+
+    template <typename Handler>
+    void Messenger::async_receive_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size) {
+        std::ofstream file;
+
+        // Throw exception if we run into any file issues
+        file.exceptions(std::fstream::failbit | std::ifstream::badbit);
+
+        // Openfile for writing
+        file.open(file_path.string(), std::fstream::out | std::fstream::binary | std::fstream::trunc);
+
+        auto header = async_receive_header(MessageType::file, handler);
+        auto total_size = header.size;
+
+        // Receive file in chunk_size messages
+        auto bytes_remaining = total_size;
+        std::vector<char> buffer_storage(chunk_size);
+        auto buffer = asio::buffer(buffer_storage);
+
+        do {
+            auto bytes_to_receive = std::min(bytes_remaining, chunk_size);
+
+            auto bytes_received = asio::async_read(socket, buffer, asio::transfer_exactly(bytes_to_receive), handler);
+
+            file.write(buffer_storage.data(), bytes_received);
+
+            bytes_remaining -= bytes_received;
+
+        } while (bytes_remaining);
+
+        file.close();
+    }
+
+    // Receive a string message asynchronously
+    template <typename Handler>
+    std::string Messenger::async_receive(const Handler& handler, MessageType* type) {
+        auto header = async_receive_header(handler);
+        *type = header.type;
+
+        // Read the message body
+        asio::streambuf buffer;
+        asio::async_read(socket, buffer, asio::transfer_exactly(header.size), handler);
+
+        // Construct a string from the message body
+        std::string body((std::istreambuf_iterator<char>(&buffer)),
+                         std::istreambuf_iterator<char>());
+
+        return body;
+    }
+
+    // Send a string message asynchronously
+    template <typename Handler>
+    void Messenger::async_send(const std::string &message, const Handler& handler, MessageType type) {
+        auto message_size = message.size();
+
+        async_send_header(message_size, MessageType::string, handler);
+
+        // Write the message body
+        auto body = asio::buffer(message.data(), message_size);
+        asio::async_write(socket, body, asio::transfer_exactly(message_size), handler);
+    }
+
+    // Send a streambuf message asynchronously
+    template <typename Handler>
+    void Messenger::async_send(asio::streambuf &message_body, const Handler& handler) {
+        auto message_size = message_body.size();
+
+        async_send_header(message_size, MessageType::string, handler);
+
+        // Write the message body
+        asio::async_write(socket, message_body, asio::transfer_exactly(message_size), handler);
+    }
 
     // Send a string as a message
     void send(const std::string &message, MessageType type=MessageType::string);
 
-    void async_send(const std::string &message, asio::yield_context yield, MessageType type=MessageType::string);
 
     // Receive message as a string
     std::string receive(MessageType type);
-    std::string async_receive(asio::yield_context yield, MessageType type=MessageType::string);
-    std::string async_receive(asio::yield_context yield, MessageType *type);
 
     // Send entire contents of streambuf
-    void async_send(asio::streambuf &message_body, asio::yield_context yield);
     void send(asio::streambuf &message_body);
 
     // Send a file in multiple chunk_size peices
     void send_file(boost::filesystem::path file_path, std::size_t chunk_size = 1024);
-    void async_send_file(boost::filesystem::path file_path, asio::yield_context yield, std::size_t chunk_size = 1024);
-
     // Read a file in multiple chunk_size peices
     void receive_file(boost::filesystem::path file_path, std::size_t chunk_size = 1024);
-    void  async_receive_file(boost::filesystem::path file_path, asio::yield_context yield, std::size_t chunk_size = 1024);
 
-    // Send a Builder
-    void async_send(Builder builder, asio::yield_context yield);
+    // Send a file as a message asynchronously
+    template <typename Handler>
+    void Messenger::async_send_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size) {
+        std::ifstream file;
+
+        // Throw exception if we run into any file issues
+        file.exceptions(std::fstream::failbit | std::ifstream::badbit);
+
+        // Open file and get size
+        file.open(file_path.string(), std::fstream::in | std::fstream::binary);
+        auto file_size = boost::filesystem::file_size(file_path);
+
+        async_send_header(file_size, MessageType::file, handler);
+
+        // Send file in chunk_size bits
+        auto bytes_remaining = file_size;
+        std::vector<char> buffer_storage(chunk_size);
+        auto buffer = asio::buffer(buffer_storage);
+        do {
+            auto bytes_to_send = std::min(bytes_remaining, chunk_size);
+
+            file.read(buffer_storage.data(), bytes_to_send);
+
+            auto bytes_sent = asio::async_write(socket, buffer, asio::transfer_exactly(bytes_to_send), handler);
+
+            bytes_remaining -= bytes_sent;
+        } while (bytes_remaining);
+
+        file.close();
+    }
+
+    template <typename Handler>
+    Builder Messenger::async_receive_builder(const Handler& handler) {
+        Messenger messenger(socket);
+
+        // Read in the serialized builder as a string
+        auto serialized_builder = messenger.async_receive(handler, MessageType::builder);
+
+        // de-serialize Builder
+        Builder builder;
+        std::istringstream archive_stream(serialized_builder);
+        boost::archive::text_iarchive archive(archive_stream);
+        archive >> builder;
+
+        return builder;
+    }
+
+    template <typename Handler>
+    void Messenger::async_send(Builder builder, const Handler& handler) {
+        Messenger messenger(socket);
+
+        // Serialize the builder into a string
+        std::ostringstream archive_stream;
+        boost::archive::text_oarchive archive(archive_stream);
+        archive << builder;
+        auto serialized_builder = archive_stream.str();
+
+        messenger.async_send(serialized_builder, handler, MessageType::builder);
+    }
+
+    // Transfer builder objects
     void send(Builder builder);
-
-    // Receive a Builder
     Builder receive_builder();
-    Builder async_receive_builder(asio::yield_context yield);
 
 private:
     tcp::socket &socket;
 
     void send_header(std::size_t message_size, MessageType type);
 
-    void async_send_header(std::size_t message_size, MessageType type, asio::yield_context yield);
+    // Send the header, which is the size and type of the message that will immediately follow, asynchronously
+    template <typename Handler>
+    void Messenger::async_send_header(std::size_t message_size, MessageType type, const Handler& handler) {
+        Header header = {message_size, type};
+        auto header_buffer = asio::buffer(&header, header_size());
+        asio::async_write(socket, header_buffer, asio::transfer_exactly(header_size()), handler);
+    }
 
     Header receive_header(const MessageType& type);
 
-    Header async_receive_header(const MessageType& type, asio::yield_context yield);
+// Receive the message header
+    template <typename Handler>
+    Header Messenger::async_receive_header(const MessageType &type, const Handler& handler) {
+        Header header;
+        auto header_buffer = asio::buffer(&header, header_size());
+        asio::async_read(socket, header_buffer, asio::transfer_exactly(header_size()), handler);
+        if (header.type == MessageType::error) {
+            throw std::system_error(EBADMSG, std::generic_category(), "received message error!");
+        } else if (type != header.type) {
+            throw std::system_error(EBADMSG, std::generic_category(), "received bad message type");
+        }
+        return header;
+    }
 
     Header receive_header();
-    Header async_receive_header(asio::yield_context yield);
+
+    // Receive the message header
+    template <typename Handler>
+    Header Messenger::async_receive_header(const Handler& handler) {
+        Header header;
+        auto header_buffer = asio::buffer(&header, header_size());
+        asio::async_read(socket, header_buffer, asio::transfer_exactly(header_size()), handler);
+        return header;
+    }
 
     static constexpr std::size_t header_size() {
         return sizeof(Header);

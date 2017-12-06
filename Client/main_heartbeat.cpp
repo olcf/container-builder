@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
         io_service.run();
     }
     catch (std::exception &e) {
-        std::cout<< "Build server exception: " + e.what();
+        std::cout<< std::string() + "Build server exception: " + e.what();
     }
 
     std::cout<< "Client shutting down";

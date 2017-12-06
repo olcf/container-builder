@@ -66,7 +66,7 @@ public:
     }
 
     template <typename Handler>
-    void async_receive_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size) {
+    void async_receive_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size=1024) {
         std::ofstream file;
 
         // Throw exception if we run into any file issues
@@ -119,7 +119,7 @@ public:
     void async_send(const std::string &message, const Handler& handler, MessageType type) {
         auto message_size = message.size();
 
-        async_send_header(message_size, MessageType::string, handler);
+        async_send_header(message_size, type, handler);
 
         // Write the message body
         auto body = asio::buffer(message.data(), message_size);

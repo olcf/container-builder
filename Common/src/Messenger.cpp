@@ -127,10 +127,8 @@ void Messenger::receive_file(boost::filesystem::path file_path, std::size_t chun
 }
 
 Builder Messenger::receive_builder() {
-    Messenger messenger(socket);
-
     // Read in the serialized builder as a string
-    auto serialized_builder = messenger.receive(MessageType::builder);
+    auto serialized_builder = receive(MessageType::builder);
 
     // de-serialize Builder
     Builder builder;
@@ -142,13 +140,11 @@ Builder Messenger::receive_builder() {
 }
 
 void Messenger::send(Builder builder) {
-    Messenger messenger(socket);
-
     // Serialize the builder into a string
     std::ostringstream archive_stream;
     boost::archive::text_oarchive archive(archive_stream);
     archive << builder;
     auto serialized_builder = archive_stream.str();
 
-    messenger.send(serialized_builder, MessageType::builder);
+    send(serialized_builder, MessageType::builder);
 }

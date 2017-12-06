@@ -185,10 +185,8 @@ public:
 
     template <typename Handler>
     Builder async_receive_builder(const Handler& handler) {
-        Messenger messenger(socket);
-
         // Read in the serialized builder as a string
-        auto serialized_builder = messenger.async_receive(handler, MessageType::builder);
+        auto serialized_builder = async_receive(handler, MessageType::builder);
 
         // de-serialize Builder
         Builder builder;
@@ -201,15 +199,13 @@ public:
 
     template <typename Handler>
     void async_send(Builder builder, const Handler& handler) {
-        Messenger messenger(socket);
-
         // Serialize the builder into a string
         std::ostringstream archive_stream;
         boost::archive::text_oarchive archive(archive_stream);
         archive << builder;
         auto serialized_builder = archive_stream.str();
 
-        messenger.async_send(serialized_builder, handler, MessageType::builder);
+        async_send(serialized_builder, handler, MessageType::builder);
     }
 
     // Transfer builder objects

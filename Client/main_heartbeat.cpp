@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
         std::shared_ptr<tcp::socket> builder_socket = std::make_shared<tcp::socket>(io_service);
         tcp::resolver builder_resolver(io_service);
         do {
-            asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}));
+            asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}), ec);
         } while (ec != boost::system::errc::success);
 
         std::cout << "Connected to builder host: " << builder.host << ":" << builder.port << std::endl;
@@ -75,6 +75,8 @@ int main(int argc, char *argv[]) {
 
         // When a hang is detected this callback will destroy the socket, wait for another connection, reset the messenger, and continue
         timer_callback_t heartbeat_hung = [&](const boost::system::error_code &ec) {
+            boost::system::error_code connect_ec;
+
             // Ignore the timer being canceled
             if (ec != boost::system::errc::success) {
                 return;
@@ -90,7 +92,7 @@ int main(int argc, char *argv[]) {
             builder_socket = std::make_shared<tcp::socket>(io_service);
             tcp::resolver builder_resolver(io_service);
             do {
-                asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}));
+                asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}), connect_ec);
             } while (ec != boost::system::errc::success);
             builder_messenger = std::make_shared<Messenger>(*builder_socket);
         };

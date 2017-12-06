@@ -48,9 +48,7 @@ int main(int argc, char *argv[]) {
         tcp::socket queue_socket(io_service);
         tcp::resolver queue_resolver(io_service);
         boost::system::error_code ec;
-        do {
-            asio::connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}));
-        } while (ec != boost::system::errc::success);
+        asio::connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}));
 
         std::cout << "Connected to BuilderQueue: " << queue_host() << ":" << queue_port() << std::endl;
 
@@ -67,8 +65,9 @@ int main(int argc, char *argv[]) {
         // Block until the initial connection to the builder is made
         std::shared_ptr<tcp::socket> builder_socket = std::make_shared<tcp::socket>(io_service);
         tcp::resolver builder_resolver(io_service);
-        // TODO handle timeouts?
-        asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}));
+        do {
+            asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}));
+        } while (ec != boost::system::errc::success);
 
         std::cout << "Connected to builder host: " << builder.host << ":" << builder.port << std::endl;
 
@@ -151,7 +150,7 @@ int main(int argc, char *argv[]) {
         std::cout<< std::string() + "Build server exception: " + e.what() << std::endl;
     }
 
-    std::cout<< "Client shutting down";
+    std::cout<< "Client shutting down\n";
 
     return 0;
 }

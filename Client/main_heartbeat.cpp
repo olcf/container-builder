@@ -47,7 +47,10 @@ int main(int argc, char *argv[]) {
 
         tcp::socket queue_socket(io_service);
         tcp::resolver queue_resolver(io_service);
-        asio::connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}));
+        boost::system::error_code ec;
+        do {
+            asio::connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}));
+        } while (ec != boost::system::errc::success);
 
         std::cout << "Connected to BuilderQueue: " << queue_host() << ":" << queue_port() << std::endl;
 
@@ -87,7 +90,9 @@ int main(int argc, char *argv[]) {
             // Try to resolve a new connection to the builder and reset the socket and messenger
             builder_socket = std::make_shared<tcp::socket>(io_service);
             tcp::resolver builder_resolver(io_service);
-            asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}));
+            do {
+                asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}));
+            } while (ec != boost::system::errc::success);
             builder_messenger = std::make_shared<Messenger>(*builder_socket);
         };
 

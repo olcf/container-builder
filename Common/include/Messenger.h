@@ -116,7 +116,7 @@ public:
 
     // Send a string message asynchronously
     template <typename Handler>
-    void async_send(const std::string &message, const Handler& handler, MessageType type) {
+    void async_send(const std::string &message, const Handler& handler, MessageType type=MessageType::string) {
         auto message_size = message.size();
 
         async_send_header(message_size, type, handler);
@@ -154,7 +154,7 @@ public:
 
     // Send a file as a message asynchronously
     template <typename Handler>
-    void async_send_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size) {
+    void async_send_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size=1024) {
         std::ifstream file;
 
         // Throw exception if we run into any file issues

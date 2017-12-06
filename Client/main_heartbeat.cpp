@@ -108,18 +108,22 @@ int main(int argc, char *argv[]) {
                         // TODO fix this mess with handling of the heartbeat
                         std::cout<<"Start reading builder output:"<<std::endl;
                         std::string line;
+                        boost::system::error_code read_ec;
+
                         do {
                             // Reset watchdog
                             watchdog.expires_from_now(timeout);
                             watchdog.async_wait(heartbeat_hung);
 
                             MessageType type;
-                            line = builder_messenger->async_receive(yield, &type);
-                            if(type == MessageType::string) {
-                                std::cout << line;
-                            } else if(type == MessageType::heartbeat) {
-                                line = std::string("heartbeat");
-                            }
+                            do {
+                                line = builder_messenger->async_receive(yield[read_ec], &type);
+                                if (type == MessageType::string) {
+                                    std::cout << line;
+                                } else if (type == MessageType::heartbeat) {
+                                    line = std::string("heartbeat");
+                                }
+                            } while(read_ec == boost::asio::error::connection_aborted);
                         } while (!line.empty());
 
                         watchdog.cancel();
@@ -133,7 +137,7 @@ int main(int argc, char *argv[]) {
                         std::cout<<"End receive of container: "<<container_path<<std::endl;
 
                         // Inform the queue we're done
-                        queue_messenger.async_send("checkout_builder_complete", yield);
+                        queue_messenger.async_send(std::string("checkout_builder_complete"), yield);
                     });
 
         // Begin processing our connections and queue

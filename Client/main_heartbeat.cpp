@@ -6,7 +6,6 @@
 #include <boost/regex.hpp>
 #include <boost/asio.hpp>
 #include <iostream>
-#include "Logger.h"
 #include "Messenger.h"
 #include <memory>
 
@@ -144,10 +143,10 @@ int main(int argc, char *argv[]) {
         io_service.run();
     }
     catch (std::exception &e) {
-        logger::write(std::string() + "Build server exception: " + e.what());
+        std::cout<< "Build server exception: " + e.what();
     }
 
-    logger::write("Server shutting down");
+    std::cout<< "Client shutting down";
 
     return 0;
 }

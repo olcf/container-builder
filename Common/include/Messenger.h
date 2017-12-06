@@ -11,14 +11,15 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
-using receive_callback_t = std::function<void(const boost::system::error_code&, std::size_t size)>;
-using timer_callback_t = std::function<void(const boost::system::error_code&)>;
+using receive_callback_t = std::function<void(const boost::system::error_code &ec, std::size_t size)>;
+using timer_callback_t = std::function<void(const boost::system::error_code &ec)>;
 
 // Enum to handle message type, used to ensure
 enum class MessageType : unsigned char {
     string,
     builder,
     file,
+    heartbeat,
     error
 };
 
@@ -32,6 +33,10 @@ class Messenger {
 
 public:
     explicit Messenger(tcp::socket &socket) : socket(socket) {}
+
+    // Send/receive a heartbeat message
+    void async_send_heartbeat(asio::yield_context yield);
+    void async_receive_heartbeat(asio::yield_context yield);
 
     // Send a string as a message
     void send(const std::string &message, MessageType type=MessageType::string);

@@ -193,27 +193,24 @@ std::string Messenger::receive(int timeout, int max_retries, MessageType type) {
     asio::deadline_timer body_watchdog(socket.get_io_service());
 
     // Callbacks for header, body, and timeouts
-    timer_callback_t header_timed_out = [&](const boost::system::error_code& ec) {
-        if(ec == boost::asio::error::operation_aborted) {
+    timer_callback_t header_timed_out = [&](const boost::system::error_code &ec) {
+        if (ec == boost::asio::error::operation_aborted) {
             return;
-        }
-        else {
-           std::cout<<"header watchdog!\n";
+        } else {
+            std::cout << "header watchdog!\n";
         }
     };
-    timer_callback_t body_timed_out = [&](const boost::system::error_code& ec) {
-        if(ec == boost::asio::error::operation_aborted) {
+    timer_callback_t body_timed_out = [&](const boost::system::error_code &ec) {
+        if (ec == boost::asio::error::operation_aborted) {
             return;
-        }
-        else {
-           std::cout<<"body watchdog!\n";
+        } else {
+            std::cout << "body watchdog!\n";
         }
     };
-    receive_callback_t received_body = [&](const boost::system::error_code& ec, std::size_t size) {
-        if(ec || size != header.size) {
+    receive_callback_t received_body = [&](const boost::system::error_code &ec, std::size_t size) {
+        if (ec || size != header.size) {
             throw std::system_error(EBADMSG, std::generic_category(), "received message error!");
-        }
-        else {
+        } else {
             body_watchdog.cancel();
             // Construct a string from the message body
             message = std::string((std::istreambuf_iterator<char>(&message_buffer)),
@@ -222,14 +219,12 @@ std::string Messenger::receive(int timeout, int max_retries, MessageType type) {
 
     };
 
-    receive_callback_t received_header = [&](const boost::system::error_code& ec, std::size_t size) {
+    receive_callback_t received_header = [&](const boost::system::error_code &ec, std::size_t size) {
         if (ec || header.type == MessageType::error) {
             throw std::system_error(EBADMSG, std::generic_category(), "received message error!");
-        }
-        else if (type != header.type) {
+        } else if (type != header.type) {
             throw std::system_error(EBADMSG, std::generic_category(), "received bad message type");
-        }
-        else {
+        } else {
             header_watchdog.cancel();
             body_watchdog.expires_from_now(boost::posix_time::seconds(timeout));
             body_watchdog.async_wait(body_timed_out);
@@ -364,4 +359,12 @@ void Messenger::send(Builder builder) {
     auto serialized_builder = archive_stream.str();
 
     messenger.send(serialized_builder, MessageType::builder);
+}
+
+void Messenger::async_send_heartbeat(asio::yield_context yield) {
+    async_send_header(0, MessageType::heartbeat, yield);
+}
+
+void Messenger::async_receive_heartbeat(asio::yield_context yield) {
+    async_receive_header(MessageType::heartbeat, yield);
 }

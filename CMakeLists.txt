@@ -25,7 +25,7 @@ set(SOURCE_FILES_QUEUE
         BuilderQueue/include/OpenStackBuilder.h)
 
 set(SOURCE_FILES_BUILDER
-        Builder/main.cpp
+        Builder/main_heartbeat.cpp
         Common/include/Builder.h
         Common/src/Logger.cpp
         Common/include/Logger.h
@@ -34,7 +34,7 @@ set(SOURCE_FILES_BUILDER
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT
-        Client/main.cpp
+        Client/main_heartbeat.cpp
         Common/include/Builder.h
         Common/src/Logger.cpp
         Common/include/Logger.h

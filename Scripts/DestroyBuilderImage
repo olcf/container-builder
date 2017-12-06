@@ -8,6 +8,22 @@ if [ "$1" != "--no_source" ]; then
   source ${SCRIPT_DIR}/openrc.sh
 fi
 
+# Delete any builders up and running
+openstack server list -f value --name Builder -c ID | while read ID; do
+  echo "Deleting server ${ID}"
+  openstack server delete --wait ${ID}
+done
+
+# Delete master image server if exists
+if [ $(openstack server list | grep "\<BuilderMaster\>" | wc -l) != 0 ]; then
+    openstack server delete --wait BuilderMaster
+fi
+
+# Delete master image if it exists
+if [ $(openstack image list | grep "\<BuilderImage\>" | wc -l) != 0 ]; then
+    openstack image delete "BuilderImage"
+fi
+
 # Remove Key
 if [ $(openstack keypair list | grep ContainerBuilderKey | wc -l) != 0 ]; then
     echo "Deleting ContainerBuilderKey"
@@ -25,13 +41,3 @@ done
 
 # Remove IP files
 rm -f ${SCRIPT_DIR}/BuilderIP
-
-# Delete master image server if exists
-if [ $(openstack server list | grep "\<BuilderMaster\>" | wc -l) != 0 ]; then
-    openstack server delete --wait BuilderMaster
-fi
-
-# Delete master image if it exists
-if [ $(openstack image list | grep "\<BuilderImage\>" | wc -l) != 0 ]; then
-    openstack image delete "BuilderImage"
-fi

@@ -70,9 +70,11 @@ int main(int argc, char *argv[]) {
                         logger::write("Sending image to client");
 
                         // Send the container to the client
+                        // TODO we send the file in a blocking manner so the heartbeat doesn't process - fix file transfer
+                        // TODO to handle heartbeat/resume
                         if (build_code == 0) {
                             logger::write("Image failed to build");
-                            messenger->async_send_file("container.img", yield);
+                            messenger->send_file("container.img");
                         };
                     });
 

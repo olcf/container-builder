@@ -44,9 +44,9 @@ public:
     void async_send(const std::string &message, asio::yield_context yield, MessageType type=MessageType::string);
 
     // Receive message as a string
-    std::string receive(MessageType type=MessageType::string);
-
+    std::string receive(MessageType type);
     std::string async_receive(asio::yield_context yield, MessageType type=MessageType::string);
+    std::string async_receive_ignore_heartbeat(asio::yield_context yield, MessageType type=MessageType::string);
 
     // Send entire contents of streambuf
     void async_send(asio::streambuf &message_body, asio::yield_context yield);
@@ -68,7 +68,6 @@ public:
     Builder receive_builder();
     Builder async_receive_builder(asio::yield_context yield);
 
-    std::string receive(int timeout, int max_retries, MessageType type=MessageType::string);
 private:
     tcp::socket &socket;
 
@@ -79,6 +78,9 @@ private:
     Header receive_header(const MessageType& type);
 
     Header async_receive_header(const MessageType& type, asio::yield_context yield);
+
+    Header receive_header();
+    Header async_receive_header(asio::yield_context yield);
 
     static constexpr std::size_t header_size() {
         return sizeof(Header);

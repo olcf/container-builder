@@ -45,6 +45,22 @@ Header Messenger::async_receive_header(const MessageType &type, asio::yield_cont
     return header;
 }
 
+// Receive the message header
+Header Messenger::receive_header() {
+    Header header;
+    auto header_buffer = asio::buffer(&header, header_size());
+    asio::read(socket, header_buffer, asio::transfer_exactly(header_size()));
+    return header;
+}
+
+// Receive the message header
+Header Messenger::async_receive_header(asio::yield_context yield) {
+    Header header;
+    auto header_buffer = asio::buffer(&header, header_size());
+    asio::async_read(socket, header_buffer, asio::transfer_exactly(header_size()), yield);
+    return header;
+}
+
 // Send a string message
 void Messenger::send(const std::string &message, MessageType type) {
     auto message_size = message.size();
@@ -166,7 +182,7 @@ std::string Messenger::receive(MessageType type) {
 
 // Receive a string message asynchronously
 std::string Messenger::async_receive(asio::yield_context yield, MessageType type) {
-    auto header = async_receive_header(MessageType::string, yield);
+    auto header = async_receive_header(type, yield);
 
     // Read the message body
     asio::streambuf buffer;
@@ -179,70 +195,27 @@ std::string Messenger::async_receive(asio::yield_context yield, MessageType type
     return body;
 }
 
-// Receive a string message with a timeout
-std::string Messenger::receive(int timeout, int max_retries, MessageType type) {
-    int retries = 0;
-
-    // Create buffers to be used for header and body
+// Receive a string message asynchronously
+// If a heartbeat is sent ignore it
+// TODO : fix this mess and use a bitfield of some sort so we can use MessageType::string | MessageType::heartbeat
+std::string Messenger::async_receive_ignore_heartbeat(asio::yield_context yield, MessageType type) {
     Header header;
-    auto header_buffer = asio::buffer(&header, header_size());
-    asio::streambuf message_buffer;
-    std::string message;
 
-    asio::deadline_timer header_watchdog(socket.get_io_service());
-    asio::deadline_timer body_watchdog(socket.get_io_service());
+    do {
+        header = async_receive_header(yield);
+    } while(header.type == MessageType::heartbeat);
 
-    // Callbacks for header, body, and timeouts
-    timer_callback_t header_timed_out = [&](const boost::system::error_code &ec) {
-        if (ec == boost::asio::error::operation_aborted) {
-            return;
-        } else {
-            std::cout << "header watchdog!\n";
-        }
-    };
-    timer_callback_t body_timed_out = [&](const boost::system::error_code &ec) {
-        if (ec == boost::asio::error::operation_aborted) {
-            return;
-        } else {
-            std::cout << "body watchdog!\n";
-        }
-    };
-    receive_callback_t received_body = [&](const boost::system::error_code &ec, std::size_t size) {
-        if (ec || size != header.size) {
-            throw std::system_error(EBADMSG, std::generic_category(), "received message error!");
-        } else {
-            body_watchdog.cancel();
-            // Construct a string from the message body
-            message = std::string((std::istreambuf_iterator<char>(&message_buffer)),
-                                  std::istreambuf_iterator<char>());
-        }
+    // Read the message body
+    asio::streambuf buffer;
+    asio::async_read(socket, buffer, asio::transfer_exactly(header.size), yield);
 
-    };
+    // Construct a string from the message body
+    std::string body((std::istreambuf_iterator<char>(&buffer)),
+                     std::istreambuf_iterator<char>());
 
-    receive_callback_t received_header = [&](const boost::system::error_code &ec, std::size_t size) {
-        if (ec || header.type == MessageType::error) {
-            throw std::system_error(EBADMSG, std::generic_category(), "received message error!");
-        } else if (type != header.type) {
-            throw std::system_error(EBADMSG, std::generic_category(), "received bad message type");
-        } else {
-            header_watchdog.cancel();
-            body_watchdog.expires_from_now(boost::posix_time::seconds(timeout));
-            body_watchdog.async_wait(body_timed_out);
-            asio::async_read(socket, message_buffer, asio::transfer_exactly(header.size), received_body);
-        }
-    };
-
-    // Initiated header read
-    header_watchdog.expires_from_now(boost::posix_time::seconds(timeout));
-    header_watchdog.async_wait(header_timed_out);
-    asio::async_read(socket, header_buffer, asio::transfer_exactly(header_size()), received_header);
-
-    // Wait for all async operations to finish
-    socket.get_io_service().run();
-    socket.get_io_service().reset();
-
-    return message;
+    return body;
 }
+
 
 void Messenger::receive_file(boost::filesystem::path file_path, std::size_t chunk_size) {
     std::ofstream file;

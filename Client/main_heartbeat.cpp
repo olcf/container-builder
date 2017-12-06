@@ -81,56 +81,49 @@ int main(int argc, char *argv[]) {
                         // Send the definition file
                         builder_messenger->async_send_file(definition_path, yield);
 
+                        // Start listening for the heartbeat which is set by the builder every 10 seconds
+                        // The heartbeat is guarded by a watchdog that if triggered will cause the connection to be restarted
+                        asio::deadline_timer heartbeat(io_service);
+                        asio::deadline_timer watchdog(io_service);
+                        const auto timeout = boost::posix_time::seconds(15);
+
+                        // When a hang is detected we destroy the socket and attempt to create a new one
+                        // This is handled outside of the heartbeat coroutine as if it fires that coroutine will be jammed up
+                        timer_callback_t heartbeat_hung = [&](const boost::system::error_code& ec) {
+                            if (ec == boost::asio::error::operation_aborted) {
+                                return;
+                            }
+                            // Destroy the current socket
+                            builder_socket->cancel();
+                            builder_socket->close();
+
+                            // Try to resolve a new connection to the builder and reset the socket and messenger
+                            builder_socket = std::make_shared<tcp::socket>(io_service);
+                            tcp::resolver builder_resolver(io_service);
+                            boost::system::error_code e;
+                            do {
+                                asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}), e);
+                            } while (e != boost::system::errc::success);
+                            builder_messenger = std::make_shared<Messenger>(*builder_socket);
+                        };
+
                         // Read the build output until a zero length message is sent
                         std::string line;
                         do {
-                            line = builder_messenger->async_receive(yield);
+                            // arm/disarm watchdog
+                            watchdog.expires_from_now(timeout);
+                            watchdog.async_wait(heartbeat_hung);
+
+                            line = builder_messenger->async_receive_ignore_heartbeat(yield);
                             std::cout << line;
                         } while (!line.empty());
+                        watchdog.cancel();
 
                         // Read the container image
                         builder_messenger->async_receive_file(container_path, yield);
 
                         // Inform the queue we're done
                         queue_messenger.async_send("checkout_builder_complete", yield);
-                    });
-
-        // Start listening for the heartbeat which is set by the builder every 10 seconds
-        // The heartbeat is guarded by a watchdog that if triggered will cause the connection to be restarted
-        asio::deadline_timer heartbeat(io_service);
-        asio::deadline_timer watchdog(io_service);
-        const auto timeout = boost::posix_time::seconds(15);
-
-        // When a hang is detected we destroy the socket and attempt to create a new one
-        // This is handled outside of the heartbeat coroutine as if it fires that coroutine will be jammed up
-        timer_callback_t heartbeat_hung = [&](const boost::system::error_code& ec) {
-            if (ec == boost::asio::error::operation_aborted) {
-                return;
-            }
-            // Destroy the current socket
-            builder_socket->cancel();
-            builder_socket->close();
-
-            // Try to resolve a new connection to the builder and reset the socket and messenger
-            builder_socket = std::make_shared<tcp::socket>(io_service);
-            tcp::resolver builder_resolver(io_service);
-            boost::system::error_code e;
-            do {
-                asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}), e);
-            } while (e != boost::system::errc::success);
-            builder_messenger = std::make_shared<Messenger>(*builder_socket);
-        };
-
-        asio::spawn(io_service,
-                    [&](asio::yield_context yield) {
-                        for(;;) {
-                            // arm the watchdog
-                            watchdog.expires_from_now(timeout);
-                            watchdog.async_wait(heartbeat_hung);
-
-                            // Try to receive a heartbeat
-                            builder_messenger->async_receive_heartbeat(yield);
-                        }
                     });
 
         // Begin processing our connections and queue

@@ -19,7 +19,6 @@ std::string queue_host() {
     if (!env) {
         throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOST");
     }
-
     return std::string(env);
 }
 
@@ -66,22 +65,21 @@ int main(int argc, char *argv[]) {
         // Block until the initial connection to the builder is made
         std::shared_ptr<tcp::socket> builder_socket = std::make_shared<tcp::socket>(io_service);
         tcp::resolver builder_resolver(io_service);
-        boost::system::error_code ec;
-        do {
-            asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}), ec);
-        } while (ec != boost::system::errc::success);
+        // TODO handle timeouts?
+        asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}));
 
         std::cout << "Connected to builder host: " << builder.host << ":" << builder.port << std::endl;
 
         std::shared_ptr<Messenger> builder_messenger = std::make_shared<Messenger>(*builder_socket);
 
-        // When a hang is detected we destroy the socket and attempt to create a new one
-        // This is handled outside of the heartbeat coroutine as if it fires that coroutine will be jammed up
+        // When a hang is detected this callback will destroy the socket, wait for another connection, reset the messenger, and continue
         timer_callback_t heartbeat_hung = [&](const boost::system::error_code &ec) {
             // Ignore the timer being canceled
             if (ec != boost::system::errc::success) {
                 return;
             }
+
+            std::cout<<"Hang in there, we're resetting the socket\n";
 
             // Destroy the current socket
             builder_socket->cancel();
@@ -90,16 +88,15 @@ int main(int argc, char *argv[]) {
             // Try to resolve a new connection to the builder and reset the socket and messenger
             builder_socket = std::make_shared<tcp::socket>(io_service);
             tcp::resolver builder_resolver(io_service);
-            boost::system::error_code e;
-            do {
-                asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}), e);
-            } while (e != boost::system::errc::success);
+            asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}));
             builder_messenger = std::make_shared<Messenger>(*builder_socket);
         };
 
         // Once we're connected to the builder start the client process in the coroutine
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
+                        std::cout<<"Sending definition: "<<definition_path<<std::endl;
+
                         // Send the definition file
                         builder_messenger->async_send_file(definition_path, yield);
 
@@ -108,7 +105,8 @@ int main(int argc, char *argv[]) {
                         const auto timeout = boost::posix_time::seconds(15);
 
                         // Read the build output until a zero length message, that is not a heartbeat, is sent
-                        // TODO fix how heartbeat is dealt with, it's a mess for testing right now
+                        // TODO fix this mess with handling of the heartbeat
+                        std::cout<<"Start reading builder output:"<<std::endl;
                         std::string line;
                         do {
                             // Reset watchdog
@@ -123,11 +121,16 @@ int main(int argc, char *argv[]) {
                                 line = std::string("heartbeat");
                             }
                         } while (!line.empty());
+
                         watchdog.cancel();
 
                         // Read the container image
                         // TODO watchdog on file transfer
+                        std::cout<<"Begin receive of container: "<<container_path<<std::endl;
+
                         builder_messenger->async_receive_file(container_path, yield);
+
+                        std::cout<<"End receive of container: "<<container_path<<std::endl;
 
                         // Inform the queue we're done
                         queue_messenger.async_send("checkout_builder_complete", yield);

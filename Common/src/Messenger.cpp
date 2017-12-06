@@ -1,7 +1,7 @@
 #include "Messenger.h"
 
 // Send the header, which is the size and type of the message that will immediately follow
-void Messenger::send_header(std::size_t message_size, MessageType type) {
+void Messenger::send_header(std::size_t message_size, const MessageType& type) {
     Header header = {message_size, type};
     auto header_buffer = asio::buffer(&header, header_size());
     asio::write(socket, header_buffer, asio::transfer_exactly(header_size()));
@@ -32,7 +32,7 @@ Header Messenger::receive_header() {
 void Messenger::send(const std::string &message, MessageType type) {
     auto message_size = message.size();
 
-    send_header(message_size, MessageType::string);
+    send_header(message_size, type);
 
     // Write the message body
     auto body = asio::buffer(message.data(), message_size);
@@ -82,7 +82,7 @@ void Messenger::send_file(boost::filesystem::path file_path, std::size_t chunk_s
 
 // Receive a string message
 std::string Messenger::receive(MessageType type) {
-    auto header = receive_header(MessageType::string);
+    auto header = receive_header(type);
 
     // Read the message body
     asio::streambuf buffer;

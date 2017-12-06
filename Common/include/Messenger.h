@@ -215,7 +215,7 @@ public:
 private:
     tcp::socket &socket;
 
-    void send_header(std::size_t message_size, MessageType type);
+    void send_header(std::size_t message_size, const MessageType& type);
 
     // Send the header, which is the size and type of the message that will immediately follow, asynchronously
     template <typename Handler>

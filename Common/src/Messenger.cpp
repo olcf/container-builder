@@ -1,9 +1,4 @@
 #include "Messenger.h"
-#include <boost/asio/read.hpp>
-#include <boost/asio/write.hpp>
-#include <iostream>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
 
 // Send the header, which is the size and type of the message that will immediately follow
 void Messenger::send_header(std::size_t message_size, MessageType type) {

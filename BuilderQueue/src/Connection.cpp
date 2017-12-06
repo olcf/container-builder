@@ -9,7 +9,7 @@ void Connection::begin() {
                 [this, self](asio::yield_context yield) {
                     try {
                         Messenger messenger(socket);
-                        auto request = messenger.async_receive(yield);
+                        auto request = messenger.async_receive(yield, MessageType::string);
 
                         if (request == "checkout_builder_request")
                             checkout_builder(yield);
@@ -36,8 +36,7 @@ void Connection::checkout_builder(asio::yield_context yield) {
         messenger.async_send(builder, yield);
         logger::write(socket, "sent builder: " + builder.id + "(" + builder.host + ")");
 
-
-        auto complete = messenger.async_receive(yield);
+        auto complete = messenger.async_receive(yield, MessageType::string);
         if (complete == "checkout_builder_complete")
             logger::write(socket, "Client completed");
         else

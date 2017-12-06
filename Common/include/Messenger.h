@@ -6,6 +6,11 @@
 #include <boost/asio/spawn.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/asio/write.hpp>
+#include <iostream>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include "Builder.h"
 
 namespace asio = boost::asio;
@@ -36,17 +41,17 @@ public:
 
     // Send/Receive heartbeat
     template <typename Handler>
-    void Messenger::async_send_heartbeat(const Handler& handler) {
+    void async_send_heartbeat(const Handler& handler) {
         async_send_header(0, MessageType::heartbeat, handler);
     }
     template <typename Handler>
-    void Messenger::async_receive_heartbeat(const Handler& handler) {
+    void async_receive_heartbeat(const Handler& handler) {
         async_receive_header(MessageType::heartbeat, handler);
     }
 
     // Receive a string message asynchronously of the specified type
     template <typename Handler>
-    std::string Messenger::async_receive(const Handler& handler, MessageType type) {
+    std::string async_receive(const Handler& handler, MessageType type) {
         auto header = async_receive_header(type, handler);
 
         // Read the message body
@@ -61,7 +66,7 @@ public:
     }
 
     template <typename Handler>
-    void Messenger::async_receive_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size) {
+    void async_receive_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size) {
         std::ofstream file;
 
         // Throw exception if we run into any file issues
@@ -94,7 +99,7 @@ public:
 
     // Receive a string message asynchronously
     template <typename Handler>
-    std::string Messenger::async_receive(const Handler& handler, MessageType* type) {
+    std::string async_receive(const Handler& handler, MessageType* type) {
         auto header = async_receive_header(handler);
         *type = header.type;
 
@@ -111,7 +116,7 @@ public:
 
     // Send a string message asynchronously
     template <typename Handler>
-    void Messenger::async_send(const std::string &message, const Handler& handler, MessageType type) {
+    void async_send(const std::string &message, const Handler& handler, MessageType type) {
         auto message_size = message.size();
 
         async_send_header(message_size, MessageType::string, handler);
@@ -123,7 +128,7 @@ public:
 
     // Send a streambuf message asynchronously
     template <typename Handler>
-    void Messenger::async_send(asio::streambuf &message_body, const Handler& handler) {
+    void async_send(asio::streambuf &message_body, const Handler& handler) {
         auto message_size = message_body.size();
 
         async_send_header(message_size, MessageType::string, handler);
@@ -149,7 +154,7 @@ public:
 
     // Send a file as a message asynchronously
     template <typename Handler>
-    void Messenger::async_send_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size) {
+    void async_send_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size) {
         std::ifstream file;
 
         // Throw exception if we run into any file issues
@@ -179,7 +184,7 @@ public:
     }
 
     template <typename Handler>
-    Builder Messenger::async_receive_builder(const Handler& handler) {
+    Builder async_receive_builder(const Handler& handler) {
         Messenger messenger(socket);
 
         // Read in the serialized builder as a string
@@ -195,7 +200,7 @@ public:
     }
 
     template <typename Handler>
-    void Messenger::async_send(Builder builder, const Handler& handler) {
+    void async_send(Builder builder, const Handler& handler) {
         Messenger messenger(socket);
 
         // Serialize the builder into a string
@@ -218,7 +223,7 @@ private:
 
     // Send the header, which is the size and type of the message that will immediately follow, asynchronously
     template <typename Handler>
-    void Messenger::async_send_header(std::size_t message_size, MessageType type, const Handler& handler) {
+    void async_send_header(std::size_t message_size, MessageType type, const Handler& handler) {
         Header header = {message_size, type};
         auto header_buffer = asio::buffer(&header, header_size());
         asio::async_write(socket, header_buffer, asio::transfer_exactly(header_size()), handler);
@@ -226,9 +231,9 @@ private:
 
     Header receive_header(const MessageType& type);
 
-// Receive the message header
+    // Receive the message header
     template <typename Handler>
-    Header Messenger::async_receive_header(const MessageType &type, const Handler& handler) {
+    Header async_receive_header(const MessageType &type, const Handler& handler) {
         Header header;
         auto header_buffer = asio::buffer(&header, header_size());
         asio::async_read(socket, header_buffer, asio::transfer_exactly(header_size()), handler);
@@ -244,7 +249,7 @@ private:
 
     // Receive the message header
     template <typename Handler>
-    Header Messenger::async_receive_header(const Handler& handler) {
+    Header async_receive_header(const Handler& handler) {
         Header header;
         auto header_buffer = asio::buffer(&header, header_size());
         asio::async_read(socket, header_buffer, asio::transfer_exactly(header_size()), handler);

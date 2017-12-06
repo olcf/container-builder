@@ -180,7 +180,7 @@ std::string Messenger::receive(MessageType type) {
     return body;
 }
 
-// Receive a string message asynchronously
+// Receive a string message asynchronously of the specified type
 std::string Messenger::async_receive(asio::yield_context yield, MessageType type) {
     auto header = async_receive_header(type, yield);
 
@@ -196,14 +196,9 @@ std::string Messenger::async_receive(asio::yield_context yield, MessageType type
 }
 
 // Receive a string message asynchronously
-// If a heartbeat is sent ignore it
-// TODO : fix this mess and use a bitfield of some sort so we can use MessageType::string | MessageType::heartbeat
-std::string Messenger::async_receive_ignore_heartbeat(asio::yield_context yield, MessageType type) {
-    Header header;
-
-    do {
-        header = async_receive_header(yield);
-    } while(header.type == MessageType::heartbeat);
+std::string Messenger::async_receive(asio::yield_context yield, MessageType* type) {
+    auto header = async_receive_header(yield);
+    *type = header.type;
 
     // Read the message body
     asio::streambuf buffer;
@@ -215,7 +210,6 @@ std::string Messenger::async_receive_ignore_heartbeat(asio::yield_context yield,
 
     return body;
 }
-
 
 void Messenger::receive_file(boost::filesystem::path file_path, std::size_t chunk_size) {
     std::ofstream file;

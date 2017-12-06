@@ -46,7 +46,7 @@ public:
     // Receive message as a string
     std::string receive(MessageType type);
     std::string async_receive(asio::yield_context yield, MessageType type=MessageType::string);
-    std::string async_receive_ignore_heartbeat(asio::yield_context yield, MessageType type=MessageType::string);
+    std::string async_receive(asio::yield_context yield, MessageType *type);
 
     // Send entire contents of streambuf
     void async_send(asio::streambuf &message_body, asio::yield_context yield);

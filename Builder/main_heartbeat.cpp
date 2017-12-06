@@ -76,19 +76,21 @@ int main(int argc, char *argv[]) {
                         };
                     });
 
-        // Start the heartbeat which will let the client know we're alive every 15 seconds
+        // Start the heartbeat which will let the client know we're alive every `pulse` seconds
         // The heartbeat is guarded by a watchdog that if triggered will cause the connection to be restarted
         asio::deadline_timer heartbeat(io_service);
         asio::deadline_timer watchdog(io_service);
-        const auto pulse = boost::posix_time::seconds(15);
-        const auto timeout = boost::posix_time::seconds(10);
+        const auto pulse = boost::posix_time::seconds(5);
+        const auto timeout = boost::posix_time::seconds(15);
 
         // When a hang is detected we destroy the socket and attempt to create a new one
         // This is handled outside of the heartbeat coroutine as if it fires that coroutine will be jammed up
         timer_callback_t heartbeat_hung = [&](const boost::system::error_code& ec) {
-            if (ec == boost::asio::error::operation_aborted) {
+            // Ignore the timer being canceled
+            if (ec != boost::system::errc::success) {
                 return;
             }
+
             // Destroy the current socket
             socket->cancel();
             socket->close();
@@ -113,9 +115,6 @@ int main(int argc, char *argv[]) {
                             heartbeat.expires_from_now(pulse);
                             // Wait until the next heartbeat
                             heartbeat.async_wait(yield);
-
-                            // stand down watchdog
-                            watchdog.cancel();
                         }
                     });
 

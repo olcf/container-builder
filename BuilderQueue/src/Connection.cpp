@@ -43,6 +43,6 @@ void Connection::checkout_builder(asio::yield_context yield) {
         else
             logger::write(socket, "Client complete error: " + complete);
     } catch (std::exception &e) {
-        logger::write(socket, "checkout_builder disconnect");
+        logger::write(socket, "Exception: checkout_builder disconnect:" + std::string(e.what()));
     }
 }

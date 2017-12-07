@@ -61,14 +61,13 @@ int main(int argc, char *argv[]) {
                         asio::streambuf buffer;
                         boost::regex line_matcher{"\\r|\\n"};
                         std::size_t read_size = 0;
-
+                        boost::system::error_code err_code;
                         do {
                             // Read from the pipe into a buffer
-                            read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield);
-
+                            read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield[err_code]);
                             // Write the buffer to our socket
                             messenger.async_send(buffer, yield);
-                        } while (read_size > 0);
+                        } while (read_size > 0 && err_code == boost::system::errc::success);
 
                         // Get the return value from the build subprocess
                         logger::write(socket, "Waiting on build process to exit");

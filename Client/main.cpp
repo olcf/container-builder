@@ -82,11 +82,13 @@ int main(int argc, char *argv[]) {
                         builder_messenger.async_send_file(definition_path, yield);
 
                         std::cout << "Start reading builder output:" << std::endl;
-                        std::string line;
-                        boost::system::error_code read_ec;
 
+                        // Hide the cursor so it doesn't jump all around the screen
+                        std::cout<<"\e[?25l"<<std::flush;
+
+                        std::string line;
                         do {
-                            auto line = builder_messenger.async_receive(yield);
+                            line = builder_messenger.async_receive(yield);
                             std::cout << line;
                         } while (!line.empty());
 
@@ -109,6 +111,10 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "Client shutting down\n";
+
+    // Show the cursor
+    std::cout<<"\e[?25h"<<std::flush;
+
 
     return 0;
 }

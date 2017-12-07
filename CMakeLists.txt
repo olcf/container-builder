@@ -46,22 +46,20 @@ add_executable(BuilderQueue ${SOURCE_FILES_QUEUE})
 add_executable(ContainerBuilder ${SOURCE_FILES_BUILDER})
 add_executable(ContainerBuilderClient ${SOURCE_FILES_CLIENT})
 
+# ignore coroutines deprecation
+add_definitions(-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
+
 set(HARDENING_FLAGS "-Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIE -fpie -fno-omit-frame-pointer")
 # https://github.com/boostorg/coroutine/issues/30
 # -fsanitize=address,undefined -fno-sanitize=vptr -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen
 
 
 set_target_properties(BuilderQueue PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(BuilderQueue
-        PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(ContainerBuilder
-        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(ContainerBuilder
-        PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(ContainerBuilderClient
-        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(ContainerBuilderClient
-        PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(BuilderQueue PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(ContainerBuilder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(ContainerBuilder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(ContainerBuilderClient PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(ContainerBuilderClient PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -75,4 +73,4 @@ target_link_libraries(BuilderQueue ${Boost_LIBRARIES})
 target_link_libraries(ContainerBuilder ${Boost_LIBRARIES})
 target_link_libraries(ContainerBuilderClient ${Boost_LIBRARIES})
 
-install (TARGETS BuilderQueue ContainerBuilder ContainerBuilderClient RUNTIME DESTINATION bin)
+install(TARGETS BuilderQueue ContainerBuilder ContainerBuilderClient RUNTIME DESTINATION bin)

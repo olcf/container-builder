@@ -50,15 +50,20 @@ void Messenger::send(asio::streambuf &message_body) {
 }
 
 // Send a file as a message
-void Messenger::send_file(boost::filesystem::path file_path, std::size_t chunk_size) {
+void Messenger::send_file(boost::filesystem::path file_path) {
     std::ifstream file;
+
+    // Get the socket receive buffer size and use that as the chunk size
+    boost::asio::socket_base::send_buffer_size option;
+    socket.get_option(option);
+    std::size_t chunk_size = option.value();
 
     // Throw exception if we run into any file issues
     file.exceptions(std::fstream::failbit | std::ifstream::badbit);
 
     // Open file and get size
     file.open(file_path.string(), std::fstream::in | std::fstream::binary);
-    auto file_size = boost::filesystem::file_size(file_path);
+    std::size_t file_size = boost::filesystem::file_size(file_path);
 
     // Send message header
     send_header(file_size, MessageType::file);
@@ -95,8 +100,13 @@ std::string Messenger::receive(MessageType type) {
     return body;
 }
 
-void Messenger::receive_file(boost::filesystem::path file_path, std::size_t chunk_size) {
+void Messenger::receive_file(boost::filesystem::path file_path) {
     std::ofstream file;
+
+    // Get the socket receive buffer size and use that as the chunk size
+    boost::asio::socket_base::receive_buffer_size option;
+    socket.get_option(option);
+    std::size_t chunk_size = option.value();
 
     // Throw exception if we run into any file issues
     file.exceptions(std::fstream::failbit | std::ifstream::badbit);

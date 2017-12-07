@@ -56,8 +56,13 @@ public:
 
     // TODO set chunk size to the size of the socket receive buffer?
     template <typename Handler>
-    void async_receive_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size=1024) {
+    void async_receive_file(boost::filesystem::path file_path, const Handler& handler) {
         std::ofstream file;
+
+        // Get the socket receive buffer size and use that as the chunk size
+        boost::asio::socket_base::receive_buffer_size option;
+        socket.get_option(option);
+        std::size_t chunk_size = option.value();
 
         // Throw exception if we run into any file issues
         file.exceptions(std::fstream::failbit | std::ifstream::badbit);
@@ -138,15 +143,20 @@ public:
     void send(asio::streambuf &message_body);
 
     // Send a file in multiple chunk_size peices
-    void send_file(boost::filesystem::path file_path, std::size_t chunk_size = 1024);
+    void send_file(boost::filesystem::path file_path);
     // Read a file in multiple chunk_size peices
-    void receive_file(boost::filesystem::path file_path, std::size_t chunk_size = 1024);
+    void receive_file(boost::filesystem::path file_path);
 
     // TODO set chunk size to the size of the socket receive buffer?
     // Send a file as a message asynchronously
     template <typename Handler>
-    void async_send_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size=1024) {
+    void async_send_file(boost::filesystem::path file_path, const Handler& handler) {
         std::ifstream file;
+
+        // Get the socket receive buffer size and use that as the chunk size
+        boost::asio::socket_base::send_buffer_size option;
+        socket.get_option(option);
+        std::size_t chunk_size = option.value();
 
         // Throw exception if we run into any file issues
         file.exceptions(std::fstream::failbit | std::ifstream::badbit);

@@ -18,9 +18,6 @@
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
-using receive_callback_t = std::function<void(const boost::system::error_code &ec, std::size_t size)>;
-using timer_callback_t = std::function<void(const boost::system::error_code &ec)>;
-
 // Enum to handle message type, used to ensure
 enum class MessageType : unsigned char {
     string,
@@ -44,6 +41,22 @@ public:
     template <typename Handler>
     std::string async_receive(const Handler& handler, MessageType type=MessageType::string) {
         auto header = async_receive_header(type, handler);
+
+        // Read the message body
+        asio::streambuf buffer;
+        asio::async_read(socket, buffer, asio::transfer_exactly(header.size), handler);
+
+        // Construct a string from the message body
+        std::string body((std::istreambuf_iterator<char>(&buffer)),
+                         std::istreambuf_iterator<char>());
+
+        return body;
+    }
+
+    template <typename Handler>
+    std::string async_receive(const Handler& handler, MessageType* type) {
+        auto header = async_receive_header(handler);
+        *type = header.type;
 
         // Read the message body
         asio::streambuf buffer;
@@ -95,28 +108,13 @@ public:
 
             bytes_remaining -= bytes_received;
 
-            ++(*progress_bar);
+            if(print_progress) {
+                ++(*progress_bar);
+            }
 
         } while (bytes_remaining);
 
         file.close();
-    }
-
-    // Receive a string message asynchronously
-    template <typename Handler>
-    std::string async_receive(const Handler& handler, MessageType* type) {
-        auto header = async_receive_header(handler);
-        *type = header.type;
-
-        // Read the message body
-        asio::streambuf buffer;
-        asio::async_read(socket, buffer, asio::transfer_exactly(header.size), handler);
-
-        // Construct a string from the message body
-        std::string body((std::istreambuf_iterator<char>(&buffer)),
-                         std::istreambuf_iterator<char>());
-
-        return body;
     }
 
     // Send a string message asynchronously

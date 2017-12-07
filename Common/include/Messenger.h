@@ -12,6 +12,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include "Builder.h"
+#include <boost/progress.hpp>
+#include <memory.h>
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -56,7 +58,7 @@ public:
 
     // TODO set chunk size to the size of the socket receive buffer?
     template <typename Handler>
-    void async_receive_file(boost::filesystem::path file_path, const Handler& handler) {
+    void async_receive_file(boost::filesystem::path file_path, const Handler& handler, const bool print_progress=false) {
         std::ofstream file;
 
         // Get the socket receive buffer size and use that as the chunk size
@@ -73,6 +75,12 @@ public:
         auto header = async_receive_header(MessageType::file, handler);
         auto total_size = header.size;
 
+        // If requested initialize a progress bar
+        std::shared_ptr<boost::progress_display> progress_bar;
+        if(print_progress) {
+            progress_bar = std::make_shared<boost::progress_display>(total_size / chunk_size);
+        }
+
         // Receive file in chunk_size messages
         auto bytes_remaining = total_size;
         std::vector<char> buffer_storage(chunk_size);
@@ -86,6 +94,8 @@ public:
             file.write(buffer_storage.data(), bytes_received);
 
             bytes_remaining -= bytes_received;
+
+            ++(*progress_bar);
 
         } while (bytes_remaining);
 
@@ -150,7 +160,7 @@ public:
     // TODO set chunk size to the size of the socket receive buffer?
     // Send a file as a message asynchronously
     template <typename Handler>
-    void async_send_file(boost::filesystem::path file_path, const Handler& handler) {
+    void async_send_file(boost::filesystem::path file_path, const Handler& handler, const bool print_progress=false) {
         std::ifstream file;
 
         // Get the socket receive buffer size and use that as the chunk size
@@ -167,6 +177,12 @@ public:
 
         async_send_header(file_size, MessageType::file, handler);
 
+        // If requested initialize a progress bar
+        std::shared_ptr<boost::progress_display> progress_bar;
+        if(print_progress) {
+            progress_bar = std::make_shared<boost::progress_display>(file_size / chunk_size);
+        }
+
         // Send file in chunk_size bits
         auto bytes_remaining = file_size;
         std::vector<char> buffer_storage(chunk_size);
@@ -179,6 +195,10 @@ public:
             auto bytes_sent = asio::async_write(socket, buffer, asio::transfer_exactly(bytes_to_send), handler);
 
             bytes_remaining -= bytes_sent;
+
+            if(print_progress) {
+                ++(*progress_bar);
+            }
         } while (bytes_remaining);
 
         file.close();

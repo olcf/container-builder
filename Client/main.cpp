@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
                         std::cout << "Sending definition: " << definition_path << std::endl;
 
                         // Send the definition file
-                        builder_messenger.async_send_file(definition_path, yield);
+                        builder_messenger.async_send_file(definition_path, yield, true);
 
                         std::cout << "Start reading builder output:" << std::endl;
 
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
                         // Read the container image
                         std::cout << "Begin receive of container: " << container_path << std::endl;
 
-                        builder_messenger.async_receive_file(container_path, yield);
+                        builder_messenger.async_receive_file(container_path, yield, true);
 
                         std::cout << "End receive of container: " << container_path << std::endl;
 

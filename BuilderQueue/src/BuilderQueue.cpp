@@ -41,8 +41,8 @@ void BuilderQueue::tick(asio::yield_context yield) {
     }
 
     // Caclulate the total allowable builders
-    auto builder_count = active_builders + cached_builders.size() + outstanding_builder_requests;
-    auto open_slots = max_builders - builder_count;
+    auto all_builder_count = active_builders + cached_builders.size() + outstanding_builder_requests;
+    auto open_slots = max_builders - all_builder_count;
 
     // Calculate if any cached slots are available
     auto open_cache_slots = max_cached_builders - cached_builders.size();
@@ -50,16 +50,15 @@ void BuilderQueue::tick(asio::yield_context yield) {
     // If slots are available attempt to fill them
     auto request_count = std::min(open_slots, open_cache_slots);
 
-    for (int i = 0; i < request_count; i++) {
-        outstanding_builder_requests++;
+    for (int i=0; i < request_count; i++) {
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
+                        outstanding_builder_requests++;
                         auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
                         if (opt_builder) {
                             cached_builders.push(opt_builder.get());
                         }
+                        outstanding_builder_requests--;
                     });
-        outstanding_builder_requests--;
-
     }
 }

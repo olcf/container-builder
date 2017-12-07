@@ -24,7 +24,6 @@ enum class MessageType : unsigned char {
     string,
     builder,
     file,
-    heartbeat,
     error
 };
 
@@ -39,19 +38,9 @@ class Messenger {
 public:
     explicit Messenger(tcp::socket &socket) : socket(socket) {}
 
-    // Send/Receive heartbeat
-    template <typename Handler>
-    void async_send_heartbeat(const Handler& handler) {
-        async_send_header(0, MessageType::heartbeat, handler);
-    }
-    template <typename Handler>
-    void async_receive_heartbeat(const Handler& handler) {
-        async_receive_header(MessageType::heartbeat, handler);
-    }
-
     // Receive a string message asynchronously of the specified type
     template <typename Handler>
-    std::string async_receive(const Handler& handler, MessageType type) {
+    std::string async_receive(const Handler& handler, MessageType type=MessageType::string) {
         auto header = async_receive_header(type, handler);
 
         // Read the message body
@@ -65,6 +54,7 @@ public:
         return body;
     }
 
+    // TODO set chunk size to the size of the socket receive buffer?
     template <typename Handler>
     void async_receive_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size=1024) {
         std::ofstream file;
@@ -152,6 +142,7 @@ public:
     // Read a file in multiple chunk_size peices
     void receive_file(boost::filesystem::path file_path, std::size_t chunk_size = 1024);
 
+    // TODO set chunk size to the size of the socket receive buffer?
     // Send a file as a message asynchronously
     template <typename Handler>
     void async_send_file(boost::filesystem::path file_path, const Handler& handler, std::size_t chunk_size=1024) {

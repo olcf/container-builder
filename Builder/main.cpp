@@ -1,97 +1,97 @@
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <fstream>
-#include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/read_until.hpp>
+#include <boost/asio/spawn.hpp>
 #include <boost/process.hpp>
 #include <boost/regex.hpp>
-#include "Messenger.h"
+#include <iostream>
 #include "Logger.h"
+#include "Messenger.h"
+#include <memory>
 
 namespace asio = boost::asio;
-namespace bp = boost::process;
 using asio::ip::tcp;
-using callback_type = std::function<void(const boost::system::error_code&, std::size_t size)>;
+namespace bp = boost::process;
 
 int main(int argc, char *argv[]) {
+
     try {
-        // Accept a connection to use this builder
+        // Block until the initial client connects
         asio::io_service io_service;
         tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8080));
         tcp::socket socket(io_service);
         acceptor.accept(socket);
 
-        logger::write("Received connection from: " + boost::lexical_cast<std::string>(socket.remote_endpoint()));
+        logger::write(socket, "Client connected");
 
-        // Read the recipe file
-        Messenger client_messenger(socket);
-        client_messenger.receive_file("container.def");
+        Messenger messenger(socket);
 
-        logger::write("Recipe file received");
+        // Once we're connected start the build process
+        asio::spawn(io_service,
+                    [&](asio::yield_context yield) {
+                        // Receive the definition file from the client
+                        messenger.async_receive_file("container.def", yield);
 
-        // Create a pipe to communicate with our build subprocess
-        bp::async_pipe std_pipe(io_service);
+                        logger::write(socket, "Received container.def");
 
-        // Launch our build as a subprocess
-        // We use "unbuffer" to fake the build into thinking it has a real TTY, which the command output eventually will
-        // This causes things like wget and color ls to work nicely
-        // TODO : perhaps set TERM as well to something like xterm ?
-        std::string build_command("/usr/bin/sudo /usr/bin/unbuffer /usr/local/bin/singularity build ./container.img ./container.def");
+                        // Create a pipe to communicate with our build subprocess
+                        bp::async_pipe std_pipe(io_service);
 
-        bp::group group;
-        std::error_code build_ec;
-        bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group, build_ec);
-        if(build_ec) {
-            logger::write("subprocess error: " + build_ec.message());
-        }
+                        // Launch our build as a subprocess
+                        // We use "unbuffer" to fake the build into thinking it has a real TTY, which the command output eventually will
+                        // This causes things like wget and color ls to work nicely
+                        std::string build_command(
+                                "/usr/bin/sudo /usr/bin/unbuffer /usr/local/bin/singularity build ./container.img ./container.def");
 
-        logger::write("Running build command: " + build_command);
+                        bp::group group;
+                        std::error_code build_ec;
+                        bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe,
+                                              group, build_ec);
+                        if (build_ec) {
+                            logger::write(socket, "subprocess error: " + build_ec.message());
+                        }
 
-        // Read process pipe output and write it to the client
-        // line buffer(ish) by reading from the pipe until we hit \n, \r
-        // NOTE: read_until will fill buffer until line_matcher is satisfied but generally will contain additional data.
-        // This is fine as all we care about is dumping everything from std_pipe to our buffer and don't require exact line buffering
-        // TODO: just call read_some perhaps?
-        asio::streambuf buffer;
-        boost::regex line_matcher{"\\r|\\n"};
+                        logger::write(socket, "launched build process: " + build_command);
 
-        // Callback for handling reading from pipe and sending output to client
-        callback_type read_std_pipe = [&](const boost::system::error_code& ec, std::size_t size) {
-            client_messenger.send(buffer);
+                        // Read process pipe output and write it to the client
+                        // line buffer(ish) by reading from the pipe until we hit \n, \r
+                        // NOTE: read_until will fill buffer until line_matcher is satisfied but generally will contain additional data.
+                        // This is fine as all we care about is dumping everything from std_pipe to our buffer and don't require exact line buffering
+                        // TODO: just call read_some perhaps?
+                        asio::streambuf buffer;
+                        boost::regex line_matcher{"\\r|\\n"};
+                        std::size_t read_size = 0;
 
-            if(size > 0) {
-                asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
-            }
-            else if(ec == asio::error::eof) {
-                logger::write("build output EOF");
-            }
-            else {
-                throw std::system_error(EBADMSG, std::generic_category(), "Error reading build output" + ec.message());
-            }
-        };
-        // Start reading child stdout/err from pipe
-        asio::async_read_until(std_pipe, buffer, line_matcher, read_std_pipe);
+                        do {
+                            // Read from the pipe into a buffer
+                            read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield);
 
+                            // Write the buffer to our socket
+                            messenger.async_send(buffer, yield);
+                        } while (read_size > 0);
+
+                        // Get the return value from the build subprocess
+                        logger::write(socket, "Waiting on build process to exit");
+                        build_child.wait();
+                        int build_code = build_child.exit_code();
+
+                        // Send the container to the client
+                        if (build_code == 0) {
+                            logger::write(socket, "Build complete, sending container");
+                            messenger.send_file("container.img");
+                        } else {
+                            logger::write(socket, "Build failed, not sending container");
+                        }
+                    });
+
+        // Begin processing our connections and queue
         io_service.run();
-
-        // Get the return value from the build subprocess
-        build_child.wait();
-        int build_code = build_child.exit_code();
-
-        logger::write("Sending image to client");
-
-        // Send the container to the client
-        if(build_code == 0) {
-            logger::write("Image failed to build");
-            client_messenger.send_file("container.img");
-        }
-
-        logger::write("Finished sending image to client");
     }
     catch (std::exception &e) {
-        logger::write(std::string("Build error: ") + e.what());
+        logger::write(std::string() + "Build server exception: " + e.what());
     }
+
+    logger::write("Builder shutting down");
 
     return 0;
 }

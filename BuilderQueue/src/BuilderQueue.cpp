@@ -51,9 +51,9 @@ void BuilderQueue::tick(asio::yield_context yield) {
     auto request_count = std::min(open_slots, open_cache_slots);
 
     for (int i=0; i < request_count; i++) {
+        outstanding_builder_requests++;
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
-                        outstanding_builder_requests++;
                         auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
                         if (opt_builder) {
                             cached_builders.push(opt_builder.get());

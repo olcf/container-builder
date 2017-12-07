@@ -69,6 +69,12 @@ Restart=no
 WantedBy=multi-user.target
 EOF
 systemctl enable ContainerBuilder
+
+# Disable TCP time stamps - ORNL seems to be jacking them up and causing the connection to drop at the 5 minute mark
+at << EOF > /etc/sysctl.d/51-net.conf
+net.ipv4.tcp_timestamps = 0
+EOF
+
 reboot
 
 # To check that the Builder service is running

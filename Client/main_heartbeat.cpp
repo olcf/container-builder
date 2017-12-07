@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
             tcp::resolver builder_resolver(io_service);
             do {
                 asio::connect(*builder_socket, builder_resolver.resolve({builder.host, builder.port}), connect_ec);
-            } while (ec != boost::system::errc::success);
+            } while (connect_ec != boost::system::errc::success);
             builder_messenger = std::make_shared<Messenger>(*builder_socket);
         };
 

@@ -29,31 +29,37 @@ void BuilderQueue::tick(asio::yield_context yield) {
 
     // Assign any unused builders to outstanding reservations
     for (auto &reservation : reservations) {
-        if (unused_builders.empty()) {
+        if (cached_builders.empty()) {
             break;
         }
         if (reservation.pending()) {
-            auto builder = unused_builders.front();
+            auto builder = cached_builders.front();
             reservation.ready(builder);
-            unused_builders.pop();
+            cached_builders.pop();
             active_builders++;
         }
     }
 
-    // Attempt to create a new builder if there is space
-    // Requesting a new builder may take quite a bit of time so it's done in a coroutine
-    auto used_builder_count = active_builders + unused_builders.size() + outstanding_builder_requests;
-    auto total_builder_space_left = max_builders - used_builder_count;
-    auto unused_builder_space = unused_builders.size() < max_unused_builders;
-    if (total_builder_space_left > 0 && unused_builder_space > 0) {
+    // Caclulate the total allowable builders
+    auto builder_count = active_builders + cached_builders.size() + outstanding_builder_requests;
+    auto open_slots = max_builders - builder_count;
+
+    // Calculate if any cached slots are available
+    auto open_cache_slots = max_cached_builders - cached_builders.size();
+
+    // If slots are available attempt to fill them
+    auto request_count = std::min(open_slots, open_cache_slots);
+
+    for (int i = 0; i < request_count; i++) {
+        outstanding_builder_requests++;
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
-                        outstanding_builder_requests++;
                         auto opt_builder = OpenStackBuilder::request_create(io_service, yield);
                         if (opt_builder) {
-                            unused_builders.push(opt_builder.get());
+                            cached_builders.push(opt_builder.get());
                         }
-                        outstanding_builder_requests--;
                     });
+        outstanding_builder_requests--;
+
     }
 }

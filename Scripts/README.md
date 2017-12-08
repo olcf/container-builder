@@ -42,7 +42,7 @@ During bring up `openrc.sh` will be copied to `/home/queue` on the `BuilderQueue
 
 To login to the queue or a builder:
 ```
-ssh -i ./ContainerBuilder cades@<BuilderQueueIP/BuilderIP>
+ssh -i ./ContainerBuilderKey cades@<BuilderQueueIP/BuilderIP>
 ```
 
 To destroy a new queue instance:

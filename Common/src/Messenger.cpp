@@ -72,10 +72,14 @@ void Messenger::send_file(boost::filesystem::path file_path) {
     auto bytes_remaining = file_size;
     std::vector<char> buffer_storage(chunk_size);
     auto buffer = asio::buffer(buffer_storage);
+    boost::crc_32_type csc_result;
+
     do {
         auto bytes_to_send = std::min(bytes_remaining, chunk_size);
 
         file.read(buffer_storage.data(), bytes_to_send);
+
+        csc_result.process_bytes(buffer_storage.data(), bytes_to_send);
 
         auto bytes_sent = asio::write(socket, buffer, asio::transfer_exactly(bytes_to_send));
 
@@ -83,6 +87,12 @@ void Messenger::send_file(boost::filesystem::path file_path) {
     } while (bytes_remaining);
 
     file.close();
+
+    // After we've sent the file we send the checksum
+    // This would make more logical sense in the header but would require us to traverse a potentialy large file twice
+    auto checksum = csc_result.checksum();
+    auto checksum_size = sizeof(boost::crc_32_type::value_type);
+    asio::write(socket, asio::buffer(&checksum, checksum_size), asio::transfer_exactly(checksum_size));
 }
 
 // Receive a string message
@@ -121,6 +131,7 @@ void Messenger::receive_file(boost::filesystem::path file_path) {
     auto bytes_remaining = total_size;
     std::vector<char> buffer_storage(chunk_size);
     auto buffer = asio::buffer(buffer_storage);
+    boost::crc_32_type csc_result;
 
     do {
         auto bytes_to_receive = std::min(bytes_remaining, chunk_size);
@@ -129,11 +140,24 @@ void Messenger::receive_file(boost::filesystem::path file_path) {
 
         file.write(buffer_storage.data(), bytes_received);
 
+        csc_result.process_bytes(buffer_storage.data(), bytes_received);
+
         bytes_remaining -= bytes_received;
 
     } while (bytes_remaining);
 
     file.close();
+
+    // After we've read the file we read the checksum and throw if they do not match
+    auto checksum = csc_result.checksum();
+    auto checksum_size = sizeof(boost::crc_32_type::value_type);
+
+    boost::crc_32_type::value_type sent_checksum;
+    asio::read(socket, asio::buffer(&sent_checksum, checksum_size), asio::transfer_exactly(checksum_size));
+
+    if(checksum != sent_checksum) {
+        throw std::runtime_error("Error, file checksums do not match");
+    }
 }
 
 Builder Messenger::receive_builder() {

@@ -83,8 +83,9 @@ int main(int argc, char *argv[]) {
 
                         std::cout << "Start reading builder output:" << std::endl;
 
-                        // Hide the cursor so it doesn't jump all around the screen
+                        // Hide the cursor and disable buffering for cleaner output
                         std::cout<<"\e[?25l"<<std::flush;
+                        std::cout.setf(std::ios::unitbuf);
 
                         std::string line;
                         do {

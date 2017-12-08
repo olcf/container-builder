@@ -2,3 +2,4 @@ build/*
 .venv/*
 Scripts/openrc.sh
 Scripts/ContainerBuilderKey
+*.swp

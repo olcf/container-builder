@@ -7,8 +7,40 @@ Reservation &BuilderQueue::enter() {
     return reservations.back();
 }
 
-void BuilderQueue::tick() {
-    // Process pending reservations
+void BuilderQueue::tick(asio::yield_context yield) {
+    // Update list of "Active" OpenStack builders
+    auto all_builders = OpenStackBuilder::get_builders(io_service, yield);
+    std::set<Builder> unavailable_builders;
+
+    // Process reservations
+    for (auto &reservation : reservations) {
+        // Set unavailable builders, that is builders which are attached to a reservation
+        if (reservation.builder) {
+            unavailable_builders.insert(reservation.builder.get());
+
+            // If the reservation is complete delete the builder
+            if (reservation.complete()) {
+                asio::spawn(io_service,
+                            [&](asio::yield_context yield) {
+                                OpenStackBuilder::destroy(reservation.builder.get(), io_service, yield);
+                                reservation.builder = boost::none;
+                            });
+            }
+        }
+    }
+
+    // Delete reservations that are completed and don't have an active builder associated with them
+    reservations.remove_if([](const auto &reservation) {
+        return reservation.complete() && !reservation.builder;
+    });
+
+    // Available_builders = all_builders - unavailable_builders
+    std::set<Builder> available_builders;
+    std::set_difference(all_builders.begin(), all_builders.end(),
+                        unavailable_builders.begin(), unavailable_builders.end(),
+                        std::inserter(available_builders, available_builders.begin()));
+
+    // Assign builders to any pending reservations
     for (auto &reservation : reservations) {
         if (reservation.pending() && !available_builders.empty()) {
             reservation.ready(*available_builders.begin());
@@ -16,48 +48,16 @@ void BuilderQueue::tick() {
         }
     }
 
-
-
-    // Update OpenStack by creating and removing builders as required
-    // This section can take quite some time so is done in a coroutine
-    if (!update_in_progress) {
-        update_in_progress = true;
+    // Request new builders if slots are open
+    auto open_slots = max_builders - all_builders.size() - pending_requests;
+    auto open_available_slots = max_available_builders - available_builders.size() - pending_requests;
+    auto request_count = std::min(open_slots, open_available_slots);
+    for (auto i=0; i < request_count; i++) {
+        pending_requests++;
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
-                        auto all_builders = OpenStackBuilder::get_builders(io_service, yield);
-                        std::set<Builder> unavailable_builders;
-
-                        // Update reservation information
-                        for (auto &reservation : reservations) {
-                            if (reservation.builder) {
-                                unavailable_builders.insert(reservation.builder.get());
-                            }
-                            if (reservation.complete()) {
-                                OpenStackBuilder::destroy(reservation.builder.get(), io_service, yield);
-                            };
-                        }
-
-                        // TODO handle error state builders - potentially in destroy script?
-
-                        // Remove all completed reservations
-                        reservations.remove_if([](const auto &res) {
-                            return res.complete();
-                        });
-
-                        // Available_builders = all_builders - unavailable_builders
-                        std::set_difference(all_builders.begin(), all_builders.end(),
-                                            unavailable_builders.begin(), unavailable_builders.end(),
-                                            std::inserter(available_builders, available_builders.begin()));
-
-                        // Spin up builders so we have the requested available
-                        auto open_slots = max_builders - all_builders.size();
-                        auto open_available_slots = max_available_builders - available_builders.size();
-                        auto request_count = std::min(open_slots, open_available_slots);
-                        for (auto i = 0; i < request_count; i++) {
-                            OpenStackBuilder::request_create(io_service, yield);
-                        }
-                        update_in_progress = false;
+                        OpenStackBuilder::request_create(io_service, yield);
+                        pending_requests--;
                     });
     }
-
 }

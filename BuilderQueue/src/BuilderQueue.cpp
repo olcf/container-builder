@@ -40,24 +40,24 @@ void BuilderQueue::tick(asio::yield_context yield) {
                         unavailable_builders.begin(), unavailable_builders.end(),
                         std::inserter(available_builders, available_builders.begin()));
 
-    // Request new builders to fill up "reserve"
+    // Assign builders to any pending reservations
+    for (auto &reservation : reservations) {
+        if (reservation.pending() && !available_builders.empty()) {
+            reservation.ready(*available_builders.begin());
+            available_builders.erase(available_builders.begin());
+        }
+    }
+
+    // Request new builders if slots are open
     auto open_slots = max_builders - all_builders.size() - pending_requests;
     auto open_available_slots = max_available_builders - available_builders.size() - pending_requests;
     auto request_count = std::min(open_slots, open_available_slots);
-    for (auto i = 0; i < request_count; i++) {
+    for (auto i=0; i < request_count; i++) {
         pending_requests++;
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
                         OpenStackBuilder::request_create(io_service, yield);
                         pending_requests--;
                     });
-    }
-
-    // Process pending reservations
-    for (auto &reservation : reservations) {
-        if (reservation.pending() && !available_builders.empty()) {
-            reservation.ready(*available_builders.begin());
-            available_builders.erase(available_builders.begin());
-        }
     }
 }

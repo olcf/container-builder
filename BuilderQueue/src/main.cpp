@@ -36,14 +36,11 @@ int main(int argc, char *argv[]) {
                     });
 
         // Start the queue which ticks at the specified interval
-        boost::asio::deadline_timer timer(io_service);
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
                         for (;;) {
                             try {
-                                builder_queue.tick();
-                                timer.expires_from_now(boost::posix_time::seconds(1));
-                                timer.async_wait(yield);
+                                builder_queue.tick(yield);
                             } catch (std::exception &e) {
                                 logger::write(std::string() + "Queue tick error: " + e.what());
                             }

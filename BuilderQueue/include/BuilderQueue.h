@@ -26,9 +26,6 @@ private:
     // Hold reservations that are to be fulfilled
     std::list<Reservation> reservations;
 
-    // List of currently available builders
-    std::set<Builder> available_builders;
-
     // Maximum number of active and cached builders
     const std::size_t max_builders;
 

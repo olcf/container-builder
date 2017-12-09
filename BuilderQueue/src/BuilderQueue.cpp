@@ -17,14 +17,15 @@ void BuilderQueue::tick(asio::yield_context yield) {
         // Set unavailable builders, that is builders which are attached to a reservation
         if (reservation.builder) {
             unavailable_builders.insert(reservation.builder.get());
-        }
-        // Delete builders that are complete
-        if (reservation.complete()) {
-            asio::spawn(io_service,
-                        [&](asio::yield_context yield) {
-                            OpenStackBuilder::destroy(reservation.builder.get(), io_service, yield);
-                            reservation.builder = boost::none;
-                        });
+
+            // If the reservation is complete delete the builder
+            if (reservation.complete()) {
+                asio::spawn(io_service,
+                            [&](asio::yield_context yield) {
+                                OpenStackBuilder::destroy(reservation.builder.get(), io_service, yield);
+                                reservation.builder = boost::none;
+                            });
+            }
         }
     }
 
@@ -34,6 +35,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
     });
 
     // Available_builders = all_builders - unavailable_builders
+    std::set<Builder> available_builders;
     std::set_difference(all_builders.begin(), all_builders.end(),
                         unavailable_builders.begin(), unavailable_builders.end(),
                         std::inserter(available_builders, available_builders.begin()));

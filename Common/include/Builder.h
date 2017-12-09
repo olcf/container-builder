@@ -16,6 +16,11 @@ public:
     std::string port;
     std::string id;
 };
+
+bool operator <(const Builder &lhs, const Builder &rhs);
+
+bool operator ==(const Builder &lhs, const Builder &rhs);
+
 namespace boost {
     namespace serialization {
 

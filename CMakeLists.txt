@@ -22,7 +22,7 @@ set(SOURCE_FILES_QUEUE
         Common/src/Messenger.cpp
         Common/include/Messenger.h
         BuilderQueue/src/OpenStackBuilder.cpp
-        BuilderQueue/include/OpenStackBuilder.h)
+        BuilderQueue/include/OpenStackBuilder.h Common/src/Builder.cpp)
 
 set(SOURCE_FILES_BUILDER
         Builder/main.cpp
@@ -39,7 +39,7 @@ set(SOURCE_FILES_CLIENT
         Common/src/Logger.cpp
         Common/include/Logger.h
         Common/src/Messenger.cpp
-        Common/include/Messenger.h)
+        Common/include/Messenger.h Common/src/Builder.cpp)
 
 # Create executables
 add_executable(BuilderQueue ${SOURCE_FILES_QUEUE})

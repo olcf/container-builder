@@ -16,7 +16,7 @@ namespace bp = boost::process;
 std::string queue_host() {
     auto env = std::getenv("QUEUE_HOST");
     if (!env) {
-        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOST");
+        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOST not set!");
     }
     return std::string(env);
 }
@@ -24,7 +24,7 @@ std::string queue_host() {
 std::string queue_port() {
     auto env = std::getenv("QUEUE_PORT");
     if (!env) {
-        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_PORT");
+        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_PORT not set!");
     }
     return std::string(env);
 }

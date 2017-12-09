@@ -19,14 +19,6 @@ ID=$(openstack server create          \
     --nic net-id="${NIC}"             \
     --key-name "${KEY}"               \
     --security-group container_builder\
-    --wait                            \
     -c id                             \
     -f value                          \
     "Builder")
-
-# If the build doesn't return a failure code echo the ID, IP address, and port of the builder service
-IP=$(openstack server show -c addresses -f value ${ID} | sed -e "s/^or_provider_general_extnetwork1=//")
-PORT="8080"
-echo ${ID}
-echo ${IP}
-echo ${PORT}

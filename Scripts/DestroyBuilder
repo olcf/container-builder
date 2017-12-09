@@ -3,4 +3,4 @@
 # OpenStack credentials
 source /home/queue/openrc.sh
 
-openstack server delete $1
+openstack server delete --wait $1

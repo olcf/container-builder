@@ -21,4 +21,5 @@ ID=$(openstack server create          \
     --security-group container_builder\
     -c id                             \
     -f value                          \
+    --wait                            \
     "Builder")

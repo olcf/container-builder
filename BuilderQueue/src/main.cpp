@@ -16,7 +16,6 @@ int main(int argc, char *argv[]) {
         asio::io_service io_service;
 
         BuilderQueue builder_queue(io_service);
-        boost::asio::deadline_timer timer(io_service);
 
         // Wait for connections from either Clients or Builders
         asio::spawn(io_service,
@@ -42,8 +41,6 @@ int main(int argc, char *argv[]) {
                         for (;;) {
                             try {
                                 builder_queue.tick(yield);
-                                timer.expires_from_now(boost::posix_time::seconds(1));
-                                timer.async_wait(yield);
                             } catch (std::exception &e) {
                                 logger::write(std::string() + "Queue tick error: " + e.what());
                             }

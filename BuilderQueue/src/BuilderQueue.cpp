@@ -31,7 +31,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
 
     // Delete reservations that are completed and don't have an active builder associated with them
     reservations.remove_if([](const auto &reservation) {
-        return reservation.complete() && !reservation.builder;
+        return (reservation.complete() && !reservation.builder);
     });
 
     // Available_builders = all_builders - unavailable_builders
@@ -53,7 +53,6 @@ void BuilderQueue::tick(asio::yield_context yield) {
     int open_slots = max_builders - all_builders.size() - pending_requests;
     int open_available_slots = max_available_builders - available_builders.size() - pending_requests;
     int request_count = std::min(open_slots, open_available_slots);
-    logger::write("Requesting " + std::to_string(request_count) + " builders");
     for (int i=0; i < request_count; i++) {
         pending_requests++;
         asio::spawn(io_service,

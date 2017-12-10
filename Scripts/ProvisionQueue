@@ -3,6 +3,11 @@
 set -e
 set -o xtrace
 
+echo 0 > /proc/sys/net/ipv4/tcp_timestamps # this session
+cat << EOF > /etc/sysctl.d/51-net.conf     # permanent
+net.ipv4.tcp_timestamps = 0
+EOF
+
 # Create non root queue user
 useradd --create-home --home-dir /home/queue --shell /bin/bash queue
 

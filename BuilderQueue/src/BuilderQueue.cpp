@@ -49,6 +49,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
     }
 
     // Request new builders if slots are open
+    // Care must be taken as all_builders may include the the pending request before it's returned(open_slots, open_available_slots may be negative)
     int open_slots = max_builders - all_builders.size() - pending_requests;
     int open_available_slots = max_available_builders - available_builders.size() - pending_requests;
     int request_count = std::min(open_slots, open_available_slots);

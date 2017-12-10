@@ -60,7 +60,7 @@ namespace OpenStackBuilder {
             Builder builder;
             auto network = builder_node.second.get<std::string>("Networks");
             size_t eq_pos = network.find("=");
-            builder.host = network.substr(eq_pos);
+            builder.host = network.substr(eq_pos+1);
 
             builder.id = builder_node.second.get<std::string>("ID");
             builder.port = "8080";

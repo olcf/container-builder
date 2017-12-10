@@ -18,5 +18,5 @@ public:
     Builder async_wait(asio::yield_context yield);
 private:
     BuilderQueue &queue;
-    Reservation& reservation;
+    Reservation &reservation;
 };

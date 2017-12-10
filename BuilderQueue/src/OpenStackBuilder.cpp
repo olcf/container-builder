@@ -59,7 +59,7 @@ namespace OpenStackBuilder {
         for (const auto &builder_node : builder_tree) {
             Builder builder;
             auto network = builder_node.second.get<std::string>("Networks");
-            size_t eq_pos = network.find("=");
+            size_t eq_pos = network.find('=');
             builder.host = network.substr(eq_pos+1);
 
             builder.id = builder_node.second.get<std::string>("ID");
@@ -127,6 +127,7 @@ namespace OpenStackBuilder {
         destroy_child.wait();
         int exit_code = destroy_child.exit_code();
 
+        // TODO an error "can't" occur, if an error deleting is detected it should make all attempts to fix it
         if (exit_code != 0) {
             logger::write("Builder with ID " + builder.id + " failed to be destroyed");
         }

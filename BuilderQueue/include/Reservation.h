@@ -9,9 +9,11 @@
 namespace asio = boost::asio;
 
 enum class ReservationStatus {
-    pending,
-    active,
-    complete
+    pending,             // Waiting on a builder to be provided by the queue
+    active,              // Provided a builder
+    request_complete,    // The queue request is complete and it's safe to cleanup any resources associated with reservation
+    cleanup,             // post request complete cleanup has begun and the resources allocated to it are being cleaned up
+    finalized            // post complete cleanup is complete and the reservation can be destroyed
 };
 
 // Reservations are handled by the queue and assigned builders as available
@@ -21,7 +23,7 @@ public:
                                                          ready_timer(io_service) {}
 
     ~Reservation() {
-        status = ReservationStatus::complete;
+        status = ReservationStatus::request_complete;
     }
 
     // Create an infinite timer that will be cancelled by the queue when the job is ready
@@ -34,16 +36,29 @@ public:
         return status == ReservationStatus::pending;
     }
 
-    bool complete() const {
-        return status == ReservationStatus::complete;
+    bool request_complete() const {
+        return status == ReservationStatus::request_complete;
     }
 
     bool active() const {
         return status == ReservationStatus::active;
     }
 
-    void set_complete() {
-        status = ReservationStatus::complete;
+
+    bool finalized() const {
+        return status == ReservationStatus::finalized;
+    }
+
+    void set_request_complete() {
+        status = ReservationStatus::request_complete;
+    }
+
+    void set_enter_cleanup() {
+        status = ReservationStatus::cleanup;
+    }
+
+    void set_finalize() {
+        status = ReservationStatus::finalized;
     }
 
     boost::optional<Builder> builder;

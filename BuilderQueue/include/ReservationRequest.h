@@ -12,7 +12,7 @@ public:
                                                reservation(queue.enter()){}
 
     ~ReservationRequest() {
-        reservation.set_complete();
+        reservation.set_request_complete();
     }
 
     Builder async_wait(asio::yield_context yield);

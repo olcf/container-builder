@@ -52,7 +52,8 @@ void BuilderQueue::tick(asio::yield_context yield) {
     auto open_slots = max_builders - all_builders.size() - pending_requests;
     auto open_available_slots = max_available_builders - available_builders.size() - pending_requests;
     auto request_count = std::min(open_slots, open_available_slots);
-    for (auto i=0; i < request_count; i++) {
+    logger::write("Requesting " + std::to_string(request_count) + " builders");
+    for (unsigned int i=0; i < request_count; i++) {
         pending_requests++;
         asio::spawn(io_service,
                     [&](asio::yield_context request_yield) {

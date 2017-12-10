@@ -127,6 +127,7 @@ namespace OpenStackBuilder {
         destroy_child.wait();
         int exit_code = destroy_child.exit_code();
 
+        // TODO an error "can't" occur, if an error deleting is detected it should make all attempts to fix it
         if (exit_code != 0) {
             logger::write("Builder with ID " + builder.id + " failed to be destroyed");
         }

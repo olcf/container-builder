@@ -18,20 +18,21 @@ void BuilderQueue::tick(asio::yield_context yield) {
         if (reservation.builder) {
             unavailable_builders.insert(reservation.builder.get());
 
-            // If the reservation is complete delete the builder
-            if (reservation.complete()) {
+            // If the reservation has completed delete the builder
+            if (reservation.request_complete()) {
+                reservation.set_enter_cleanup();
                 asio::spawn(io_service,
-                            [&](asio::yield_context destroy_yield) {
+                            [this, &reservation](asio::yield_context destroy_yield) {
                                 OpenStackBuilder::destroy(reservation.builder.get(), io_service, destroy_yield);
-                                reservation.builder = boost::none;
+                                reservation.set_finalize();
                             });
             }
         }
     }
 
-    // Delete reservations that are completed and don't have an active builder associated with them
+    // Delete reservations that are completed
     reservations.remove_if([](const auto &reservation) {
-        return (reservation.complete() && !reservation.builder);
+        return reservation.finalized();
     });
 
     // Available_builders = all_builders - unavailable_builders
@@ -56,7 +57,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
     for (int i=0; i < request_count; i++) {
         pending_requests++;
         asio::spawn(io_service,
-                    [&](asio::yield_context request_yield) {
+                    [this](asio::yield_context request_yield) {
                         OpenStackBuilder::request_create(io_service, request_yield);
                         pending_requests--;
                     });

@@ -59,7 +59,7 @@ namespace OpenStackBuilder {
         for (const auto &builder_node : builder_tree) {
             Builder builder;
             auto network = builder_node.second.get<std::string>("Networks");
-            size_t eq_pos = network.find("=");
+            size_t eq_pos = network.find('=');
             builder.host = network.substr(eq_pos+1);
 
             builder.id = builder_node.second.get<std::string>("ID");

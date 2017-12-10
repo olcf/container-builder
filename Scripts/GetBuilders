@@ -1,4 +1,4 @@
-#!/bin bash
+#!/bin/bash
 
 # OpenStack credentials
 source /home/queue/openrc.sh

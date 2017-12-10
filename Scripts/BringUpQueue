@@ -63,10 +63,12 @@ VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s
 scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/openrc.sh cades@${VM_IP}:/home/cades/openrc.sh
 scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/RequestCreateBuilder cades@${VM_IP}:/home/cades/RequestCreateBuilder
 scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/DestroyBuilder cades@${VM_IP}:/home/cades/DestroyBuilder
+scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/GetBuilders cades@${VM_IP}:/home/cades/GetBuilders
 
 ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/openrc.sh /home/queue/openrc.sh'
 ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/RequestCreateBuilder /home/queue/RequestCreateBuilder'
 ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/DestroyBuilder /home/queue/DestroyBuilder'
+ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/GetBuilders /home/queue/GetBuilders'
 
 # Reboot to ensure Queue service, added in provisioning, is started
 openstack server reboot --wait ${VM_UUID}

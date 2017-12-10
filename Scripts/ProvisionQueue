@@ -26,7 +26,7 @@ rm -rf /boost_1_65_1
 
 # Install ContainerBuilder
 cd /
-git clone https://github.com/AdamSimpson/ContainerBuilder.git
+git clone https://code.ornl.gov/olcf/ContainerBuilder.git
 cd ContainerBuilder
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTAL_PREFIX="/usr/local" ..

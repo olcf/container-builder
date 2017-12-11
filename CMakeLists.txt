@@ -53,7 +53,6 @@ set(HARDENING_FLAGS "-Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 
 # https://github.com/boostorg/coroutine/issues/30
 # -fsanitize=address,undefined -fno-sanitize=vptr -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen
 
-
 set_target_properties(BuilderQueue PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(BuilderQueue PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(ContainerBuilder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
@@ -72,5 +71,11 @@ include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(BuilderQueue ${Boost_LIBRARIES})
 target_link_libraries(ContainerBuilder ${Boost_LIBRARIES})
 target_link_libraries(ContainerBuilderClient ${Boost_LIBRARIES})
+
+# RPATH settings: https://cmake.org/Wiki/CMake_RPATH_handling
+SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+SET(CMAKE_INSTALL_RPATH "")
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 
 install(TARGETS BuilderQueue ContainerBuilder ContainerBuilderClient RUNTIME DESTINATION bin)

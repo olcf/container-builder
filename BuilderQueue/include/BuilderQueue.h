@@ -10,8 +10,8 @@
 class BuilderQueue {
 public:
     explicit BuilderQueue(asio::io_service &io_service) : io_service(io_service),
-                                                          max_builders(1),
-                                                          max_available_builders(max_builders),
+                                                          max_builders(20),
+                                                          max_available_builders(5),
                                                           pending_requests(0)
                                                           {}
 

@@ -72,10 +72,4 @@ target_link_libraries(BuilderQueue ${Boost_LIBRARIES})
 target_link_libraries(ContainerBuilder ${Boost_LIBRARIES})
 target_link_libraries(ContainerBuilderClient ${Boost_LIBRARIES})
 
-# RPATH settings: https://cmake.org/Wiki/CMake_RPATH_handling
-SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-SET(CMAKE_INSTALL_RPATH "")
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-
 install(TARGETS BuilderQueue ContainerBuilder ContainerBuilderClient RUNTIME DESTINATION bin)

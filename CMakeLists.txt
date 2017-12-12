@@ -21,14 +21,14 @@ set(SOURCE_FILES_QUEUE
         Common/include/Logger.h
         Common/include/Messenger.h
         BuilderQueue/src/OpenStackBuilder.cpp
-        BuilderQueue/include/OpenStackBuilder.h Common/src/Builder.cpp)
+        BuilderQueue/include/OpenStackBuilder.h Common/src/Builder.cpp Common/src/Messenger.cpp)
 
 set(SOURCE_FILES_BUILDER
         Builder/main.cpp
         Common/include/Builder.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/include/Messenger.h)
+        Common/include/Messenger.h Common/src/Messenger.cpp)
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT
@@ -36,7 +36,7 @@ set(SOURCE_FILES_CLIENT
         Common/include/Builder.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/include/Messenger.h Common/src/Builder.cpp)
+        Common/include/Messenger.h Common/src/Builder.cpp Common/src/Messenger.cpp)
 
 # Create executables
 add_executable(BuilderQueue ${SOURCE_FILES_QUEUE})

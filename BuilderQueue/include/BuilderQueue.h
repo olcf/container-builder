@@ -20,6 +20,7 @@ public:
 
     // Attempt to process the queue after an event that adds/removes builders or requests
     void tick(asio::yield_context yield);
+
 private:
     asio::io_service &io_service;
 

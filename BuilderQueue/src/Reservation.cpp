@@ -8,10 +8,11 @@ void Reservation::async_wait(asio::yield_context yield) {
     if (status == ReservationStatus::pending) {
         ready_timer.expires_at(boost::posix_time::pos_infin);
         // On timer cancel we will get an operation aborted error from async_wait
-        boost::system::error_code ec;
-        ready_timer.async_wait(yield[ec]);
-        if (ec != asio::error::operation_aborted) {
-            throw std::system_error(EBADMSG, std::system_category());
+        boost::system::error_code error;
+        ready_timer.async_wait(yield[error]);
+        if (error != asio::error::operation_aborted) {
+            logger::write("Error in reservation async_wait" + error.message());
+            return;
         }
     }
 }

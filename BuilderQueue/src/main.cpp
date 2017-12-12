@@ -11,48 +11,41 @@ namespace asio = boost::asio;
 using asio::ip::tcp;
 
 int main(int argc, char *argv[]) {
+    asio::io_service io_service;
 
-    try {
-        asio::io_service io_service;
+    BuilderQueue builder_queue(io_service);
 
-        BuilderQueue builder_queue(io_service);
-
-        // Wait for connections from either Clients or Builders
-        asio::spawn(io_service,
-                    [&](asio::yield_context yield) {
-                        tcp::acceptor acceptor(io_service,
-                                               tcp::endpoint(tcp::v4(), 8080));
-
-                        for (;;) {
-                            try {
-                                boost::system::error_code ec;
-                                tcp::socket socket(io_service);
-                                acceptor.async_accept(socket, yield[ec]);
-                                std::make_shared<Connection>(std::move(socket), builder_queue)->begin();
-                            } catch (std::exception &e) {
-                                logger::write(std::string() + "New connection error: " + e.what());
-                            }
+    // Wait for connections from either Clients or Builders
+    asio::spawn(io_service,
+                [&](asio::yield_context yield) {
+                    tcp::acceptor acceptor(io_service,
+                                           tcp::endpoint(tcp::v4(), 8080));
+                    for (;;) {
+                        boost::system::error_code error;
+                        tcp::socket socket(io_service);
+                        acceptor.async_accept(socket, yield[error]);
+                        if (error) {
+                            logger::write(socket, "Error accepting new connection");
+                        } else {
+                            std::make_shared<Connection>(std::move(socket), builder_queue)->begin();
                         }
-                    });
+                    }
+                });
 
-        // Start the queue which ticks at the specified interval
-        asio::spawn(io_service,
-                    [&](asio::yield_context yield) {
-                        for (;;) {
-                            try {
-                                builder_queue.tick(yield);
-                            } catch (std::exception &e) {
-                                logger::write(std::string() + "Queue tick error: " + e.what());
-                            }
+    // Start the queue which ticks at the specified interval
+    asio::spawn(io_service,
+                [&](asio::yield_context yield) {
+                    for (;;) {
+                        try {
+                            builder_queue.tick(yield);
+                        } catch (...) {
+                            logger::write("Unknown queue tick exception");
                         }
-                    });
+                    }
+                });
 
-        // Begin processing our connections and queue
-        io_service.run();
-    }
-    catch (std::exception &e) {
-        logger::write(std::string() + "Server Exception: " + e.what());
-    }
+    // Begin processing our connections and queue
+    io_service.run();
 
     logger::write("Server shutting down");
 

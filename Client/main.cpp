@@ -43,20 +43,25 @@ public:
 
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
+                        boost::system::error_code error;
+
                         std::cout << prefix;
                         while (show_animation) {
                             std::cout << "\b--" << std::flush;
                             timer.expires_from_now(expire_time);
-                            timer.async_wait(yield);
+                            timer.async_wait(yield[error]);
                             std::cout << "\b\b\\ " << std::flush;
                             timer.expires_from_now(expire_time);
-                            timer.async_wait(yield);
+                            timer.async_wait(yield[error]);
                             std::cout << "\b|" << std::flush;
                             timer.expires_from_now(expire_time);
-                            timer.async_wait(yield);
+                            timer.async_wait(yield[error]);
                             timer.expires_from_now(expire_time);
                             std::cout << "\b/" << std::flush;
-                            timer.async_wait(yield);
+                            timer.async_wait(yield[error]);
+                            if(error) {
+                                std::cerr<<"Error animating spinner!"<<std::endl;
+                            }
                         }
                         std::cout<<std::endl;
                     });
@@ -93,19 +98,32 @@ int main(int argc, char *argv[]) {
                         waiting_animation.start("Connecting to BuilderQueue: ");
                         tcp::socket queue_socket(io_service);
                         tcp::resolver queue_resolver(io_service);
-                        boost::system::error_code ec;
+                        boost::system::error_code error;
 
-                        asio::async_connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}), yield);
+                        asio::async_connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}), yield[error]);
+                        if(error) {
+                            std::cerr<<"Error connecting to builder queue: " << error.message() << std::endl;
+                            return;
+                        }
+
                         waiting_animation.stop();
 
                         Messenger queue_messenger(queue_socket);
 
                         // Initiate a build request
                         waiting_animation.start("Requesting Builder: ");
-                        queue_messenger.async_send("checkout_builder_request", yield);
+                        queue_messenger.async_send("checkout_builder_request", yield[error]);
+                        if(error) {
+                            std::cerr<<"Error communicating with the builder queue!" << error.message() << std::endl;
+                            return;
+                        }
 
                         // Wait on a builder from the queue
-                        auto builder = queue_messenger.async_receive_builder(yield);
+                        auto builder = queue_messenger.async_receive_builder(yield[error]);
+                        if(error) {
+                            std::cerr<<"Error obtaining VM builder from builder queue!" << error.message() << std::endl;
+                            return;
+                        }
                         waiting_animation.stop();
 
                         waiting_animation.start("Connecting to Builder: ");
@@ -113,8 +131,8 @@ int main(int argc, char *argv[]) {
                         tcp::resolver builder_resolver(io_service);
                         do {
                             asio::async_connect(builder_socket, builder_resolver.resolve({builder.host, builder.port}),
-                                                yield[ec]);
-                        } while (ec != boost::system::errc::success);
+                                                yield[error]);
+                        } while(error);
                         waiting_animation.stop();
 
                         Messenger builder_messenger(builder_socket);
@@ -123,7 +141,11 @@ int main(int argc, char *argv[]) {
                         std::cout << "Sending definition: " << definition_path << std::endl;
 
                         // Send the definition file
-                        builder_messenger.async_send_file(definition_path, yield, true);
+                        builder_messenger.async_send_file(definition_path, yield[error], true);
+                        if(error) {
+                            std::cerr<<"Error sending definition file to builder!" << error.message() << std::endl;
+                            return;
+                        }
 
                         std::cout << "Start of Singularity builder output:" << std::endl;
 
@@ -133,31 +155,41 @@ int main(int argc, char *argv[]) {
 
                         std::string line;
                         do {
-                            line = builder_messenger.async_receive(yield);
+                            line = builder_messenger.async_receive(yield[error]);
+                            if(error) {
+                                std::cerr<<"Error streaming build output!" << error.message() << std::endl;
+                                return;
+                            }
                             std::cout << line;
                         } while (!line.empty());
 
                         // Read the container image
                         std::cout << "Sending finished container: " << container_path << std::endl;
 
-                        builder_messenger.async_receive_file(container_path, yield, true);
+                        builder_messenger.async_receive_file(container_path, yield[error], true);
+                        if(error) {
+                            std::cerr<<"Error downloading container image!" << error.message() << std::endl;
+                            return;
+                        }
 
                         std::cout << "Container received: " << container_path << std::endl;
 
                         // Inform the queue we're done
-                        queue_messenger.async_send(std::string("checkout_builder_complete"), yield);
+                        queue_messenger.async_send(std::string("checkout_builder_complete"), yield[error]);
+                        if(error) {
+                            std::cerr<<"Error ending build" << error.message() << std::endl;
+                            return;
+                        }
                     });
 
         // Begin processing our connections and queue
         io_service.run();
     }
-    catch (std::exception &e) {
-        std::cout << std::string() + "Build exception: " + e.what() << std::endl;
+    catch (...) {
+        std::cout << std::string() + "Unknown ContainerBuilder exception: " << std::endl;
     }
 
-    std::cout << "Client shutting down\n";
-
-    // Show the cursor
+    // Restore the cursor
     std::cout << "\e[?25h" << std::flush;
 
 

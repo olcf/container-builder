@@ -9,10 +9,10 @@ void Connection::begin() {
         asio::spawn(socket.get_io_service(),
                     [this, self](asio::yield_context yield) {
                         Messenger messenger(socket);
-                        boost::system::error_code ec;
-                        auto request = messenger.async_receive(yield[ec], MessageType::string);
-                        if (ec) {
-                            logger::write(socket, "Request failure" + ec.message());
+                        boost::system::error_code error;
+                        auto request = messenger.async_receive(yield[error], MessageType::string);
+                        if (error) {
+                            logger::write(socket, "Request failure" + error.message());
                         } else if (request == "checkout_builder_request") {
                             checkout_builder(yield[ec]);
                         } else {
@@ -27,31 +27,31 @@ void Connection::begin() {
 // Handle a client builder request
 void Connection::checkout_builder(asio::yield_context yield) {
     logger::write(socket, "Checkout resource request");
-    boost::system::error_code ec;
+    boost::system::error_code error;
 
     Messenger messenger(socket);
 
     // Request a builder
     logger::write(socket, "Requesting builder from the queue");
     ReservationRequest reservation(queue);
-    Builder builder = reservation.async_wait(yield[ec]);
-    if (ec) {
-        logger::write("reservation builder request failed: " + ec.message());
+    Builder builder = reservation.async_wait(yield[error]);
+    if (error) {
+        logger::write("reservation builder request failed: " + error.message());
         return;
     }
 
     // Send the fulfilled builder
-    messenger.async_send(builder, yield[ec]);
-    if (ec) {
+    messenger.async_send(builder, yield[error]);
+    if (error) {
         logger::write(socket, "Error sending builder: " + builder.id + "(" + builder.host + ")");
         return;
     }
 
     // Wait on connection to finish
     logger::write(socket, "Sent builder: " + builder.id + "(" + builder.host + ")");
-    std::string complete = messenger.async_receive(yield[ec], MessageType::string);
-    if (ec || complete != "checkout_builder_complete") {
-        logger::write(socket, "Failed to receive completion message from client" + ec.message());
+    std::string complete = messenger.async_receive(yield[error], MessageType::string);
+    if (error || complete != "checkout_builder_complete") {
+        logger::write(socket, "Failed to receive completion message from client" + error.message());
         return;
     }
 

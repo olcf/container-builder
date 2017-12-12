@@ -21,10 +21,10 @@ int main(int argc, char *argv[]) {
                     tcp::acceptor acceptor(io_service,
                                            tcp::endpoint(tcp::v4(), 8080));
                     for (;;) {
-                        boost::system::error_code ec;
+                        boost::system::error_code error;
                         tcp::socket socket(io_service);
-                        acceptor.async_accept(socket, yield[ec]);
-                        if (ec) {
+                        acceptor.async_accept(socket, yield[error]);
+                        if (error) {
                             logger::write(socket, "Error accepting new connection");
                         } else {
                             std::make_shared<Connection>(std::move(socket), builder_queue)->begin();

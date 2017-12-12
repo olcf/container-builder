@@ -15,18 +15,18 @@ namespace OpenStackBuilder {
         asio::streambuf buffer;
 
         // Asynchronously launch the list command
-        std::error_code list_ec;
+        std::error_code list_error;
         logger::write("Running command: " + list_command);
-        bp::child list_child(list_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group, list_ec);
-        if (list_ec) {
-            logger::write("subprocess error: " + list_ec.message());
+        bp::child list_child(list_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group, list_error);
+        if (list_error) {
+            logger::write("subprocess error: " + list_error.message());
         }
 
         // Read the list command output until we reach EOF, which is returned as an error
-        boost::system::error_code read_ec;
-        boost::asio::async_read(std_pipe, buffer, yield[read_ec]);
-        if (read_ec != asio::error::eof) {
-            logger::write("OpenStack destroy error: " + read_ec.message());
+        boost::system::error_code read_error;
+        boost::asio::async_read(std_pipe, buffer, yield[read_error]);
+        if (read_error != asio::error::eof) {
+            logger::write("OpenStack destroy error: " + read_error.message());
         }
 
         // Grab exit code from destroy command
@@ -81,19 +81,19 @@ namespace OpenStackBuilder {
         asio::streambuf buffer;
 
         // Asynchronously launch the create command
-        std::error_code create_ec;
+        std::error_code create_error;
         logger::write("Running command: " + create_command);
         bp::child build_child(create_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group,
-                              create_ec);
-        if (create_ec) {
-            logger::write("subprocess error: " + create_ec.message());
+                              create_error);
+        if (create_error) {
+            logger::write("subprocess error: " + create_error.message());
         }
 
         // Read the create_command output until we reach EOF, which is returned as an error
-        boost::system::error_code read_ec;
-        boost::asio::async_read(std_pipe, buffer, yield[read_ec]);
-        if (read_ec != asio::error::eof) {
-            logger::write("OpenStack create error: " + read_ec.message());
+        boost::system::error_code read_error;
+        boost::asio::async_read(std_pipe, buffer, yield[read_error]);
+        if (read_error != asio::error::eof) {
+            logger::write("OpenStack create error: " + read_error.message());
         }
 
         // Grab exit code  from builder
@@ -112,12 +112,12 @@ namespace OpenStackBuilder {
         asio::streambuf buffer;
 
         // Asynchronously launch the destroy command
-        std::error_code destroy_ec;
+        std::error_code destroy_error;
         logger::write("Running command: " + destroy_command);
         bp::child destroy_child(destroy_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group,
-                                destroy_ec);
-        if (destroy_ec) {
-            logger::write("subprocess error: " + destroy_ec.message());
+                                destroy_error);
+        if (destroy_error) {
+            logger::write("subprocess error: " + destroy_error.message());
         }
 
         // Read the destroy_command output until we reach EOF, which is returned as an error

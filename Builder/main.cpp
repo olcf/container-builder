@@ -29,8 +29,14 @@ int main(int argc, char *argv[]) {
         // Once we're connected start the build process
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
+                        boost::system::error_code error;
+
                         // Receive the definition file from the client
-                        messenger.async_receive_file("container.def", yield);
+                        messenger.async_receive_file("container.def", yield[error]);
+                        if(error) {
+                            logger::write("Error receiving definition file: " + error.message());
+                            return;
+                        }
 
                         logger::write(socket, "Received container.def");
 
@@ -49,6 +55,7 @@ int main(int argc, char *argv[]) {
                                               group, build_ec);
                         if (build_ec) {
                             logger::write(socket, "subprocess error: " + build_ec.message());
+                            return;
                         }
 
                         logger::write(socket, "launched build process: " + build_command);
@@ -61,13 +68,18 @@ int main(int argc, char *argv[]) {
                         asio::streambuf buffer;
                         boost::regex line_matcher{"\\r|\\n"};
                         std::size_t read_size = 0;
-                        boost::system::error_code err_code;
                         do {
                             // Read from the pipe into a buffer
-                            read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield[err_code]);
+                            read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield[error]);
+                            if(error) {
+                                logger::write(socket, "reading process pipe failed: " + error.message());
+                            }
                             // Write the buffer to our socket
-                            messenger.async_send(buffer, yield);
-                        } while (read_size > 0 && err_code == boost::system::errc::success);
+                            messenger.async_send(buffer, yield[error]);
+                            if(error) {
+                                logger::write(socket, "sending process pipe failed: " + error.message());
+                            }
+                        } while (read_size > 0 && !error);
 
                         // Get the return value from the build subprocess
                         logger::write(socket, "Waiting on build process to exit");
@@ -86,8 +98,8 @@ int main(int argc, char *argv[]) {
         // Begin processing our connections and queue
         io_service.run();
     }
-    catch (std::exception &e) {
-        logger::write(std::string() + "Build server exception: " + e.what());
+    catch (...) {
+        logger::write("Unknown builder exception encountered");
     }
 
     logger::write("Builder shutting down");

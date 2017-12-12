@@ -4,44 +4,56 @@
 
 // Handle the initial request
 void Connection::begin() {
-    auto self(shared_from_this());
-    asio::spawn(socket.get_io_service(),
-                [this, self](asio::yield_context yield) {
-                    try {
+    try {
+        auto self(shared_from_this());
+        asio::spawn(socket.get_io_service(),
+                    [this, self](asio::yield_context yield) {
                         Messenger messenger(socket);
-                        auto request = messenger.async_receive(yield, MessageType::string);
-
-                        if (request == "checkout_builder_request")
-                            checkout_builder(yield);
-                        else
-                            throw std::system_error(EPERM, std::system_category(), request + " not supported");
-                    }
-                    catch (std::exception &e) {
-                        logger::write(socket, std::string() + "Connection initial request error " + e.what());
-                    }
-                });
+                        boost::system::error_code ec;
+                        auto request = messenger.async_receive(yield[ec], MessageType::string);
+                        if (ec) {
+                            logger::write(socket, "Request failure" + ec.message());
+                        } else if (request == "checkout_builder_request") {
+                            checkout_builder(yield[ec]);
+                        } else {
+                            logger::write(socket, "Invalid request message received: " + request);
+                        }
+                    });
+    } catch(...) {
+        logger::write(socket, "Unknown connection exception caught");
+    }
 }
 
 // Handle a client builder request
 void Connection::checkout_builder(asio::yield_context yield) {
-    try {
-        logger::write(socket, "Checkout resource request");
+    logger::write(socket, "Checkout resource request");
+    boost::system::error_code ec;
 
-        Messenger messenger(socket);
+    Messenger messenger(socket);
 
-        logger::write(socket, "Requesting resource from the queue");
-        ReservationRequest reservation(queue);
-        auto builder = reservation.async_wait(yield);
-
-        messenger.async_send(builder, yield);
-        logger::write(socket, "sent builder: " + builder.id + "(" + builder.host + ")");
-
-        auto complete = messenger.async_receive(yield, MessageType::string);
-        if (complete == "checkout_builder_complete")
-            logger::write(socket, "Client completed");
-        else
-            logger::write(socket, "Client complete error: " + complete);
-    } catch (std::exception &e) {
-        logger::write(socket, "Exception: checkout_builder disconnect:" + std::string(e.what()));
+    // Request a builder
+    logger::write(socket, "Requesting builder from the queue");
+    ReservationRequest reservation(queue);
+    Builder builder = reservation.async_wait(yield[ec]);
+    if (ec) {
+        logger::write("reservation builder request failed: " + ec.message());
+        return;
     }
+
+    // Send the fulfilled builder
+    messenger.async_send(builder, yield[ec]);
+    if (ec) {
+        logger::write(socket, "Error sending builder: " + builder.id + "(" + builder.host + ")");
+        return;
+    }
+
+    // Wait on connection to finish
+    logger::write(socket, "Sent builder: " + builder.id + "(" + builder.host + ")");
+    std::string complete = messenger.async_receive(yield[ec], MessageType::string);
+    if (ec || complete != "checkout_builder_complete") {
+        logger::write(socket, "Failed to receive completion message from client" + ec.message());
+        return;
+    }
+
+    logger::write(socket, "Connection completed successfully");
 }

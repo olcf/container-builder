@@ -23,10 +23,10 @@ namespace OpenStackBuilder {
         }
 
         // Read the list command output until we reach EOF, which is returned as an error
-        boost::system::error_code ec;
-        boost::asio::async_read(std_pipe, buffer, yield[ec]);
-        if (ec != asio::error::eof) {
-            logger::write("OpenStack destroy error: " + ec.message());
+        boost::system::error_code read_ec;
+        boost::asio::async_read(std_pipe, buffer, yield[read_ec]);
+        if (read_ec != asio::error::eof) {
+            logger::write("OpenStack destroy error: " + read_ec.message());
         }
 
         // Grab exit code from destroy command
@@ -56,15 +56,19 @@ namespace OpenStackBuilder {
 
         // Fill a set of builders from the property tree data
         std::set<Builder> builders;
-        for (const auto &builder_node : builder_tree) {
-            Builder builder;
-            auto network = builder_node.second.get<std::string>("Networks");
-            size_t eq_pos = network.find('=');
-            builder.host = network.substr(eq_pos+1);
+        try {
+            for (const auto &builder_node : builder_tree) {
+                Builder builder;
+                auto network = builder_node.second.get<std::string>("Networks");
+                size_t eq_pos = network.find('=');
+                builder.host = network.substr(eq_pos + 1);
 
-            builder.id = builder_node.second.get<std::string>("ID");
-            builder.port = "8080";
-            builders.insert(builder);
+                builder.id = builder_node.second.get<std::string>("ID");
+                builder.port = "8080";
+                builders.insert(builder);
+            }
+        } catch(const pt::ptree_error &e) {
+            logger::write(std::string() + "Error parsing builders: " + e.what());
         }
 
         return builders;
@@ -117,10 +121,10 @@ namespace OpenStackBuilder {
         }
 
         // Read the destroy_command output until we reach EOF, which is returned as an error
-        boost::system::error_code ec;
-        boost::asio::async_read(std_pipe, buffer, yield[ec]);
-        if (ec != asio::error::eof) {
-            logger::write("OpenStack destroy error: " + ec.message());
+        boost::system::error_code read_ec;
+        boost::asio::async_read(std_pipe, buffer, yield[read_ec]);
+        if (read_ec != asio::error::eof) {
+            logger::write("OpenStack destroy error: " + read_ec.message());
         }
 
         // Grab exit code from destroy command

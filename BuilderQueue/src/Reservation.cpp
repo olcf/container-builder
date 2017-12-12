@@ -11,7 +11,8 @@ void Reservation::async_wait(asio::yield_context yield) {
         boost::system::error_code ec;
         ready_timer.async_wait(yield[ec]);
         if (ec != asio::error::operation_aborted) {
-            throw std::system_error(EBADMSG, std::system_category());
+            logger::write("Error in reservation async_wait" + ec.message());
+            return;
         }
     }
 }

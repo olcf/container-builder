@@ -46,6 +46,11 @@ add_executable(BuilderQueue ${SOURCE_FILES_QUEUE})
 add_executable(ContainerBuilder ${SOURCE_FILES_BUILDER})
 add_executable(ContainerBuilderClient ${SOURCE_FILES_CLIENT})
 
+# boost log definition
+add_definitions(-DBOOST_LOG_DYN_LINK)
+set(Boost_NO_BOOST_CMAKE TRUE) # Ignore system boost and use module system boost
+set(Boost_USE_STATIC_LIBS OFF)
+
 # ignore coroutines deprecation
 add_definitions(-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
 
@@ -65,6 +70,7 @@ find_package(Threads REQUIRED)
 target_link_libraries(BuilderQueue ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(ContainerBuilder ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(ContainerBuilderClient ${CMAKE_THREAD_LIBS_INIT})
+
 
 find_package(Boost 1.64.0 COMPONENTS system coroutine filesystem serialization regex log log_setup thread REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})

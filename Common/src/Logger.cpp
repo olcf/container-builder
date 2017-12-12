@@ -1,5 +1,3 @@
-#define BOOST_LOG_DYN_LINK 1
-
 #include "Logger.h"
 
 BOOST_LOG_GLOBAL_LOGGER_INIT(global_log, src::logger) {

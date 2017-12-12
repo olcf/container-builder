@@ -19,7 +19,6 @@ set(SOURCE_FILES_QUEUE
         Common/include/Builder.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/src/Messenger.cpp
         Common/include/Messenger.h
         BuilderQueue/src/OpenStackBuilder.cpp
         BuilderQueue/include/OpenStackBuilder.h Common/src/Builder.cpp)
@@ -29,7 +28,6 @@ set(SOURCE_FILES_BUILDER
         Common/include/Builder.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/src/Messenger.cpp
         Common/include/Messenger.h)
 
 # Files related to the API
@@ -38,7 +36,6 @@ set(SOURCE_FILES_CLIENT
         Common/include/Builder.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/src/Messenger.cpp
         Common/include/Messenger.h Common/src/Builder.cpp)
 
 # Create executables
@@ -64,6 +61,9 @@ set_target_properties(ContainerBuilder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS
 set_target_properties(ContainerBuilder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(ContainerBuilderClient PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(ContainerBuilderClient PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+
+# Force logger to use stderr instead of file for client
+set_target_properties(ContainerBuilderClient PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -D LOG_TO_CONSOLE")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)

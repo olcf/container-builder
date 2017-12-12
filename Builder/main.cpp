@@ -89,7 +89,10 @@ int main(int argc, char *argv[]) {
                         // Send the container to the client
                         if (build_code == 0) {
                             logger::write(socket, "Build complete, sending container");
-                            messenger.send_file("container.img");
+                            messenger.async_send_file("container.img", yield[error]);
+                            if(error) {
+                                logger::write(socket, "Sending file to client failed: " + error.message());
+                            }
                         } else {
                             logger::write(socket, "Build failed, not sending container");
                         }

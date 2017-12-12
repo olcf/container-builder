@@ -19,7 +19,7 @@ void Connection::begin() {
                             logger::write(socket, "Invalid request message received: " + request);
                         }
                     });
-    } catch(...) {
+    } catch (...) {
         logger::write(socket, "Unknown connection exception caught");
     }
 }

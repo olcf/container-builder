@@ -15,6 +15,7 @@
 #include <boost/progress.hpp>
 #include <boost/crc.hpp>
 #include <memory.h>
+#include "Logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -41,7 +42,12 @@ public:
     // Receive a string message asynchronously of the specified type
     template <typename Handler>
     std::string async_receive(const Handler& handler, MessageType type=MessageType::string) {
-        auto header = async_receive_header(type, handler);
+        auto header = async_receive_header(handler);
+
+        if(header.type != type) {
+            logger::write("Received bad message header");
+            return std::string();
+        }
 
         // Read the message body
         asio::streambuf buffer;
@@ -70,7 +76,6 @@ public:
         return body;
     }
 
-    // TODO set chunk size to the size of the socket receive buffer?
     template <typename Handler>
     void async_receive_file(boost::filesystem::path file_path, const Handler& handler, const bool print_progress=false) {
         std::ofstream file;
@@ -80,13 +85,17 @@ public:
         socket.get_option(option);
         std::size_t chunk_size = option.value();
 
-        // Throw exception if we run into any file issues
-        file.exceptions(std::fstream::failbit | std::ifstream::badbit);
-
         // Openfile for writing
         file.open(file_path.string(), std::fstream::out | std::fstream::binary | std::fstream::trunc);
+        if(!file) {
+            logger::write("Error opening file: " + file_path.string() + " " + std::strerror(errno));
+        }
 
-        auto header = async_receive_header(MessageType::file, handler);
+        auto header = async_receive_header(handler);
+        if(header.type != MessageType::file) {
+            logger::write("Recieved message hader not of file type");
+            return;
+        }
         auto total_size = header.size;
 
         // If requested initialize a progress bar
@@ -118,7 +127,7 @@ public:
 
         } while (bytes_remaining);
 
-        // After we've read the file we read the checksum and throw if they do not match
+        // After we've read the file we read the checksum and print a message if they do not match
         auto checksum = csc_result.checksum();
         auto checksum_size = sizeof(boost::crc_32_type::value_type);
 
@@ -126,7 +135,7 @@ public:
         asio::async_read(socket, asio::buffer(&sent_checksum, checksum_size), asio::transfer_exactly(checksum_size), handler);
 
         if(checksum != sent_checksum) {
-            throw std::runtime_error("Error, file checksums do not match");
+            logger::write("File checksums do not match, file corrupted!");
         }
 
         file.close();
@@ -155,22 +164,6 @@ public:
         asio::async_write(socket, message_body, asio::transfer_exactly(message_size), handler);
     }
 
-    // Send a string as a message
-    void send(const std::string &message, MessageType type=MessageType::string);
-
-
-    // Receive message as a string
-    std::string receive(MessageType type);
-
-    // Send entire contents of streambuf
-    void send(asio::streambuf &message_body);
-
-    // Send a file in multiple chunk_size peices
-    void send_file(boost::filesystem::path file_path);
-    // Read a file in multiple chunk_size peices
-    void receive_file(boost::filesystem::path file_path);
-
-    // TODO set chunk size to the size of the socket receive buffer?
     // Send a file as a message asynchronously
     template <typename Handler>
     void async_send_file(boost::filesystem::path file_path, const Handler& handler, const bool print_progress=false) {
@@ -181,11 +174,11 @@ public:
         socket.get_option(option);
         std::size_t chunk_size = option.value();
 
-        // Throw exception if we run into any file issues
-        file.exceptions(std::fstream::failbit | std::ifstream::badbit);
-
         // Open file and get size
         file.open(file_path.string(), std::fstream::in | std::fstream::binary);
+        if(!file) {
+            logger::write("Error opening file: " + file_path.string() + " " + std::strerror(errno));
+        }
         auto file_size = boost::filesystem::file_size(file_path);
 
         async_send_header(file_size, MessageType::file, handler);
@@ -251,14 +244,8 @@ public:
         async_send(serialized_builder, handler, MessageType::builder);
     }
 
-    // Transfer builder objects
-    void send(Builder builder);
-    Builder receive_builder();
-
 private:
     tcp::socket &socket;
-
-    void send_header(std::size_t message_size, const MessageType& type);
 
     // Send the header, which is the size and type of the message that will immediately follow, asynchronously
     template <typename Handler>
@@ -267,24 +254,6 @@ private:
         auto header_buffer = asio::buffer(&header, header_size());
         asio::async_write(socket, header_buffer, asio::transfer_exactly(header_size()), handler);
     }
-
-    Header receive_header(const MessageType& type);
-
-    // Receive the message header
-    template <typename Handler>
-    Header async_receive_header(const MessageType &type, const Handler& handler) {
-        Header header;
-        auto header_buffer = asio::buffer(&header, header_size());
-        asio::async_read(socket, header_buffer, asio::transfer_exactly(header_size()), handler);
-        if (header.type == MessageType::error) {
-            throw std::system_error(EBADMSG, std::generic_category(), "received message error!");
-        } else if (type != header.type) {
-            throw std::system_error(EBADMSG, std::generic_category(), "received bad message type");
-        }
-        return header;
-    }
-
-    Header receive_header();
 
     // Receive the message header
     template <typename Handler>

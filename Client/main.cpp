@@ -7,6 +7,7 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include "Messenger.h"
+#include "Logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -15,7 +16,8 @@ namespace bp = boost::process;
 std::string queue_host() {
     auto env = std::getenv("QUEUE_HOST");
     if (!env) {
-        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_HOST not set!");
+        logger::write("QUEUE_HOST not set!");
+        exit(EXIT_FAILURE);
     }
     return std::string(env);
 }
@@ -23,7 +25,8 @@ std::string queue_host() {
 std::string queue_port() {
     auto env = std::getenv("QUEUE_PORT");
     if (!env) {
-        throw std::system_error(ENOTSUP, std::system_category(), "QUEUE_PORT not set!");
+        logger::write("QUEUE_PORT not set!");
+        exit(EXIT_FAILURE);
     }
     return std::string(env);
 }
@@ -60,7 +63,7 @@ public:
                             std::cout << "\b/" << std::flush;
                             timer.async_wait(yield[error]);
                             if(error && error != asio::error::operation_aborted) {
-                                std::cerr<<"Error animating spinner!"<<std::endl;
+                                logger::write("Error animating spinner!");
                             }
                         }
                         std::cout<<std::endl;
@@ -69,6 +72,7 @@ public:
 
     void stop() {
         show_animation=false;
+        std::cout<<std::endl;
     }
 
 private:
@@ -81,7 +85,6 @@ private:
 int main(int argc, char *argv[]) {
 
     try {
-
         // Check for correct number of arguments
         if (argc != 3) {
             std::cerr << "Usage: ContainerBuilder <definition path> <container path>\n";
@@ -107,7 +110,7 @@ int main(int argc, char *argv[]) {
                         asio::async_connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}), yield[error]);
                         waiting_animation.stop();
                         if(error) {
-                            std::cerr<<"Error connecting to builder queue: " << error.message() << std::endl;
+                            logger::write("Error connecting to builder queue: " + error.message());
                             return;
                         }
                         
@@ -117,7 +120,7 @@ int main(int argc, char *argv[]) {
                         waiting_animation.start("Requesting Builder: ");
                         queue_messenger.async_send("checkout_builder_request", yield[error]);
                         if(error) {
-                            std::cerr<<"Error communicating with the builder queue!" << error.message() << std::endl;
+                            logger::write("Error communicating with the builder queue!");
                             return;
                         }
 
@@ -125,7 +128,7 @@ int main(int argc, char *argv[]) {
                         auto builder = queue_messenger.async_receive_builder(yield[error]);
                         waiting_animation.stop();
                         if(error) {
-                            std::cerr<<"Error obtaining VM builder from builder queue!" << error.message() << std::endl;
+                            logger::write("Error obtaining VM builder from builder queue!" + error.message());
                             return;
                         }
 
@@ -141,42 +144,42 @@ int main(int argc, char *argv[]) {
                         Messenger builder_messenger(builder_socket);
 
                         // Once we're connected to the builder start the client process
-                        std::cout << "Sending definition: " << definition_path << std::endl;
+                        logger::write("Sending definition: " + definition_path);
 
                         // Send the definition file
                         builder_messenger.async_send_file(definition_path, yield[error], true);
                         if(error) {
-                            std::cerr<<"Error sending definition file to builder!" << error.message() << std::endl;
+                            logger::write("Error sending definition file to builder!" + error.message());
                             return;
                         }
 
-                        std::cout << "Start of Singularity builder output:" << std::endl;
+                        logger::write("Start of Singularity builder output:");
 
                         std::string line;
                         do {
                             line = builder_messenger.async_receive(yield[error]);
                             if(error) {
-                                std::cerr<<"Error streaming build output!" << error.message() << std::endl;
+                                logger::write("Error streaming build output!" + error.message());
                                 return;
                             }
                             std::cout << line;
                         } while (!line.empty());
 
                         // Read the container image
-                        std::cout << "Sending finished container: " << container_path << std::endl;
+                        logger::write("Sending finished container: " + container_path);
 
                         builder_messenger.async_receive_file(container_path, yield[error], true);
                         if(error) {
-                            std::cerr<<"Error downloading container image!" << error.message() << std::endl;
+                            logger::write("Error downloading container image!" + error.message());
                             return;
                         }
 
-                        std::cout << "Container received: " << container_path << std::endl;
+                        logger::write("Container received: " + container_path);
 
                         // Inform the queue we're done
                         queue_messenger.async_send(std::string("checkout_builder_complete"), yield[error]);
                         if(error) {
-                            std::cerr<<"Error ending build" << error.message() << std::endl;
+                            logger::write("Error ending build" + error.message());
                             return;
                         }
                     });
@@ -185,7 +188,7 @@ int main(int argc, char *argv[]) {
         io_service.run();
     }
     catch (...) {
-        std::cout << std::string() + "Unknown ContainerBuilder exception: " << std::endl;
+        logger::write("Unknown ContainerBuilder exception: ");
     }
 
     // Restore the cursor

@@ -8,7 +8,6 @@
 #include <iostream>
 #include "Messenger.h"
 
-
 namespace asio = boost::asio;
 using asio::ip::tcp;
 namespace bp = boost::process;
@@ -28,34 +27,50 @@ std::string queue_port() {
     }
     return std::string(env);
 }
-/*
-void display_spinner(asio::io_service &io_service, asio::yield_context &yield, bool display) {
-    static bool should_display;
-    static boost::asio::deadline_timer timer(io_service);
 
-    should_display = display;
+// Simple waiting animation usable with async coroutines operations
+class WaitingAnimation {
+public:
+    WaitingAnimation(asio::io_service &io_service) : io_service(io_service),
+                                                     timer(io_service),
+                                                     expire_time(250),
+                                                     show_animation(false) {}
 
-    auto expire_time = boost::posix_time::milliseconds(250);
+    // Start a coroutine animation that yields during animation
+    // When stop() is called the coroutine will exit
+    void start(std::string prefix) {
+        show_animation = true;
 
-    asio::spawn(io_service,
-                [&](asio::yield_context yield) {
-                    while (should_display) {
-                        std::cout << "\b--" << std::flush;
-                        timer.expires_from_now(expire_time);
-                        timer.async_wait(yield);
-                        std::cout << "\b\\" << std::flush;
-                        timer.expires_from_now(expire_time);
-                        timer.async_wait(yield);
-                        std::cout << "\b|" << std::flush;
-                        timer.expires_from_now(expire_time);
-                        timer.async_wait(yield);
-                        timer.expires_from_now(expire_time);
-                        std::cout << "\b/" << std::flush;
-                        timer.async_wait(yield);
-                    }
-                });
-}
-*/
+        asio::spawn(io_service,
+                    [&](asio::yield_context yield) {
+                        std::cout << prefix;
+                        while (show_animation) {
+                            std::cout << "\b--" << std::flush;
+                            timer.expires_from_now(expire_time);
+                            timer.async_wait(yield);
+                            std::cout << "\b\b\\ " << std::flush;
+                            timer.expires_from_now(expire_time);
+                            timer.async_wait(yield);
+                            std::cout << "\b|" << std::flush;
+                            timer.expires_from_now(expire_time);
+                            timer.async_wait(yield);
+                            timer.expires_from_now(expire_time);
+                            std::cout << "\b/" << std::flush;
+                            timer.async_wait(yield);
+                        }
+                    });
+    }
+
+    void stop() {
+        show_animation=false;
+    }
+
+private:
+    asio::io_service& io_service;
+    boost::asio::deadline_timer timer;
+    const boost::posix_time::milliseconds expire_time;
+    bool show_animation;
+};
 
 int main(int argc, char *argv[]) {
 
@@ -70,40 +85,36 @@ int main(int argc, char *argv[]) {
         std::string container_path(argv[2]);
 
         asio::io_service io_service;
+        WaitingAnimation waiting_animation(io_service);
 
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
-
-                        std::cout << "Attempting to connect to BuilderQueue: " << queue_host() << ":" << queue_port()
-                                  << std::endl;
-
+                        waiting_animation.start("Connecting to BuilderQueue: ");
                         tcp::socket queue_socket(io_service);
                         tcp::resolver queue_resolver(io_service);
                         boost::system::error_code ec;
 
                         asio::async_connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}), yield);
-
-                        std::cout << "Connected to BuilderQueue: " << queue_host() << ":" << queue_port() << std::endl;
+                        waiting_animation.stop();
 
                         Messenger queue_messenger(queue_socket);
 
                         // Initiate a build request
+                        waiting_animation.start("Requesting Builder: ");
                         queue_messenger.async_send("checkout_builder_request", yield);
 
                         // Wait on a builder from the queue
                         auto builder = queue_messenger.async_receive_builder(yield);
+                        waiting_animation.stop();
 
-                        std::cout << "Attempting to connect to build host: " << builder.host << ":" << builder.port
-                                  << std::endl;
-
+                        waiting_animation.start("Connecting to Builder: ");
                         tcp::socket builder_socket(io_service);
                         tcp::resolver builder_resolver(io_service);
                         do {
                             asio::async_connect(builder_socket, builder_resolver.resolve({builder.host, builder.port}),
                                                 yield[ec]);
                         } while (ec != boost::system::errc::success);
-
-                        std::cout << "Connected to builder host: " << builder.host << ":" << builder.port << std::endl;
+                        waiting_animation.stop();
 
                         Messenger builder_messenger(builder_socket);
 

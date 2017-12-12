@@ -47,10 +47,10 @@ public:
 
                         std::cout << prefix;
                         while (show_animation) {
-                            std::cout << "\b--" << std::flush;
+                            std::cout << "\b-" << std::flush;
                             timer.expires_from_now(expire_time);
                             timer.async_wait(yield[error]);
-                            std::cout << "\b\b\\ " << std::flush;
+                            std::cout << "\b\\" << std::flush;
                             timer.expires_from_now(expire_time);
                             timer.async_wait(yield[error]);
                             std::cout << "\b|" << std::flush;
@@ -59,7 +59,7 @@ public:
                             timer.expires_from_now(expire_time);
                             std::cout << "\b/" << std::flush;
                             timer.async_wait(yield[error]);
-                            if(error) {
+                            if(error && error != asio::error::operation_aborted) {
                                 std::cerr<<"Error animating spinner!"<<std::endl;
                             }
                         }
@@ -95,19 +95,22 @@ int main(int argc, char *argv[]) {
 
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
+                        // Hide the cursor and disable buffering for cleaner output
+                        std::cout << "\e[?25l" << std::flush;
+                        std::cout.setf(std::ios::unitbuf);
+
                         waiting_animation.start("Connecting to BuilderQueue: ");
                         tcp::socket queue_socket(io_service);
                         tcp::resolver queue_resolver(io_service);
                         boost::system::error_code error;
 
                         asio::async_connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}), yield[error]);
+                        waiting_animation.stop();
                         if(error) {
                             std::cerr<<"Error connecting to builder queue: " << error.message() << std::endl;
                             return;
                         }
-
-                        waiting_animation.stop();
-
+                        
                         Messenger queue_messenger(queue_socket);
 
                         // Initiate a build request
@@ -120,11 +123,11 @@ int main(int argc, char *argv[]) {
 
                         // Wait on a builder from the queue
                         auto builder = queue_messenger.async_receive_builder(yield[error]);
+                        waiting_animation.stop();
                         if(error) {
                             std::cerr<<"Error obtaining VM builder from builder queue!" << error.message() << std::endl;
                             return;
                         }
-                        waiting_animation.stop();
 
                         waiting_animation.start("Connecting to Builder: ");
                         tcp::socket builder_socket(io_service);
@@ -148,10 +151,6 @@ int main(int argc, char *argv[]) {
                         }
 
                         std::cout << "Start of Singularity builder output:" << std::endl;
-
-                        // Hide the cursor and disable buffering for cleaner output
-                        std::cout << "\e[?25l" << std::flush;
-                        std::cout.setf(std::ios::unitbuf);
 
                         std::string line;
                         do {

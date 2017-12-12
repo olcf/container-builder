@@ -13,13 +13,26 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(global_log, src::logger) {
 
 namespace logger {
     void write(const std::string &message) {
-        src::logger &lg = global_log::get();
-        BOOST_LOG(lg) << message;
+        try {
+            src::logger &lg = global_log::get();
+            BOOST_LOG(lg) << message;
+        } catch(...) {
+            std::cerr<<"Error writing message: "<< message << std::endl;
+        }
     }
 
     void write(const tcp::socket &socket, const std::string &message) {
-        src::logger &lg = global_log::get();
-        const std::string connection_string = boost::lexical_cast<std::string>(socket.remote_endpoint());
-        BOOST_LOG(lg) << " [" << connection_string << "] : " << message;
+        try {
+            src::logger &lg = global_log::get();
+            std::string connection_string;
+            if (socket.is_open()) {
+                connection_string = boost::lexical_cast<std::string>(socket.remote_endpoint());
+            } else {
+                connection_string = "socket-closed";
+            }
+            BOOST_LOG(lg) << " [" << connection_string << "] : " << message;
+        } catch(...) {
+            std::cerr<<"Error writing message: "<< message << std::endl;
+        }
     }
 }

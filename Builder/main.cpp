@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 
                         // Receive the definition file from the client
                         messenger.async_receive_file("container.def", yield[error]);
-                        if(error) {
+                        if (error) {
                             logger::write("Error receiving definition file: " + error.message());
                             return;
                         }
@@ -71,12 +71,12 @@ int main(int argc, char *argv[]) {
                         do {
                             // Read from the pipe into a buffer
                             read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield[error]);
-                            if(error) {
+                            if (error) {
                                 logger::write(socket, "reading process pipe failed: " + error.message());
                             }
                             // Write the buffer to our socket
                             messenger.async_send(buffer, yield[error]);
-                            if(error) {
+                            if (error) {
                                 logger::write(socket, "sending process pipe failed: " + error.message());
                             }
                         } while (read_size > 0 && !error);
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
                         if (build_code == 0) {
                             logger::write(socket, "Build complete, sending container");
                             messenger.async_send_file("container.img", yield[error]);
-                            if(error) {
+                            if (error) {
                                 logger::write(socket, "Sending file to client failed: " + error.message());
                             }
                         } else {
@@ -98,8 +98,9 @@ int main(int argc, char *argv[]) {
                         }
                     });
 
-        // Begin processing our connections and queue
+        // Start processing coroutine
         io_service.run();
+
     }
     catch (...) {
         logger::write("Unknown builder exception encountered");

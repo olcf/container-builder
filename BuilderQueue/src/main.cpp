@@ -44,8 +44,14 @@ int main(int argc, char *argv[]) {
                     }
                 });
 
-    // Begin processing our connections and queue
-    io_service.run();
+    // Keep running even in the event of an exception
+    for(;;) {
+        try {
+            io_service.run();
+        } catch(...) {
+            logger::write("Unknown io_service exception run");
+        }
+    }
 
     logger::write("Server shutting down");
 

@@ -14,7 +14,7 @@ void Connection::begin() {
                         if (error) {
                             logger::write(socket, "Request failure" + error.message());
                         } else if (request == "checkout_builder_request") {
-                            checkout_builder(yield[ec]);
+                            checkout_builder(yield[error]);
                         } else {
                             logger::write(socket, "Invalid request message received: " + request);
                         }

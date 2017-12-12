@@ -58,6 +58,7 @@ public:
                             std::cout << "\b/" << std::flush;
                             timer.async_wait(yield);
                         }
+                        std::cout<<std::endl;
                     });
     }
 

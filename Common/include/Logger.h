@@ -26,16 +26,16 @@ using boost::asio::ip::tcp;
 
 namespace logger {
     enum severity_level {
-        normal,
+        info,
         success,
         warning,
         error,
         fatal
     };
 
-    BOOST_LOG_GLOBAL_LOGGER(global_log, src::severity_logger<severity_level>);
+    BOOST_LOG_GLOBAL_LOGGER(global_log, src::severity_logger<severity_level>)
 
-    void write(const std::string &message, severity_level severity=severity_level::normal);
+    void write(const std::string &message, severity_level severity=severity_level::info);
 
-    void write(const tcp::socket &socket, const std::string &message, severity_level severity=severity_level::normal);
+    void write(const tcp::socket &socket, const std::string &message, severity_level severity=severity_level::info);
 }

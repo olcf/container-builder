@@ -16,7 +16,7 @@ namespace bp = boost::process;
 std::string queue_host() {
     auto env = std::getenv("QUEUE_HOST");
     if (!env) {
-        logger::write("QUEUE_HOST not set!");
+        logger::write("QUEUE_HOST not set!", logger::severity_level::fatal);
         exit(EXIT_FAILURE);
     }
     return std::string(env);
@@ -25,7 +25,7 @@ std::string queue_host() {
 std::string queue_port() {
     auto env = std::getenv("QUEUE_PORT");
     if (!env) {
-        logger::write("QUEUE_PORT not set!");
+        logger::write("QUEUE_PORT not set!", logger::severity_level::fatal);
         exit(EXIT_FAILURE);
     }
     return std::string(env);
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
     try {
         // Check for correct number of arguments
         if (argc != 3) {
-            std::cerr << "Usage: ContainerBuilder <definition path> <container path>\n";
+            logger::write("Usage: ContainerBuilder <definition path> <container path>\n", logger::severity_level::fatal);
             return 1;
         }
         std::string definition_path(argv[1]);

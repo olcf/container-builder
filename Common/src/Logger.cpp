@@ -1,12 +1,34 @@
 #include "Logger.h"
 
-// Custom formatter to color text output based on severity level
+// Print severity level based on enum value
+namespace logger {
+    std::ostream &operator<<(std::ostream &strm, logger::severity_level &level) {
+        static const char *strings[] = {
+                "INFO",
+                "SUCCESS",
+                "WARNING",
+                "ERROR",
+                "FATAL"};
+
+        if (static_cast< std::size_t >(level) < sizeof(strings) / sizeof(*strings))
+            strm << strings[level];
+        else
+            strm << static_cast< int >(level);
+
+        return strm;
+    }
+}
+
+// Custom formatter to color text output to console based on severity level
 void color_log_severity(logging::record_view const& rec, logging::formatting_ostream& strm) {
     // Add color based on severity
     auto severity = logging::extract<logger::severity_level>("Severity", rec);
     if (severity) {
         switch (severity.get()) {
-            case logger::severity_level::normal:
+            case logger::severity_level::info:
+                strm << "\033[22m";
+                break;
+            case logger::severity_level::success:
                 strm << "\033[32m";
                 break;
             case logger::severity_level::warning:
@@ -21,9 +43,8 @@ void color_log_severity(logging::record_view const& rec, logging::formatting_ost
                 break;
         }
     }
-
     // Print formatted log message
-    strm << logging::extract<std::string>("TimeStamp", rec) << '[' << logging::extract<std::string>("Severity", rec) << ']'
+    strm << logging::extract<boost::posix_time::ptime>("TimeStamp", rec) << " [" << logging::extract<logger::severity_level>("Severity", rec) << "] "
          << rec[logging::expressions::smessage];
 
     // Remove coloring
@@ -35,24 +56,22 @@ void color_log_severity(logging::record_view const& rec, logging::formatting_ost
 
 // By default we log to ContainerBuilder.log but if CONSOLE_LOG is defined output it to stderr
 BOOST_LOG_GLOBAL_LOGGER_INIT(logger::global_log, src::severity_logger<logger::severity_level>) {
+    // Global logger object
     src::severity_logger<logger::severity_level> lg;
-
+    // Register the severity attribute
+    boost::log::register_simple_formatter_factory< boost::log::trivial::severity_level, char >("Severity");
 #ifdef LOG_TO_CONSOLE
-    logging::add_console_log(std::cerr);
+    // Define a sink to std::cerr and format it with color
+    auto console_sink = logging::add_console_log(std::cerr);
+    console_sink->set_formatter(&color_log_severity);
 #else
+    // Log to a file, we don't want the log full of color sequence characters so we use a simple formatting
     logging::add_file_log("ContainerBuilder.log",
                           keywords::auto_flush = true,
                           keywords::open_mode = (std::ios::out | std::ios::app),
                           keywords::format = "%TimeStamp% [%Severity%]: %Message%");
 #endif
-
-    typedef logging::sinks::synchronous_sink< logging::sinks::text_ostream_backend > text_sink;
-    boost::shared_ptr< text_sink > sink = boost::make_shared< text_sink >();
-    sink->set_formatter(&color_log_severity);
-    logging::core::get()->add_sink(sink);
-
     logging::add_common_attributes();
-
     return lg;
 }
 

@@ -46,19 +46,19 @@ public:
                         for (;;) {
                             if (expire_time.is_not_a_date_time())
                                 break;
-                            logger::write("\r" + prefix + ".  ", logger::severity_level::warning);
+                            std::cout << "\r" << prefix << ".  ";
                             timer.expires_from_now(expire_time);
                             timer.async_wait(yield[error]);
 
                             if (expire_time.is_not_a_date_time())
                                 break;
-                            logger::write("\b\b.", logger::severity_level::warning);
+                            std::cout << "\b\b.";
                             timer.expires_from_now(expire_time);
                             timer.async_wait(yield[error]);
 
                             if (expire_time.is_not_a_date_time())
                                 break;
-                            logger::write(".", logger::severity_level::warning);
+                            std::cout << ".";
                             timer.expires_from_now(expire_time);
                             timer.async_wait(yield[error]);
                         }
@@ -71,7 +71,7 @@ public:
         boost::system::error_code error;
         expire_time = boost::posix_time::not_a_date_time;
         timer.cancel(error);
-        write("\r" + prefix + suffix, level);
+        logger::write("\r" + prefix + suffix, level);
     }
 
 private:
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
                                           logger::severity_level::fatal);
                             return;
                         }
-                        wait_queue.stop("Success\n", logger::severity_level::success);
+                        wait_queue.stop("", logger::severity_level::success);
 
 
                         Messenger queue_messenger(queue_socket);
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
                             logger::write("Error obtaining VM builder from builder queue!" + error.message());
                             return;
                         }
-                        wait_get_builder.stop("Success\n", logger::severity_level::success);
+                        wait_get_builder.stop("", logger::severity_level::success);
 
                         WaitingAnimation wait_builder(io_service, "Connecting to Builder: ");
                         tcp::socket builder_socket(io_service);
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
                             asio::async_connect(builder_socket, builder_resolver.resolve({builder.host, builder.port}),
                                                 yield[error]);
                         } while (error);
-                        wait_builder.stop("Success\n", logger::severity_level::success);
+                        wait_builder.stop("", logger::severity_level::success);
 
                         Messenger builder_messenger(builder_socket);
 

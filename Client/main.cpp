@@ -31,54 +31,54 @@ std::string queue_port() {
     return std::string(env);
 }
 
-// Simple waiting animation usable with async coroutines operations
+// Print animated elipses, used to indicate to the user we're waiting on an async routine
 class WaitingAnimation {
 public:
-    WaitingAnimation(asio::io_service &io_service) : io_service(io_service),
-                                                     timer(io_service),
-                                                     expire_time(250),
-                                                     show_animation(false) {}
-
-    // Start a coroutine animation that yields during animation
-    // When stop() is called the coroutine will exit
-    void start(std::string prefix) {
-        show_animation = true;
-
+    WaitingAnimation(asio::io_service &io_service, std::string prefix) : io_service(io_service),
+                                                                         timer(io_service),
+                                                                         expire_time(
+                                                                                 boost::posix_time::milliseconds(500)),
+                                                                         prefix(prefix) {
         asio::spawn(io_service,
-                    [&](asio::yield_context yield) {
+                    [this, prefix](asio::yield_context yield) {
                         boost::system::error_code error;
 
-                        std::cout << prefix;
-                        while (show_animation) {
-                            std::cout << "\b-" << std::flush;
+                        for (;;) {
+                            if (expire_time.is_not_a_date_time())
+                                break;
+                            std::cout << "\r" << prefix << ".  " << std::flush;
                             timer.expires_from_now(expire_time);
                             timer.async_wait(yield[error]);
-                            std::cout << "\b\\" << std::flush;
+
+                            if (expire_time.is_not_a_date_time())
+                                break;
+                            std::cout << "\b\b." << std::flush;
                             timer.expires_from_now(expire_time);
                             timer.async_wait(yield[error]);
-                            std::cout << "\b|" << std::flush;
+
+                            if (expire_time.is_not_a_date_time())
+                                break;
+                            std::cout << "." << std::flush;
                             timer.expires_from_now(expire_time);
                             timer.async_wait(yield[error]);
-                            timer.expires_from_now(expire_time);
-                            std::cout << "\b/" << std::flush;
-                            timer.async_wait(yield[error]);
-                            if(error && error != asio::error::operation_aborted) {
-                                logger::write("Error animating spinner!");
-                            }
                         }
-                        std::cout<<std::endl;
                     });
     }
 
-    void stop() {
-        show_animation=false;
-        std::cout<<std::endl;
+    // Cancel any outstanding timers and set the expire time to not a date, stopping the animation
+    // The suffix string will be printed in place of the animated ellipses
+    void stop(std::string suffix) {
+        boost::system::error_code error;
+        expire_time = boost::posix_time::not_a_date_time;
+        timer.cancel(error);
+        std::cout << "\r" << prefix << suffix;
     }
 
 private:
-    asio::io_service& io_service;
+    asio::io_service &io_service;
     boost::asio::deadline_timer timer;
-    const boost::posix_time::milliseconds expire_time;
+    boost::posix_time::time_duration expire_time;
+    std::string prefix;
     bool show_animation;
 };
 
@@ -94,7 +94,6 @@ int main(int argc, char *argv[]) {
         std::string container_path(argv[2]);
 
         asio::io_service io_service;
-        WaitingAnimation waiting_animation(io_service);
 
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
@@ -102,44 +101,48 @@ int main(int argc, char *argv[]) {
                         std::cout << "\e[?25l" << std::flush;
                         std::cout.setf(std::ios::unitbuf);
 
-                        waiting_animation.start("Connecting to BuilderQueue: ");
+                        WaitingAnimation wait_queue(io_service, "Connecting to BuilderQueue: ");
                         tcp::socket queue_socket(io_service);
                         tcp::resolver queue_resolver(io_service);
                         boost::system::error_code error;
 
-                        asio::async_connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}), yield[error]);
-                        waiting_animation.stop();
-                        if(error) {
+                        asio::async_connect(queue_socket, queue_resolver.resolve({queue_host(), queue_port()}),
+                                            yield[error]);
+                        if (error) {
+                            wait_queue.stop("Failed\n");
                             logger::write("Error connecting to builder queue: " + error.message());
                             return;
                         }
-                        
+                        wait_queue.stop("Success\n");
+
+
                         Messenger queue_messenger(queue_socket);
 
                         // Initiate a build request
-                        waiting_animation.start("Requesting Builder: ");
+                        WaitingAnimation wait_get_builder(io_service, "Requesting Builder: ");
                         queue_messenger.async_send("checkout_builder_request", yield[error]);
-                        if(error) {
+                        if (error) {
                             logger::write("Error communicating with the builder queue!");
                             return;
                         }
 
                         // Wait on a builder from the queue
                         auto builder = queue_messenger.async_receive_builder(yield[error]);
-                        waiting_animation.stop();
-                        if(error) {
+                        if (error) {
+                            wait_get_builder.stop("Failed\n");
                             logger::write("Error obtaining VM builder from builder queue!" + error.message());
                             return;
                         }
+                        wait_get_builder.stop("Success\n");
 
-                        waiting_animation.start("Connecting to Builder: ");
+                        WaitingAnimation wait_builder(io_service, "Connecting to Builder: ");
                         tcp::socket builder_socket(io_service);
                         tcp::resolver builder_resolver(io_service);
                         do {
                             asio::async_connect(builder_socket, builder_resolver.resolve({builder.host, builder.port}),
                                                 yield[error]);
-                        } while(error);
-                        waiting_animation.stop();
+                        } while (error);
+                        wait_builder.stop("Success\n");
 
                         Messenger builder_messenger(builder_socket);
 
@@ -148,7 +151,7 @@ int main(int argc, char *argv[]) {
 
                         // Send the definition file
                         builder_messenger.async_send_file(definition_path, yield[error], true);
-                        if(error) {
+                        if (error) {
                             logger::write("Error sending definition file to builder!" + error.message());
                             return;
                         }
@@ -158,7 +161,7 @@ int main(int argc, char *argv[]) {
                         std::string line;
                         do {
                             line = builder_messenger.async_receive(yield[error]);
-                            if(error) {
+                            if (error) {
                                 logger::write("Error streaming build output!" + error.message());
                                 return;
                             }
@@ -169,7 +172,7 @@ int main(int argc, char *argv[]) {
                         logger::write("Sending finished container: " + container_path);
 
                         builder_messenger.async_receive_file(container_path, yield[error], true);
-                        if(error) {
+                        if (error) {
                             logger::write("Error downloading container image!" + error.message());
                             return;
                         }
@@ -178,7 +181,7 @@ int main(int argc, char *argv[]) {
 
                         // Inform the queue we're done
                         queue_messenger.async_send(std::string("checkout_builder_complete"), yield[error]);
-                        if(error) {
+                        if (error) {
                             logger::write("Error ending build" + error.message());
                             return;
                         }
@@ -193,7 +196,6 @@ int main(int argc, char *argv[]) {
 
     // Restore the cursor
     std::cout << "\e[?25h" << std::flush;
-
 
     return 0;
 }

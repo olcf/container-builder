@@ -33,9 +33,17 @@ namespace logger {
         fatal
     };
 
-    BOOST_LOG_GLOBAL_LOGGER(global_log, src::severity_logger<severity_level>)
+    // Print string representation of severity levels
+    std::ostream &operator<<(std::ostream &strm, logger::severity_level &level);
 
+    // Add color to console logger output
+    void color_log_severity(logging::record_view const& rec, logging::formatting_ostream& strm);
+
+    // Write a simple message to the log
     void write(const std::string &message, severity_level severity=severity_level::info);
 
+    // Write a log mesage with socket information appended
     void write(const tcp::socket &socket, const std::string &message, severity_level severity=severity_level::info);
+
+    BOOST_LOG_GLOBAL_LOGGER(global_log, src::severity_logger<severity_level>)
 }

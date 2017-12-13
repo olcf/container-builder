@@ -21,6 +21,7 @@ fi
 cp spack-etc/*.yaml $SPACKROOT/etc/spack
 
 $SPACKROOT/bin/spack repo add spack-repo/containerbuilder
+$SPACKROOT/bin/spack spec -NIl "container-builder%gcc@5.3.0"
 $SPACKROOT/bin/spack install "container-builder%gcc@5.3.0"
 
 root=$($SPACKROOT/bin/spack config get config | grep "\btcl:" | awk '{print $2}' | sed 's/^$spack/./')

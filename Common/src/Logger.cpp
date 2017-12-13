@@ -70,9 +70,9 @@ void logger::color_log_severity(logging::record_view const &rec, logging::format
         }
     }
     // Print formatted log message
-    boost::posix_time::time_facet facet;
-    facet.format("%Y-%b-%d %H:%M:%S");
-    strm.imbue(std::locale(strm.getloc(), &facet));
+    boost::posix_time::time_facet* facet = new boost::posix_time::time_facet;
+    facet->format("%Y-%b-%d %H:%M:%S");
+    strm.imbue(std::locale(strm.getloc(), facet));
 
     strm << logging::extract<boost::posix_time::ptime>("TimeStamp", rec) << " ["
          << logging::extract<logger::severity_level>("Severity", rec) << "] "

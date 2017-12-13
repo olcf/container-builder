@@ -1,5 +1,19 @@
+stages:
+  - test
+  - deploy
+
 test:
   script:
   - ./tests/run.sh
   tags:
   - titan
+  stage: test
+
+deploy:
+  script:
+  - ./deploy.sh $CI_COMMIT_TAG
+  tags:
+  - titan
+  stage: deploy
+  only:
+  - tags

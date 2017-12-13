@@ -25,7 +25,7 @@ $SPACKROOT/bin/spack install "container-builder%gcc@5.3.0"
 
 root=$($SPACKROOT/bin/spack config get config | grep "\btcl:" | awk '{print $2}' | sed 's/^$spack/./')
 arch=$($SPACKROOT/bin/spack arch)
-mfname=$($SPACKROOT/bin/spack module find "container-builder%gcc@7.1.0")
+mfname=$($SPACKROOT/bin/spack module find "container-builder%gcc@5.3.0")
 
 real_mf_path="$SPACKROOT/$root/$arch/$mfname"
 

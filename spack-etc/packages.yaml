@@ -4,6 +4,8 @@ packages:
     version: [ 1.65.1 ]
     modules:
       boost@1.65.1+coroutine: boost/1.65.1
+      boost@1.65.1: boost/1.65.1
+    variants: "+coroutine"
 
   openssl:
     buildable: false

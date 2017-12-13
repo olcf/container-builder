@@ -29,8 +29,13 @@ arch=$($SPACKROOT/bin/spack arch)
 mfname=$($SPACKROOT/bin/spack module find "container-builder%gcc@7.1.0")
 
 real_mf_path="$SPACKROOT/$root/$arch/$mfname"
-echo "I think the mf is at $real_mf_path"
 
 MF_ROOT=/sw/xk6/modulefiles/container-builder
 mkdir -p $MF_ROOT
-cp $real_mf_path $MF_ROOT/$VERSION
+cat << EOF > $MF_ROOT/$VERSION
+#%Module
+
+setenv QUEUE_HOST 128.219.186.173
+setenv QUEUE_PORT 8080
+load $real_mf_path
+EOF

@@ -79,7 +79,6 @@ private:
     boost::asio::deadline_timer timer;
     boost::posix_time::time_duration expire_time;
     std::string prefix;
-    bool show_animation;
 };
 
 int main(int argc, char *argv[]) {
@@ -88,7 +87,7 @@ int main(int argc, char *argv[]) {
         // Check for correct number of arguments
         if (argc != 3) {
             logger::write("Usage: ContainerBuilder <definition path> <container path>\n", logger::severity_level::fatal);
-            return 1;
+            return EXIT_FAILURE;
         }
         std::string definition_path(argv[1]);
         std::string container_path(argv[2]);
@@ -110,7 +109,8 @@ int main(int argc, char *argv[]) {
                                             yield[error]);
                         if (error) {
                             wait_queue.stop("Failed\n", logger::severity_level::fatal);
-                            logger::write("Error connecting to builder queue: " + error.message(), logger::severity_level::fatal);
+                            logger::write("Error connecting to builder queue: " + error.message(),
+                                          logger::severity_level::fatal);
                             return;
                         }
                         wait_queue.stop("Success\n", logger::severity_level::success);
@@ -152,7 +152,8 @@ int main(int argc, char *argv[]) {
                         // Send the definition file
                         builder_messenger.async_send_file(definition_path, yield[error], true);
                         if (error) {
-                            logger::write("Error sending definition file to builder!" + error.message(), logger::severity_level::fatal);
+                            logger::write("Error sending definition file to builder!" + error.message(),
+                                          logger::severity_level::fatal);
                             return;
                         }
 
@@ -162,7 +163,8 @@ int main(int argc, char *argv[]) {
                         do {
                             line = builder_messenger.async_receive(yield[error]);
                             if (error) {
-                                logger::write("Error streaming build output!" + error.message(), logger::severity_level::fatal);
+                                logger::write("Error streaming build output!" + error.message(),
+                                              logger::severity_level::fatal);
                                 return;
                             }
                             std::cout << line;
@@ -173,7 +175,8 @@ int main(int argc, char *argv[]) {
 
                         builder_messenger.async_receive_file(container_path, yield[error], true);
                         if (error) {
-                            logger::write("Error downloading container image!" + error.message(), logger::severity_level::fatal);
+                            logger::write("Error downloading container image!" + error.message(),
+                                          logger::severity_level::fatal);
                             return;
                         }
 

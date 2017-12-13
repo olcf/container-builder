@@ -1,9 +1,9 @@
 packages:
   boost:
     buildable: false
-    version: [ 1.62.0 ]
+    version: [ 1.65.1 ]
     modules:
-      boost@1.62.0: boost/1.62.0
+      boost@1.65.1: boost/1.65.1
 
   openssl:
     buildable: false

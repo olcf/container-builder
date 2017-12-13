@@ -5,14 +5,12 @@ source $MODULESHOME/init/bash
 export PATH=$PATH:$MODULESHOME/bin
 
 module unload xalt PrgEnv-pgi PrgEnv-gnu PrgEnv-intel PrgEnv-cray
-module load PrgEnv-gnu
-module swap gcc gcc/7.1.0
 
 set -x
 rm -rf $HOME/.spack
 
 unset CRAYPE_VERSION
-SW_ROOT=/sw/xk6/container-builder/
+SW_ROOT=/sw/xk6/container-builder/$VERSION
 mkdir -p $SW_ROOT
 
 SPACKROOT=$SW_ROOT/.spack
@@ -23,7 +21,7 @@ fi
 cp spack-etc/*.yaml $SPACKROOT/etc/spack
 
 $SPACKROOT/bin/spack repo add spack-repo/containerbuilder
-$SPACKROOT/bin/spack install "container-builder@$VERSION%gcc@7.1.0 ^cmake@3.9.0%gcc@4.7+ownlibs"
+$SPACKROOT/bin/spack install "container-builder%gcc@5.3.0"
 
 root=$($SPACKROOT/bin/spack config get config | grep "\btcl:" | awk '{print $2}' | sed 's/^$spack/./')
 arch=$($SPACKROOT/bin/spack arch)

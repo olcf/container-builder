@@ -1,0 +1,36 @@
+compilers:
+- compiler:
+    spec: gcc@4.3.4
+    operating_system: suse_linux11
+    target: x86_64
+    modules: []
+    paths:
+      cc:  /usr/bin/gcc
+      cxx: /usr/bin/g++
+      f77: /usr/bin/gfortran
+      fc:  /usr/bin/gfortran
+    extra_rpaths: []
+    environment: {}
+    flags:
+      cflags:   -Wl,--disable-new-dtags
+      cxxflags: -Wl,--disable-new-dtags
+      fflags:   -Wl,--disable-new-dtags
+
+- compiler:
+    spec: gcc@5.3.0
+    operating_system: suse_linux11
+    target: x86_64
+    modules: [ gcc/5.3.0 ]
+    paths:
+      cc:  /opt/gcc/5.3.0/bin/gcc
+      cxx: /opt/gcc/5.3.0/bin/g++
+      f77: /opt/gcc/5.3.0/bin/gfortran
+      fc:  /opt/gcc/5.3.0/bin/gfortran
+    extra_rpaths:
+      - /opt/gcc/5.3.0/snos/lib64
+      - /opt/gcc/5.3.0/snos/lib
+    environment: {}
+    flags:
+      cflags:   -Wl,--disable-new-dtags
+      cxxflags: -Wl,--disable-new-dtags
+      fflags:   -Wl,--disable-new-dtags

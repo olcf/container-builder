@@ -1,0 +1,19 @@
+packages:
+  boost:
+    buildable: false
+    version: [ 1.62.0 ]
+    modules:
+      boost@1.62.0: boost/1.62.0
+
+  openssl:
+    buildable: false
+    version: [system, local]
+    paths:
+      openssl@system: /false/path
+      openssl@local: /usr
+
+  cmake:
+    buildable: false
+    version: [ 3.9.0 ]
+    modules:
+      cmake@3.9.0: cmake3/3.9.0

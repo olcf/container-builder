@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
                                           logger::severity_level::fatal);
                             return;
                         }
-                        wait_queue.stop("Success", logger::severity_level::success);
+                        wait_queue.stop("", logger::severity_level::success);
 
 
                         Messenger queue_messenger(queue_socket);
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
                             logger::write("Error obtaining VM builder from builder queue!" + error.message());
                             return;
                         }
-                        wait_get_builder.stop("Success", logger::severity_level::success);
+                        wait_get_builder.stop("", logger::severity_level::success);
 
                         WaitingAnimation wait_builder(io_service, "Connecting to Builder: ");
                         tcp::socket builder_socket(io_service);
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
                             asio::async_connect(builder_socket, builder_resolver.resolve({builder.host, builder.port}),
                                                 yield[error]);
                         } while (error);
-                        wait_builder.stop("Success", logger::severity_level::success);
+                        wait_builder.stop("", logger::severity_level::success);
 
                         Messenger builder_messenger(builder_socket);
 

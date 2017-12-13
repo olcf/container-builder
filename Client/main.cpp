@@ -71,7 +71,7 @@ public:
         boost::system::error_code error;
         expire_time = boost::posix_time::not_a_date_time;
         timer.cancel(error);
-        logger::write("\r" + prefix + suffix, level);
+        logger::write(prefix + suffix, level);
     }
 
 private:

@@ -24,10 +24,18 @@ namespace src = boost::log::sources;
 namespace keywords = boost::log::keywords;
 using boost::asio::ip::tcp;
 
-BOOST_LOG_GLOBAL_LOGGER(global_log, src::logger)
-
 namespace logger {
-    void write(const std::string &message);
+    enum severity_level {
+        normal,
+        success,
+        warning,
+        error,
+        fatal
+    };
 
-    void write(const tcp::socket &socket, const std::string &message);
+    BOOST_LOG_GLOBAL_LOGGER(global_log, src::severity_logger<severity_level>);
+
+    void write(const std::string &message, severity_level severity=severity_level::normal);
+
+    void write(const tcp::socket &socket, const std::string &message, severity_level severity=severity_level::normal);
 }

@@ -41,7 +41,7 @@ set(SOURCE_FILES_CLIENT
 # Create executables
 add_executable(BuilderQueue ${SOURCE_FILES_QUEUE})
 add_executable(ContainerBuilder ${SOURCE_FILES_BUILDER})
-add_executable(ContainerBuilderClient ${SOURCE_FILES_CLIENT})
+add_executable(container-builder ${SOURCE_FILES_CLIENT})
 
 # boost log definition
 add_definitions(-DBOOST_LOG_DYN_LINK)
@@ -59,23 +59,23 @@ set_target_properties(BuilderQueue PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${
 set_target_properties(BuilderQueue PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(ContainerBuilder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(ContainerBuilder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(ContainerBuilderClient PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(ContainerBuilderClient PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(container-builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(container-builder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 
 # Force logger to use stderr instead of file for client
-set_target_properties(ContainerBuilderClient PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -D LOG_TO_CONSOLE")
+set_target_properties(container-builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -D LOG_TO_CONSOLE")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(BuilderQueue ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(ContainerBuilder ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(ContainerBuilderClient ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(container-builder ${CMAKE_THREAD_LIBS_INIT})
 
 
 find_package(Boost 1.64.0 COMPONENTS system coroutine filesystem serialization regex log log_setup thread REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(BuilderQueue ${Boost_LIBRARIES})
 target_link_libraries(ContainerBuilder ${Boost_LIBRARIES})
-target_link_libraries(ContainerBuilderClient ${Boost_LIBRARIES})
+target_link_libraries(container-builder ${Boost_LIBRARIES})
 
-install(TARGETS BuilderQueue ContainerBuilder ContainerBuilderClient RUNTIME DESTINATION bin)
+install(TARGETS BuilderQueue ContainerBuilder container-builder RUNTIME DESTINATION bin)

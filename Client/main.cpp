@@ -31,7 +31,7 @@ std::string queue_port() {
     return std::string(env);
 }
 
-// Print animated elipses, used to indicate to the user we're waiting on an async routine
+// Print animated ellipses, used to indicate to the user we're waiting on an async routine
 class WaitingAnimation {
 public:
     WaitingAnimation(asio::io_service &io_service, std::string prefix) : io_service(io_service),
@@ -71,6 +71,7 @@ public:
         boost::system::error_code error;
         expire_time = boost::posix_time::not_a_date_time;
         timer.cancel(error);
+        std::cout<<"\r"<<std::flush;
         logger::write(prefix + suffix, level);
     }
 

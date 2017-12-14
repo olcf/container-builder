@@ -37,5 +37,5 @@ cat << EOF > $MF_ROOT/$VERSION
 
 setenv QUEUE_HOST 128.219.186.173
 setenv QUEUE_PORT 8080
-load $real_mf_path
+module load $real_mf_path
 EOF

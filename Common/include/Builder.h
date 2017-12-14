@@ -5,7 +5,6 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/serialization/string.hpp>
-#include <boost/asio/spawn.hpp>
 
 namespace asio = boost::asio;
 using asio::ip::tcp;

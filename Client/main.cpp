@@ -86,11 +86,11 @@ int main(int argc, char *argv[]) {
     try {
         // Check for correct number of arguments
         if (argc != 3) {
-            logger::write("Usage: ContainerBuilder <definition path> <container path>\n", logger::severity_level::fatal);
+            logger::write("Usage: ContainerBuilder <container path> <definition path>\n", logger::severity_level::fatal);
             return EXIT_FAILURE;
         }
-        std::string definition_path(argv[1]);
-        std::string container_path(argv[2]);
+        std::string container_path(argv[1]);
+        std::string definition_path(argv[2]);
 
         asio::io_service io_service;
 

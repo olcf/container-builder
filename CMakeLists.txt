@@ -39,9 +39,9 @@ set(SOURCE_FILES_CLIENT
         Common/include/Messenger.h Common/src/Builder.cpp Common/src/Messenger.cpp)
 
 # Create executables
-add_executable(BuilderQueue ${SOURCE_FILES_QUEUE})
-add_executable(ContainerBuilder ${SOURCE_FILES_BUILDER})
-add_executable(container-builder ${SOURCE_FILES_CLIENT})
+add_executable(builder_queue ${SOURCE_FILES_QUEUE})
+add_executable(builder_server ${SOURCE_FILES_BUILDER})
+add_executable(container_builder ${SOURCE_FILES_CLIENT})
 
 # boost log definition
 add_definitions(-DBOOST_LOG_DYN_LINK)
@@ -55,27 +55,27 @@ set(HARDENING_FLAGS "-Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 
 # https://github.com/boostorg/coroutine/issues/30
 # -fsanitize=address,undefined -fno-sanitize=vptr -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen
 
-set_target_properties(BuilderQueue PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(BuilderQueue PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(ContainerBuilder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(ContainerBuilder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(container-builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(container-builder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(builder_queue PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(builder_queue PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(builder_server PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(builder_server PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(container_builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(container_builder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 
 # Force logger to use stderr instead of file for client
-set_target_properties(container-builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -D LOG_TO_CONSOLE")
+set_target_properties(container_builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -D LOG_TO_CONSOLE")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-target_link_libraries(BuilderQueue ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(ContainerBuilder ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(container-builder ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(builder_queue ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(builder_server ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(container_builder ${CMAKE_THREAD_LIBS_INIT})
 
 
 find_package(Boost 1.64.0 COMPONENTS system coroutine filesystem serialization regex log log_setup thread REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(BuilderQueue ${Boost_LIBRARIES})
-target_link_libraries(ContainerBuilder ${Boost_LIBRARIES})
-target_link_libraries(container-builder ${Boost_LIBRARIES})
+target_link_libraries(builder_queue ${Boost_LIBRARIES})
+target_link_libraries(builder_server ${Boost_LIBRARIES})
+target_link_libraries(container_builder ${Boost_LIBRARIES})
 
-install(TARGETS BuilderQueue ContainerBuilder container-builder RUNTIME DESTINATION bin)
+install(TARGETS builder_queue builder_server container_builder RUNTIME DESTINATION bin)

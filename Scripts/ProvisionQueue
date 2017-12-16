@@ -44,9 +44,9 @@ rm -rf /ContainerBuilder
 pip install python-openstackclient
 
 # Create systemd script and launch the BuilderQueue daemon
-cat << EOF > /etc/systemd/system/BuilderQueue.service
+cat << EOF > /etc/systemd/system/builder_queue.service
 [Unit]
-Description=BuilderQueue daemon
+Description=builder_queue daemon
 After=network.target
 
 [Service]
@@ -54,7 +54,7 @@ Type=simple
 User=queue
 Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
 WorkingDirectory=/home/queue
-ExecStart=/usr/local/bin/BuilderQueue
+ExecStart=/usr/local/bin/builder_queue
 Restart=no
 
 [Install]
@@ -63,4 +63,4 @@ EOF
 
 # There appears to be some weird issues with starting systemd services inside of a cloud-init script
 # The easiest thing to do is just reboot after enabling the service
-systemctl enable BuilderQueue
+systemctl enable builder_queue

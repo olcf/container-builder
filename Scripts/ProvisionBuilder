@@ -48,7 +48,7 @@ cd boost_1_65_1
 ./b2 install || :
 rm -rf /boost_1_65_1
 
-# Install ContainerBuilder
+# Install builder_server
 cd /
 git clone https://code.ornl.gov/olcf/ContainerBuilder.git
 cd ContainerBuilder
@@ -59,9 +59,9 @@ make install
 rm -rf /ContainerBuilder
 
 # Create systemd script and launch the Builder daemon
-cat << EOF > /etc/systemd/system/ContainerBuilder.service
+cat << EOF > /etc/systemd/system/builder_server.service
 [Unit]
-Description=ContainerBuilder daemon
+Description=builder_server daemon
 After=network.target
 
 [Service]
@@ -69,16 +69,16 @@ Type=simple
 User=builder
 WorkingDirectory=/home/builder
 Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
-ExecStart=/usr/local/bin/ContainerBuilder
+ExecStart=/usr/local/bin/builder_server
 Restart=no
 
 [Install]
 WantedBy=multi-user.target
 EOF
-systemctl enable ContainerBuilder
+systemctl enable builder_server
 
 reboot
 
 # To check that the Builder service is running
-# sudo netstat -plnt | grep ContainerBuilder
+# sudo netstat -plnt | grep builder_server
 # systemctl status

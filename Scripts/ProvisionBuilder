@@ -63,7 +63,7 @@ rm -rf /ContainerBuilder
 ######################################
 
 # Add support of ppc64le arch
-sudo apt-get install -y qemu binfmt-support zlib1g-dev libglib2.0 devlibpixman-1-dev libfdt-dev
+sudo apt-get install -y qemu binfmt-support zlib1g-dev libglib2.0-dev libpixman-1-dev libfdt-dev
 
 # Install a newer qemu from source to support ppc64le
 wget https://github.com/qemu/qemu/archive/v2.11.0.tar.gz

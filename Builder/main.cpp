@@ -7,7 +7,6 @@
 #include <iostream>
 #include "Logger.h"
 #include "Messenger.h"
-#include <memory>
 
 namespace asio = boost::asio;
 using asio::ip::tcp;

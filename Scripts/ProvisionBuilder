@@ -51,7 +51,7 @@ EOF
 # Install ppc64le glibc
 sudo dpkg --add-architecture ppc64el
 sudo apt-get update || true # Ignore complaints about missing cades ppc64le repos
-sudo apt-get install libc6:ppc64el libc6-dev:ppc64el
+sudo apt-get -y install libc6:ppc64el libc6-dev:ppc64el
 
 # A dirty hack to copy the custom qemu static binaries over top of the distro provided dynamically linked binaries
 sudo cp -r /usr/local/bin/qemu-* /usr/bin

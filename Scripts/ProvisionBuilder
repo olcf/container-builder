@@ -21,6 +21,44 @@ apt-get -y update
 apt-get -y install expect
 apt-get -y install yum rpm
 
+#####################################
+# begin ppc64le QUEMU stuff
+######################################
+
+# Add support of ppc64le arch
+sudo apt-get install -y qemu binfmt-support zlib1g-dev libglib2.0-dev libpixman-1-dev libfdt-dev
+
+# Install a newer qemu from source to support ppc64le
+wget 'https://github.com/qemu/qemu/archive/v2.11.0.tar.gz'
+tar xf ./v2.11.0.tar.gz
+cd qemu-2.11.0
+mkdir build
+cd build
+../configure --static
+make
+sudo make install
+
+# Add ppc64le repos to apt sources
+cat << EOF > /etc/apt/sources.list
+deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ xenial main restricted multiverse
+deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ xenial-updates multiverse
+deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ xenial-backports main restricted universe multiverse
+deb [arch=ppc64el] http://ports.ubuntu.com/ubuntu-ports/ xenial main restricted universe
+deb [arch=ppc64el] http://ports.ubuntu.com/ubuntu-ports/ xenial-updates main restricted universe
+EOF
+
+# Install ppc64le glibc
+sudo dpkg --add-architecture ppc64el
+sudo apt-get update
+sudo apt-get install libc6:ppc64el libc6-dev:ppc64el
+
+# A dirty hack to copy the custom qemu static binaries over top of the distro provided dynamically linked binaries
+sudo cp -r /usr/local/bin/qemu-* /usr/bin
+
+#####################################
+# End ppc64le
+#####################################
+
 # Install Singularity
 export VERSION=2.4
 wget https://github.com/singularityware/singularity/releases/download/${VERSION}/singularity-${VERSION}.tar.gz
@@ -58,47 +96,6 @@ make
 make install
 rm -rf /ContainerBuilder
 
-#####################################
-# begin ppc64le QUEMU stuff
-######################################
-
-# Add support of ppc64le arch
-sudo apt-get install -y qemu binfmt-support zlib1g-dev libglib2.0-dev libpixman-1-dev libfdt-dev
-
-# Install a newer qemu from source to support ppc64le
-wget https://github.com/qemu/qemu/archive/v2.11.0.tar.gz
-tar xf v2.11.0.tar.gz
-cd qemu-2.11.0/
-mkdir build
-cd build
-../configure --static
-make
-sudo make install
-
-# Add ppc64le repos to apt sources
-cat << EOF > /etc/apt/sources.list
-deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ xenial main restricted multiverse
-deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ xenial-updates multiverse
-deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ xenial-backports main restricted universe multiverse
-deb [arch=ppc64el] http://ports.ubuntu.com/ubuntu-ports/ xenial main restricted universe
-deb [arch=ppc64el] http://ports.ubuntu.com/ubuntu-ports/ xenial-updates main restricted universe
-EOF
-
-# Install ppc64le glibc
-sudo dpkg --add-architecture ppc64el
-sudo apt-get update
-sudo apt-get install libc6:ppc64el libc6-dev:ppc64el
-
-# A dirty hack to copy the custom qemu static binaries over top of the distro provided dynamically linked binaries
-sudo cp -r /usr/local/bin/qemu-* /usr/bin
-
-# Create singularity ppc64le builder image
-sudo /usr/local/bin/singularity build /home/builder/ppc_builder.img /ContainerBuilder/Scripts/ppc_builder.def
-
-#####################################
-# End ppc64le
-#####################################
-
 # Create systemd script and launch the Builder daemon
 cat << EOF > /etc/systemd/system/builder_server.service
 [Unit]
@@ -117,6 +114,9 @@ Restart=no
 WantedBy=multi-user.target
 EOF
 systemctl enable builder_server
+
+# Create singularity ppc64le builder image
+sudo /usr/local/bin/singularity build /home/builder/ppc_builder.img /ContainerBuilder/Scripts/ppc_builder.def
 
 reboot
 

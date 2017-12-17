@@ -97,6 +97,8 @@ make
 make install
 rm -rf /ContainerBuilder
 
+cd /
+
 # Create systemd script and launch the Builder daemon
 cat << EOF > /etc/systemd/system/builder_server.service
 [Unit]

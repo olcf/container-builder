@@ -1,0 +1,11 @@
+BootStrap: docker
+From: ppc64le/ubuntu:zesty
+
+%setup
+cp /usr/bin/qemu-ppc64le  ${SINGULARITY_ROOTFS}/usr/bin/qemu-ppc64le
+
+%post
+apt-get update
+apt-get install -y apt-utils build-essential wget python yum git autoconf libtool autogen squashfs-tools
+git clone https://github.com/singularityware/singularity.git
+cd singularity && ./autogen.sh && ./configure --prefix=/usr/local && make && make install

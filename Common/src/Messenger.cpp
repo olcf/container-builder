@@ -326,3 +326,36 @@ Header  Messenger::async_receive_header(asio::yield_context yield) {
     }
     return header;
 }
+
+ClientData Messenger::async_receive_client_data(asio::yield_context yield) {
+    // Read in the serialized client data as a string
+    boost::system::error_code error;
+    auto serialized_client_data = async_receive(yield[error], MessageType::client_data);
+    if (error) {
+        logger::write("Received bad client data" + error.message());
+        ClientData client_data;
+        return client_data;
+    }
+
+    // de-serialize Builder
+    std::istringstream archive_stream(serialized_client_data);
+    boost::archive::text_iarchive archive(archive_stream);
+    ClientData client_data;
+    archive >> client_data;
+
+    return client_data;
+}
+
+void Messenger::async_send(ClientData client_data, asio::yield_context yield) {
+    // Serialize the client data into a string
+    std::ostringstream archive_stream;
+    boost::archive::text_oarchive archive(archive_stream);
+    archive << client_data;
+    auto serialized_client_data = archive_stream.str();
+
+    boost::system::error_code error;
+    async_send(serialized_client_data, yield[error], MessageType::client_data);
+    if (error) {
+        logger::write("Error sending client data" + error.message());
+    }
+}

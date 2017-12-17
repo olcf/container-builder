@@ -21,7 +21,7 @@ set(SOURCE_FILES_QUEUE
         Common/include/Logger.h
         Common/include/Messenger.h
         BuilderQueue/src/OpenStackBuilder.cpp
-        BuilderQueue/include/OpenStackBuilder.h Common/src/Builder.cpp Common/src/Messenger.cpp)
+        BuilderQueue/include/OpenStackBuilder.h Common/src/Builder.cpp Common/src/Messenger.cpp Common/include/ClientData.h)
 
 set(SOURCE_FILES_BUILDER
         Builder/main.cpp
@@ -36,7 +36,13 @@ set(SOURCE_FILES_CLIENT
         Common/include/Builder.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/include/Messenger.h Common/src/Builder.cpp Common/src/Messenger.cpp)
+        Common/include/Messenger.h Common/src/Builder.cpp Common/src/Messenger.cpp Common/include/ClientData.h)
+
+# Scripts required for runtime
+set(SCRIPTS
+        Scripts/RequestCreateBuilder
+        Scripts/GetBuilders
+        Scripts/DestroyBuilder)
 
 # Create executables
 add_executable(builder_queue ${SOURCE_FILES_QUEUE})
@@ -72,10 +78,15 @@ target_link_libraries(builder_server ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(container_builder ${CMAKE_THREAD_LIBS_INIT})
 
 
-find_package(Boost 1.64.0 COMPONENTS system coroutine filesystem serialization regex log log_setup thread REQUIRED)
+find_package(Boost 1.64.0 COMPONENTS system coroutine filesystem serialization regex log log_setup thread program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(builder_queue ${Boost_LIBRARIES})
 target_link_libraries(builder_server ${Boost_LIBRARIES})
 target_link_libraries(container_builder ${Boost_LIBRARIES})
 
 install(TARGETS builder_queue builder_server container_builder RUNTIME DESTINATION bin)
+
+# Install scripts
+install(FILES ${SCRIPTS}
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ
+WORLD_EXECUTE DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")

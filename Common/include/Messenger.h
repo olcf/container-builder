@@ -16,6 +16,7 @@
 #include <boost/crc.hpp>
 #include <memory.h>
 #include "Logger.h"
+#include "ClientData.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -24,6 +25,7 @@ using asio::ip::tcp;
 enum class MessageType : unsigned char {
     string,
     builder,
+    client_data,
     file,
     error
 };
@@ -39,31 +41,24 @@ class Messenger {
 public:
     explicit Messenger(tcp::socket &socket) : socket(socket) {}
 
-    // Receive a string message asynchronously of the specified type
     std::string async_receive(asio::yield_context yield, MessageType type=MessageType::string);
-
     std::string async_receive(asio::yield_context yield, MessageType* type);
 
-    void async_receive_file(boost::filesystem::path file_path, asio::yield_context yield, const bool print_progress=false);
-
-    // Send a string message asynchronously
     void async_send(const std::string &message, asio::yield_context yield, MessageType type=MessageType::string);
-
-    // Send a streambuf message asynchronously
     void async_send(asio::streambuf &message_body, asio::yield_context yield);
 
-    // Send a file as a message asynchronously
+    void async_receive_file(boost::filesystem::path file_path, asio::yield_context yield, const bool print_progress=false);
     void async_send_file(boost::filesystem::path file_path, asio::yield_context yield, const bool print_progress=false);
 
     Builder async_receive_builder(asio::yield_context yield);
-
     void async_send(Builder builder, asio::yield_context yield);
+
+    ClientData async_receive_client_data(asio::yield_context yield);
+    void async_send(ClientData client_data, asio::yield_context yield);
 private:
     tcp::socket &socket;
 
-    // Send the header, which is the size and type of the message that will immediately follow, asynchronously
     void async_send_header(std::size_t message_size, MessageType type, asio::yield_context yield);
-    // Receive the message header
     Header async_receive_header(asio::yield_context yield);
 
     static constexpr std::size_t header_size() {

@@ -31,6 +31,13 @@ int main(int argc, char *argv[]) {
                     [&](asio::yield_context yield) {
                         boost::system::error_code error;
 
+                        // Receive client data
+                        ClientData client_data = messenger.async_receive_client_data(yield[error]);
+                        if (error) {
+                            logger::write("Error receiving client data: " + error.message());
+                            return;
+                        }
+
                         // Receive the definition file from the client
                         messenger.async_receive_file("container.def", yield[error]);
                         if (error) {
@@ -47,7 +54,19 @@ int main(int argc, char *argv[]) {
                         // We use "unbuffer" to fake the build into thinking it has a real TTY, which the command output eventually will
                         // This causes things like wget and color ls to work nicely
                         std::string build_command(
-                                "/usr/bin/sudo /usr/bin/unbuffer /usr/local/bin/singularity build ./container.img ./container.def");
+                                "/usr/bin/sudo ");
+                        // If the cleint has a tty trick the subprocess into thinking that as well
+                        if(client_data.tty) {
+                            build_command += "/usr/bin/unbuffer ";
+                        }
+                        // Architecture specific build methods
+                        if(client_data.arch == Architecture::x86_64) {
+                            build_command += "/usr/local/bin/singularity build ./container.img ./container.def";
+                        }
+                        else if(client_data.arch == Architecture::ppc64le) {
+                            build_command += "/usr/local/bin/singularity exec /home/builder/ppc_builder.img /usr/local/bin/singularity build ./container.img ./container.def";
+                        }
+
 
                         bp::group group;
                         std::error_code build_ec;

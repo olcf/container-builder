@@ -7,11 +7,12 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include "Messenger.h"
-#include "Logger.h"
+#include <boost/program_options.hpp>
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
 namespace bp = boost::process;
+namespace po = boost::program_options;
 
 std::string queue_host() {
     auto env = std::getenv("QUEUE_HOST");
@@ -71,7 +72,7 @@ public:
         boost::system::error_code error;
         expire_time = boost::posix_time::not_a_date_time;
         timer.cancel(error);
-        std::cout<<"\r"<<std::flush;
+        std::cout << "\r" << std::flush;
         logger::write(prefix + suffix, level);
     }
 
@@ -85,13 +86,39 @@ private:
 int main(int argc, char *argv[]) {
 
     try {
-        // Check for correct number of arguments
-        if (argc != 3) {
-            logger::write("Usage: ContainerBuilder <container path> <definition path>\n", logger::severity_level::fatal);
-            return EXIT_FAILURE;
+        // Supported arguments
+        po::options_description desc("Allowed options");
+        desc.add_options()
+                ("help", "produce help message")
+                ("arch", po::value<std::string>()->default_value("x86_64"), "select architecture, valid options are x86_64 and ppc64le")
+                ("tty", po::value<bool>()->default_value(isatty(fileno(stdout))),
+                 "true if the data should be presented as if a tty is present")
+                ("container", po::value<std::string>()->required(), "(required) the container name")
+                ("definition", po::value<std::string>()->required(), "(required) the definition file");
+
+        // Position arguments, the container output name and input definition
+        po::positional_options_description pos_desc;
+        pos_desc.add("container", 1);
+        pos_desc.add("definition", 1);
+
+        // Parse arguments
+        po::variables_map vm;
+        po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_desc).run(), vm);
+
+        // Print help if requested
+        if (!vm.count("container") || !vm.count("definition") || vm.count("help")) {
+            std::cerr << desc << std::endl;
+            return 0;
         }
-        std::string container_path(argv[1]);
-        std::string definition_path(argv[2]);
+
+        // Set local variables based upon program arguments
+        auto definition_path = vm["definition"].as<std::string>();
+        auto container_path = vm["container"].as<std::string>();
+        auto tty = vm["tty"].as<bool>();
+        auto arch = vm["arch"].as<std::string>();
+
+        // Make sure variables are set as required
+        po::notify(vm);
 
         asio::io_service io_service;
 
@@ -147,6 +174,25 @@ int main(int argc, char *argv[]) {
 
                         Messenger builder_messenger(builder_socket);
 
+                        // Send client information to builder
+                        ClientData client_data;
+                        char user[100];
+                        int err = getlogin_r(user, 100);
+                        if (err) {
+                            logger::write("Error get login name for client data!" + error.message(),
+                                          logger::severity_level::fatal);
+                            return;
+                        }
+                        client_data.user_id = std::string(user);
+                        client_data.tty = tty;
+                        client_data.set_arch(arch);
+                        builder_messenger.async_send(client_data, yield[error]);
+                        if (error) {
+                            logger::write("Error sending client data to builder!" + error.message(),
+                                          logger::severity_level::fatal);
+                            return;
+                        }
+
                         // Once we're connected to the builder start the client process
                         logger::write("Sending definition: " + definition_path);
 
@@ -193,6 +239,9 @@ int main(int argc, char *argv[]) {
 
         // Begin processing our connections and queue
         io_service.run();
+    }
+    catch (std::exception &exception) {
+        logger::write(exception.what(), logger::severity_level::fatal);
     }
     catch (...) {
         logger::write("Unknown ContainerBuilder exception: ", logger::severity_level::fatal);

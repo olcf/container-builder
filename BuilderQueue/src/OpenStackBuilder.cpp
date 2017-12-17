@@ -9,7 +9,7 @@ namespace pt = boost::property_tree;
 
 namespace OpenStackBuilder {
     std::set<Builder> get_builders(asio::io_service &io_service, asio::yield_context yield) {
-        std::string list_command("/home/queue/GetBuilders");
+        std::string list_command("/usr/local/bin/GetBuilders");
         bp::group group;
         bp::async_pipe std_pipe(io_service);
         asio::streambuf buffer;
@@ -75,7 +75,7 @@ namespace OpenStackBuilder {
     }
 
     void request_create(asio::io_service &io_service, asio::yield_context yield) {
-        std::string create_command("/home/queue/RequestCreateBuilder");
+        std::string create_command("/usr/local/bin/RequestCreateBuilder");
         bp::group group;
         bp::async_pipe std_pipe(io_service);
         asio::streambuf buffer;
@@ -106,7 +106,7 @@ namespace OpenStackBuilder {
     }
 
     void destroy(Builder builder, asio::io_service &io_service, asio::yield_context yield) {
-        std::string destroy_command("/home/queue/DestroyBuilder " + builder.id);
+        std::string destroy_command("/usr/local/bin/DestroyBuilder " + builder.id);
         bp::group group;
         bp::async_pipe std_pipe(io_service);
         asio::streambuf buffer;

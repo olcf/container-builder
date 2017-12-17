@@ -6,9 +6,6 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/serialization/string.hpp>
 
-namespace asio = boost::asio;
-using asio::ip::tcp;
-
 class Builder {
 public:
     std::string host;

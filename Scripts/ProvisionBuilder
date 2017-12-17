@@ -26,11 +26,11 @@ apt-get -y install yum rpm
 ######################################
 
 # Add support of ppc64le arch
-sudo apt-get install -y qemu binfmt-support zlib1g-dev libglib2.0-dev libpixman-1-dev libfdt-dev libpython-stdlib
+sudo apt-get install -y qemu binfmt-support zlib1g-dev libglib2.0-dev libpixman-1-dev libfdt-dev libpython2.7-stdlib
 
 # Install a newer qemu from source to support ppc64le
-wget 'https://github.com/qemu/qemu/archive/v2.11.0.tar.gz'
-tar xf ./v2.11.0.tar.gz
+wget 'https://download.qemu.org/qemu-2.11.0.tar.xz'
+tar xf v2.11.0.tar.gz
 cd qemu-2.11.0
 mkdir build
 cd build

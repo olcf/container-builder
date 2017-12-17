@@ -95,7 +95,6 @@ mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr/local" ..
 make
 make install
-rm -rf /ContainerBuilder
 
 cd /
 

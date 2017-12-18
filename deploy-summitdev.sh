@@ -32,10 +32,13 @@ real_mf_path="$SPACKROOT/$root/$arch/$mfname"
 
 MF_ROOT=/sw/summitdev/modulefiles/container-builder
 mkdir -p $MF_ROOT
+
+source ./queue_host.sh
+
 cat << EOF > $MF_ROOT/$VERSION
 #%Module
 
-setenv QUEUE_HOST 128.219.186.173
+setenv QUEUE_HOST ${QUEUE_HOST}
 setenv QUEUE_PORT 8080
 module load $real_mf_path
 EOF

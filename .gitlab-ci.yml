@@ -1,12 +1,13 @@
 stages:
-  - deploy
+  - deploy-queue
+  - deploy-client
 
 deploy-titan:
   script:
   - ./deploy-titan.sh $CI_COMMIT_TAG
   tags:
   - titan
-  stage: deploy
+  stage: deploy-client
   only:
   - tags
 
@@ -15,7 +16,7 @@ deploy-summitdev:
   - ./deploy-summitdev.sh $CI_COMMIT_TAG
   tags:
   - ppc64le
-  stage: deploy
+  stage: deploy-client
   only:
   - tags
 
@@ -24,6 +25,9 @@ deploy-openstack:
   - ./deploy-openstack.sh $CI_COMMIT_TAG
   tags:
   - openstack
-  stage: deploy
+  stage: deploy-queue
   only:
   - tags
+  artifacts:
+    paths:
+      - queue_host.sh

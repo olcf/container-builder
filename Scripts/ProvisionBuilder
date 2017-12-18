@@ -117,9 +117,6 @@ WantedBy=multi-user.target
 EOF
 systemctl enable builder_server
 
-# Create singularity ppc64le builder image
-sudo /usr/local/bin/singularity build /home/builder/ppc_builder.img /ContainerBuilder/Scripts/ppc_builder.def
-
 reboot
 
 # To check that the Builder service is running

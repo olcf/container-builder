@@ -47,6 +47,15 @@ int main(int argc, char *argv[]) {
 
                         logger::write(socket, "Received container.def");
 
+                        if(client_data.arch == Architecture::ppc64le) {
+                            // A dirty hack but the ppc64le qemu executable must be in the place the kernel expects it
+                            // Modify the definition to copy this executable in during %setup
+                            boost::filesystem::path fPath{"myfile.txt"};
+                            boost::filesystem::ofstream def{fPath, std::ios::app};
+                            std::string copy_qemu("\n%setup\ncp /usr/bin/qemu-ppc64le  ${SINGULARITY_ROOTFS}/usr/bin/qemu-ppc64le");
+                            def << copy_qemu;
+                        }
+
                         // Create a pipe to communicate with our build subprocess
                         bp::async_pipe std_pipe(io_service);
 
@@ -59,19 +68,7 @@ int main(int argc, char *argv[]) {
                         if(client_data.tty) {
                             build_command += "/usr/bin/unbuffer ";
                         }
-                        // Architecture specific build methods
-                        if(client_data.arch == Architecture::x86_64) {
-                            build_command += "/usr/local/bin/singularity build ./container.img ./container.def";
-                        }
-                        else if(client_data.arch == Architecture::ppc64le) {
-                            // A dirty hack but the ppc64le qemu executable must be in the place the kernel expects it
-                            // Modify the definition to copy this executable in during %setup
-                            boost::filesystem::path fPath{"myfile.txt"};
-                            boost::filesystem::ofstream def{fPath, std::ios::app};
-                            def << "%setup\ncp /usr/bin/qemu-ppc64le  ${SINGULARITY_ROOTFS}/usr/bin/qemu-ppc64le";
-                            build_command += "/usr/local/bin/singularity exec -B /home/builder /home/builder/ppc_builder.img /usr/local/bin/singularity build /home/builder/container.img /home/builder/container.def";
-                        }
-
+                        build_command += "/usr/local/bin/singularity build ./container.img ./container.def";
 
                         bp::group group;
                         std::error_code build_ec;

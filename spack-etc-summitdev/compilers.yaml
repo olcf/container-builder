@@ -2,7 +2,6 @@ compilers:
 - compiler:
     spec: gcc@4.8.5
     operating_system: rhel7
-    target: ppc64le
     paths:
       cc:  /usr/bin/gcc
       cxx: /usr/bin/g++
@@ -12,7 +11,6 @@ compilers:
 - compiler:
     spec: gcc@7.1.0
     operating_system: rhel7
-    target: ppc64le
     modules: [ gcc/7.1.0 ]
     paths:
       cc:  /sw/summitdev/gcc/7.1.0/bin/gcc

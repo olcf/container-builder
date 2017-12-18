@@ -4,7 +4,7 @@ export OS_CACERT=`pwd`/OpenStack.cer
 echo "using OS_CACERT="${OS_CACERT}
 
 # OpenStack credentials
-source ./openrc.sh
+#source ./openrc.sh
 
 # Destroy any existing builder if one exists
 ./TearDownQueue --no_source

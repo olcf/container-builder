@@ -20,6 +20,9 @@ if [ ! -d $SPACKROOT ]; then
 fi
 cp spack-etc-summitdev/*.yaml $SPACKROOT/etc/spack
 
+# Fix LMOD spack interface
+export PATH=$PATH:/sw/summitdev/.swci/0-core/etc/nccs-sw-ci/summitdev/bin/
+
 $SPACKROOT/bin/spack repo add spack-repo/containerbuilder
 $SPACKROOT/bin/spack spec -NIl "container-builder%gcc@7.1.0"
 $SPACKROOT/bin/spack install "container-builder%gcc@7.1.0"

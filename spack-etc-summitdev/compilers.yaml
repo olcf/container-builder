@@ -11,7 +11,7 @@ compilers:
 - compiler:
     spec: gcc@7.1.0
     operating_system: rhel7
-    modules: [ gcc/7.1.0 ]
+    modules: [gcc/7.1.0]
     paths:
       cc:  /sw/summitdev/gcc/7.1.0/bin/gcc
       cxx: /sw/summitdev/gcc/7.1.0/bin/g++

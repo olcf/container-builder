@@ -8,7 +8,3 @@ pip install python-openstackclient
 cd Scripts
 ./CreateBuilderImage
 ./BringUpQueue
-
-cat << EOF > queue_host.sh
-QUEUE_HOST=12345
-EOF

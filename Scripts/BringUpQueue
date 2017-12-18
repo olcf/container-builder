@@ -7,7 +7,7 @@ echo "using OS_CACERT="${OS_CACERT}
 #source ./openrc.sh
 
 # Destroy any existing builder if one exists
-./TearDownQueue --no_source
+#./TearDownQueue --no_source
 
 # Get script directory
 SCRIPT_DIR=$(pwd)
@@ -67,3 +67,7 @@ ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv
 openstack server reboot --wait ${VM_UUID}
 
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"
+
+cat << EOF > queue_host.sh
+QUEUE_HOST=${VM_IP}
+EOF

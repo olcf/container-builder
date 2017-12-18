@@ -18,7 +18,7 @@ SPACKROOT=$SW_ROOT/.spack
 if [ ! -d $SPACKROOT ]; then
 	git clone https://github.com/spack/spack.git $SPACKROOT
 fi
-cp spack-etc-summit/*.yaml $SPACKROOT/etc/spack
+cp spack-etc-summitdev/*.yaml $SPACKROOT/etc/spack
 
 $SPACKROOT/bin/spack repo add spack-repo/containerbuilder
 $SPACKROOT/bin/spack spec -NIl "container-builder%gcc@7.1.0"

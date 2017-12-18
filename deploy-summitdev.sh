@@ -17,6 +17,9 @@ SPACKROOT=$SW_ROOT/.spack
 
 if [ ! -d $SPACKROOT ]; then
 	git clone https://github.com/spack/spack.git $SPACKROOT
+	cd $SPACKROOT
+	git checkout d3519af7de84fa72dee0618c7754f7ebeaa23142
+	cd ..
 fi
 cp spack-etc-summitdev/*.yaml $SPACKROOT/etc/spack
 

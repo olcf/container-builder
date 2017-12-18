@@ -1,19 +1,29 @@
 stages:
-  - test
   - deploy
 
-test:
+deploy-titan:
   script:
-  - ./tests/run.sh
+  - ./deploy-titan.sh $CI_COMMIT_TAG
   tags:
   - titan
-  stage: test
+  stage: deploy
+  only:
+  - tags
 
-deploy:
+deploy-summitdev:
   script:
-  - ./deploy.sh $CI_COMMIT_TAG
+  - ./deploy-summitdev.sh $CI_COMMIT_TAG
   tags:
-  - titan
+  - summitdev
+  stage: deploy
+  only:
+  - tags
+
+deploy-openstack:
+  script:
+  - ./deploy-openstack.sh $CI_COMMIT_TAG
+  tags:
+  - openstack
   stage: deploy
   only:
   - tags

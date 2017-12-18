@@ -1,13 +1,14 @@
 #!/bin/bash -e
 VERSION=$1
 
+export HOME=$(pwd)
+
 source $MODULESHOME/init/bash
 export PATH=$PATH:$MODULESHOME/bin
 
 module unload xalt PrgEnv-pgi PrgEnv-gnu PrgEnv-intel PrgEnv-cray
 
 set -x
-rm -rf $HOME/.spack
 
 unset CRAYPE_VERSION
 SW_ROOT=/sw/xk6/container-builder/$VERSION
@@ -18,7 +19,7 @@ SPACKROOT=$SW_ROOT/.spack
 if [ ! -d $SPACKROOT ]; then
 	git clone https://github.com/spack/spack.git $SPACKROOT
 fi
-cp spack-etc/*.yaml $SPACKROOT/etc/spack
+cp spack-etc-titan/*.yaml $SPACKROOT/etc/spack
 
 $SPACKROOT/bin/spack repo add spack-repo/containerbuilder
 $SPACKROOT/bin/spack spec -NIl "container-builder%gcc@5.3.0"

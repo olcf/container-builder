@@ -30,7 +30,7 @@ mfname=$($SPACKROOT/bin/spack module find "container-builder%gcc@7.1.0")
 
 real_mf_path="$SPACKROOT/$root/$arch/$mfname"
 
-MF_ROOT=/sw/summitdev/modulefiles/container-builder
+MF_ROOT=/sw/summitdev/modulefiles/core/container-builder
 mkdir -p $MF_ROOT
 
 source ./queue_host.sh

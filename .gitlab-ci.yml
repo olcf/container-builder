@@ -31,3 +31,4 @@ deploy-openstack:
   artifacts:
     paths:
       - queue_host.sh
+      - Scripts/ContainerBuilderKey

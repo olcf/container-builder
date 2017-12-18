@@ -59,7 +59,8 @@ sleep 60
 
 VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
 
-# Copy files to VM and then move to correct directory
+# Copy OpenStack credentials to VM and then move to correct directory
+printenv | grep ^OS_ > ${SCRIPT_DIR}/openrc.sh # "Reconstruct" openrc.sh
 scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/openrc.sh cades@${VM_IP}:/home/cades/openrc.sh
 ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/openrc.sh /home/queue/openrc.sh'
 

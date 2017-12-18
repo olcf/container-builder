@@ -6,7 +6,7 @@ export HOME=$(pwd)
 source $MODULESHOME/init/bash
 export PATH=$PATH:$MODULESHOME/bin
 
-module unload xalt
+module unload DefApps
 
 set -x
 
@@ -19,9 +19,6 @@ if [ ! -d $SPACKROOT ]; then
 	git clone https://github.com/spack/spack.git $SPACKROOT
 fi
 cp spack-etc-summitdev/*.yaml $SPACKROOT/etc/spack
-
-# Fix LMOD spack interface
-export PATH=$PATH:/sw/summitdev/.swci/0-core/etc/nccs-sw-ci/summitdev/bin/
 
 $SPACKROOT/bin/spack repo add spack-repo/containerbuilder
 $SPACKROOT/bin/spack spec -NIl "container-builder%gcc@7.1.0"

@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
                             build_command += "/usr/local/bin/singularity build ./container.img ./container.def";
                         }
                         else if(client_data.arch == Architecture::ppc64le) {
-                            build_command += "/usr/local/bin/singularity exec /home/builder/ppc_builder.img /usr/local/bin/singularity build ./container.img ./container.def";
+                            build_command += "/usr/local/bin/singularity exec -B /home/builder /home/builder/ppc_builder.img /usr/local/bin/singularity build /home/builder/container.img /home/builder/container.def";
                         }
 
 

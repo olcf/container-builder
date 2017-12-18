@@ -4,6 +4,7 @@
 #include <boost/asio/spawn.hpp>
 #include <boost/process.hpp>
 #include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
 #include <iostream>
 #include "Logger.h"
 #include "Messenger.h"
@@ -63,6 +64,11 @@ int main(int argc, char *argv[]) {
                             build_command += "/usr/local/bin/singularity build ./container.img ./container.def";
                         }
                         else if(client_data.arch == Architecture::ppc64le) {
+                            // A dirty hack but the ppc64le qemu executable must be in the place the kernel expects it
+                            // Modify the definition to copy this executable in during %setup
+                            boost::filesystem::path fPath{"myfile.txt"};
+                            boost::filesystem::ofstream def{fPath, std::ios::app};
+                            def << "%setup\ncp /usr/bin/qemu-ppc64le  ${SINGULARITY_ROOTFS}/usr/bin/qemu-ppc64le";
                             build_command += "/usr/local/bin/singularity exec -B /home/builder /home/builder/ppc_builder.img /usr/local/bin/singularity build /home/builder/container.img /home/builder/container.def";
                         }
 

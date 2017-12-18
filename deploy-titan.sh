@@ -20,7 +20,7 @@ if [ ! -d $SPACKROOT ]; then
 	git clone https://github.com/spack/spack.git $SPACKROOT
 	cd $SPACKROOT
 	git checkout d3519af7de84fa72dee0618c7754f7ebeaa23142
-	cd
+	cd ${HOME}
 fi
 cp spack-etc-titan/*.yaml $SPACKROOT/etc/spack
 
@@ -37,7 +37,7 @@ real_mf_path="$SPACKROOT/$root/$arch/$mfname"
 MF_ROOT=/sw/xk6/modulefiles/container-builder
 mkdir -p $MF_ROOT
 
-source ./queue_host.sh
+source artifacts/queue_host.sh
 
 cat << EOF > $MF_ROOT/$VERSION
 #%Module

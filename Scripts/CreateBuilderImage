@@ -20,7 +20,7 @@ openstack security group rule create container_builder --protocol tcp --dst-port
 
 # Create Keys for cades user
 KEY="ContainerBuilderKey"
-KEY_FILE="${SCRIPT_DIR}/${KEY}"
+KEY_FILE="${SCRIPT_DIR}/../artifacts/${KEY}"
 
 # Create a new keypair named ContainerBuilderKey
 openstack keypair create ${KEY} > ${KEY_FILE}

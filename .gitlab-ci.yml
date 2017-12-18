@@ -14,7 +14,7 @@ deploy-summitdev:
   script:
   - ./deploy-summitdev.sh $CI_COMMIT_TAG
   tags:
-  - summitdev
+  - ppc64le
   stage: deploy
   only:
   - tags

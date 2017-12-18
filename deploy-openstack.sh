@@ -5,6 +5,8 @@ pyvenv .venv
 source .venv/bin/activate
 pip install python-openstackclient
 
+mkdir artifacts
+
 cd Scripts
 ./CreateBuilderImage
 ./BringUpQueue

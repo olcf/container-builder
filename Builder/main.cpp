@@ -5,7 +5,6 @@
 #include <boost/process.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
-#include <iostream>
 #include "Logger.h"
 #include "Messenger.h"
 
@@ -50,8 +49,7 @@ int main(int argc, char *argv[]) {
                         if(client_data.arch == Architecture::ppc64le) {
                             // A dirty hack but the ppc64le qemu executable must be in the place the kernel expects it
                             // Modify the definition to copy this executable in during %setup
-                            boost::filesystem::path fPath{"myfile.txt"};
-                            boost::filesystem::ofstream def{fPath, std::ios::app};
+                            boost::filesystem::ofstream def{"container.def", std::ios::app};
                             std::string copy_qemu("\n%setup\ncp /usr/bin/qemu-ppc64le  ${SINGULARITY_ROOTFS}/usr/bin/qemu-ppc64le");
                             def << copy_qemu;
                         }

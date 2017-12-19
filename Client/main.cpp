@@ -176,8 +176,8 @@ int main(int argc, char *argv[]) {
 
                         // Send client information to builder
                         ClientData client_data;
-                        char user[100];
-                        int err = getlogin_r(user, 100);
+                        char user[15];
+                        int err = getlogin_r(user, 15);
                         if (err) {
                             logger::write("Error get login name for client data!" + error.message(),
                                           logger::severity_level::fatal);

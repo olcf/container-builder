@@ -54,11 +54,14 @@ sleep 60
 VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
 
 # Copy OpenStack credentials to VM and then move to correct directory
+unset OS_CACERT
 printenv | grep ^OS_ > ${SCRIPT_DIR}/openrc.sh # "Reconstruct" openrc.sh
+awk '{print "export "$0}' ${SCRIPT_DIR}/openrc.sh
 scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ${SCRIPT_DIR}/openrc.sh cades@${VM_IP}:/home/cades/openrc.sh
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/openrc.sh /home/queue/openrc.sh'
 
 # Reboot to ensure Queue service, added in provisioning, is started
+export OS_CACERT=`pwd`/OpenStack.cer
 openstack server reboot --wait ${VM_UUID}
 
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"

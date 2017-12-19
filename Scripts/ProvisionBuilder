@@ -60,6 +60,12 @@ sudo cp -r /usr/local/bin/qemu-* /usr/bin
 # End ppc64le
 #####################################
 
+# fix yum/RPM issue under debian: https://github.com/singularityware/singularity/issues/241
+sudo cat << EOF > /root/.rpmmacros
+%_var /var
+%_dbpath %{_var}/lib/rpm
+EOF
+
 # Install Singularity
 export VERSION=2.4
 wget https://github.com/singularityware/singularity/releases/download/${VERSION}/singularity-${VERSION}.tar.gz

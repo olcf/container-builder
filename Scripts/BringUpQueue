@@ -55,8 +55,8 @@ VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s
 
 # Copy OpenStack credentials to VM and then move to correct directory
 printenv | grep ^OS_ > ${SCRIPT_DIR}/openrc.sh # "Reconstruct" openrc.sh
-scp -o StrictHostKeyChecking=no -i ./ContainerBuilderKey ${SCRIPT_DIR}/openrc.sh cades@${VM_IP}:/home/cades/openrc.sh
-ssh -o StrictHostKeyChecking=no -i ./ContainerBuilderKey cades@${VM_IP} 'sudo mv /home/cades/openrc.sh /home/queue/openrc.sh'
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ${SCRIPT_DIR}/openrc.sh cades@${VM_IP}:/home/cades/openrc.sh
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/openrc.sh /home/queue/openrc.sh'
 
 # Reboot to ensure Queue service, added in provisioning, is started
 openstack server reboot --wait ${VM_UUID}

@@ -3,12 +3,6 @@
 export OS_CACERT=`pwd`/OpenStack.cer
 echo "using OS_CACERT="${OS_CACERT}
 
-# OpenStack credentials
-#source ./openrc.sh
-
-# Destroy any existing builder if one exists
-#./TearDownQueue --no_source
-
 # Get script directory
 SCRIPT_DIR=$(pwd)
 
@@ -19,7 +13,7 @@ FLAVOR="m1.medium"
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)
 
 KEY="ContainerBuilderKey"
-KEY_FILE="${SCRIPT_DIR}/${KEY}"
+KEY_FILE="${SCRIPT_DIR}/../artifacts/${KEY}"
 
 echo "This make take some time."
 

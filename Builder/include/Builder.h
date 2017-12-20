@@ -18,6 +18,8 @@ namespace bp = boost::process;
 class Builder {
 public:
     explicit Builder() {
+
+        // Full build connection - this will not run until the io_service is started
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
                         Messenger client = connect_to_client(yield);
@@ -27,15 +29,13 @@ public:
                         // Receive client data
                         ClientData client_data = client.async_receive_client_data(yield[error]);
                         if (error) {
-                            logger::write("Error receiving client data: " + error.message());
-                            return;
+                            throw std::runtime_error("Error receiving client data: " + error.message());
                         }
 
                         // Receive the definition file from the client
                         client.async_receive_file("container.def", yield[error]);
                         if (error) {
-                            logger::write("Error receiving definition file: " + error.message());
-                            return;
+                            throw std::runtime_error("Error receiving definition file: " + error.message());
                         }
 
                         logger::write(client.socket, "Received container.def");
@@ -67,8 +67,7 @@ public:
                         bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe,
                                               group, build_ec);
                         if (build_ec) {
-                            logger::write(client.socket, "subprocess error: " + build_ec.message());
-                            return;
+                            throw std::runtime_error("subprocess error: " + build_ec.message());
                         }
 
                         logger::write(client.socket, "launched build process: " + build_command);
@@ -85,12 +84,12 @@ public:
                             // Read from the pipe into a buffer
                             read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield[error]);
                             if (error) {
-                                logger::write(socket, "reading process pipe failed: " + error.message());
+                                throw std::runtime_error("reading process pipe failed: " + error.message());
                             }
                             // Write the buffer to our socket
-                            messenger.async_send(buffer, yield[error]);
+                            client.async_send(buffer, yield[error]);
                             if (error) {
-                                logger::write(socket, "sending process pipe failed: " + error.message());
+                                throw std::runtime_error("sending process pipe failed: " + error.message());
                             }
                         } while (read_size > 0 && !error);
 
@@ -102,17 +101,18 @@ public:
                         // Send the container to the client
                         if (build_code == 0) {
                             logger::write(socket, "Build complete, sending container");
-                            messenger.async_send_file("container.img", yield[error]);
+                            client.async_send_file("container.img", yield[error]);
                             if (error) {
-                                logger::write(socket, "Sending file to client failed: " + error.message());
+                                throw std::runtime_error("Sending file to client failed: " + error.message());
                             }
                         } else {
-                            logger::write(socket, "Build failed, not sending container");
+                            throw std::runtime_error("Build failed, not sending container");
                         }
                     });
 
     }
 
+    // Start the IO service
     void run();
 
     Messenger connect_to_client(asio::yield_context yield);

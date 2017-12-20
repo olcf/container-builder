@@ -86,6 +86,7 @@ public:
 
     ClientData client_data();
 
+    // Start the IO service
     void run();
 private:
     asio::io_service io_service;

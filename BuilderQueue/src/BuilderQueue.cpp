@@ -1,5 +1,4 @@
 #include "BuilderQueue.h"
-#include "Logger.h"
 #include "OpenStackBuilder.h"
 
 Reservation &BuilderQueue::enter() {

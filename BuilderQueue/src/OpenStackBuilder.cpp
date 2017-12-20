@@ -1,6 +1,4 @@
 #include "OpenStackBuilder.h"
-#include "boost/process.hpp"
-#include "Logger.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 

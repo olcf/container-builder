@@ -25,7 +25,7 @@ public:
 
         // Full client connection - this will not run until the io_service is started
         asio::spawn(io_service,
-                    [&](asio::yield_context yield) {
+                    [this](asio::yield_context yield) {
                         boost::system::error_code error;
 
                         auto queue_messenger = connect_to_queue(yield[error]);

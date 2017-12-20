@@ -12,7 +12,7 @@ enum class Architecture {
 };
 
 namespace Arch {
-    static Architecture to_arch(std::string arch_string) {
+    static Architecture to_arch(const std::string& arch_string) const {
         if (arch_string == "x86_64")
             return Architecture::x86_64;
         else if (arch_string == "ppc64le")

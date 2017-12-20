@@ -8,7 +8,7 @@
 // The reservation to have a handle to the queue, else we have a weird circular dependency: reservation<-->queue
 class ReservationRequest {
 public:
-    ReservationRequest(BuilderQueue &queue) :  queue(queue),
+    explicit ReservationRequest(BuilderQueue &queue) :  queue(queue),
                                                reservation(queue.enter()){}
 
     ~ReservationRequest() {

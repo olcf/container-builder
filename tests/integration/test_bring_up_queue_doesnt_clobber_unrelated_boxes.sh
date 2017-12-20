@@ -20,7 +20,7 @@ cd Scripts
 ./TearDownQueue
 
 echo "# Assert that dummy VM was unaffected"
-openstack server list | grep $DUMMY_VM
+openstack server list | grep ${DUMMY_VM}
 
 echo "# Cleanup dummy VM"
-openstack server delete --wait $DUMMY_VM
+openstack server delete --wait ${DUMMY_VM}

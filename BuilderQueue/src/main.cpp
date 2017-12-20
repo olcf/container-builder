@@ -54,6 +54,5 @@ int main(int argc, char *argv[]) {
     }
 
     logger::write("Server shutting down");
-
     return 0;
 }

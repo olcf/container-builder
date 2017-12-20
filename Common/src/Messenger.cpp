@@ -1,6 +1,5 @@
 #include <functional>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/buffer.hpp>
 #include <boost/asio/spawn.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/filesystem.hpp>
@@ -10,11 +9,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include "Builder.h"
-#include <boost/progress.hpp>
-#include <boost/crc.hpp>
-#include <memory.h>
-#include "Logger.h"
-#include "Messenger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;

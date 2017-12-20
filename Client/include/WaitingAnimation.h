@@ -10,7 +10,7 @@ namespace asio = boost::asio;
 // Print animated ellipses, used to indicate to the user we're waiting on an async routine
 class WaitingAnimation {
 public:
-    WaitingAnimation(asio::io_service &io_service, std::string prefix) : io_service(io_service),
+    WaitingAnimation(asio::io_service &io_service, const std::string& prefix) : io_service(io_service),
                                                                          timer(io_service),
                                                                          expire_time(
                                                                                  boost::posix_time::milliseconds(500)),
@@ -43,7 +43,7 @@ public:
 
     // Cancel any outstanding timers and set the expire time to not a date, stopping the animation
     // The suffix string will be printed in place of the animated ellipses
-    void stop(std::string suffix, logger::severity_level level) {
+    void stop(const std::string& suffix, logger::severity_level level) {
         boost::system::error_code error;
         expire_time = boost::posix_time::not_a_date_time;
         timer.cancel(error);

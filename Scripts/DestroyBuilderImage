@@ -33,7 +33,7 @@ fi
 
 # Delete the security group
 openstack security group list -f value | grep container_builder | while read LINE; do
-  ARR_LINE=($LINE)
+  ARR_LINE=(${LINE})
   ID=${ARR_LINE[0]}
   echo "Deleting security group ${ID}"
   openstack security group delete ${ID}

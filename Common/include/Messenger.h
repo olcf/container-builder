@@ -42,16 +42,16 @@ class Messenger {
 
 public:
     // Create a client messenger by asyncronously connecting to the specified host
-    explicit Messenger(asio::io_service& io_service, std::string host, std::string port, asio::yield_context yield) : socket(io_service) {
+    explicit Messenger(asio::io_service& io_service, const std::string& host, const std::string& port, asio::yield_context yield) : socket(io_service) {
         boost::system::error_code error;
         tcp::resolver queue_resolver(io_service);
         asio::async_connect(socket, queue_resolver.resolve({host, port}), yield[error]);
     }
 
     // Create a server messenger by doing an async block listen on the specified port
-    explicit Messenger(asio::io_service& io_service, std::string port, asio::yield_context yield) : socket(io_service) {
+    explicit Messenger(asio::io_service& io_service, const std::string& port, asio::yield_context yield) : socket(io_service) {
         boost::system::error_code error;
-        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), std::stoi(port)), error);
+        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), std::stoi(port)));
         acceptor.async_accept(socket, yield[error]);
     }
 

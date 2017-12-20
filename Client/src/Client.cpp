@@ -114,6 +114,8 @@ ClientData Client::client_data() {
     data.user_id = user_id;
     data.tty = tty;
     data.arch = arch;
+
+    return data;
 }
 
 void Client::run() {

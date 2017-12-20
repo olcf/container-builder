@@ -1,7 +1,6 @@
 #include "Client.h"
 #include <boost/program_options.hpp>
 #include <boost/process.hpp>
-#include "WaitingAnimation.h"
 
 namespace bp = boost::process;
 

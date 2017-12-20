@@ -9,6 +9,7 @@
 #include <iostream>
 #include "Messenger.h"
 #include "ClientData.h"
+#include "WaitingAnimation.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -97,6 +98,7 @@ private:
     std::string queue_port;
     bool tty;
     Architecture arch;
+    WaitingAnimation waiting;
 
     void parse_environment();
     void parse_arguments(int argc, char **argv);

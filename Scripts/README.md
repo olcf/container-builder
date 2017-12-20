@@ -17,7 +17,7 @@ export OS_IDENTITY_API_VERSION="3"
 ```
 
 To initiate the Containerbuilder service several steps are required.
-* Create the Builder master OpenStack image which will be used by the Builder Queue
+* Create the BuilderData master OpenStack image which will be used by the BuilderData Queue
 * Bring up the BuilderQueue OpenStack instance
 
 First the builder master image must be created.
@@ -55,4 +55,4 @@ Note: To use the openstack client from Titan yo must export `OS_CACERT=$(pwd)/Op
 
 Note: `openstack list` can be called to show all active OpenStack instances including their ID, name, and IP
 
-Note: To check if the BuilderQueue and Builder services are running ssh to each node and run `systemctl status`. To diagnose issues use `sudo journalctl`
+Note: To check if the BuilderQueue and BuilderData services are running ssh to each node and run `systemctl status`. To diagnose issues use `sudo journalctl`

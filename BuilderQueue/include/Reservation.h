@@ -30,7 +30,7 @@ public:
     void async_wait(asio::yield_context yield);
 
     // Callback used by BuilderQueue to cancel the timer which signals our reservation is ready
-    void ready(Builder acquired_builder);
+    void ready(BuilderData acquired_builder);
 
     bool pending() const {
         return status == ReservationStatus::pending;
@@ -61,7 +61,7 @@ public:
         status = ReservationStatus::finalized;
     }
 
-    boost::optional<Builder> builder;
+    boost::optional<BuilderData> builder;
     ReservationStatus status;
 private:
     asio::deadline_timer ready_timer;

@@ -11,18 +11,22 @@ enum class Architecture {
     ppc64le
 };
 
+namespace Arch {
+    static Architecture to_arch(std::string arch_string) {
+        if (arch_string == "x86_64")
+            return Architecture::x86_64;
+        else if (arch_string == "ppc64le")
+            return Architecture::ppc64le;
+        else
+            throw std::runtime_error("Incorrect architecture supported");
+    }
+};
+
 class ClientData {
 public:
     std::string user_id;
     bool tty;
     Architecture arch;
-
-    void set_arch(std::string arch_string) {
-            if(arch_string == "x86_64")
-                arch = Architecture::x86_64;
-            else if (arch_string == "ppc64le")
-                arch = Architecture::ppc64le;
-    }
 };
 
 namespace boost {

@@ -15,7 +15,7 @@ public:
         reservation.set_request_complete();
     }
 
-    Builder async_wait(asio::yield_context yield);
+    BuilderData async_wait(asio::yield_context yield);
 private:
     BuilderQueue &queue;
     Reservation &reservation;

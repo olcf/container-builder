@@ -16,7 +16,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
         return;
     }
 
-    std::set<Builder> unavailable_builders;
+    std::set<BuilderData> unavailable_builders;
 
     // Delete reservations that are completed
     reservations.remove_if([](const auto &reservation) {
@@ -47,7 +47,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
     }
 
     // Available_builders = all_builders - unavailable_builders
-    std::set<Builder> available_builders;
+    std::set<BuilderData> available_builders;
     std::set_difference(all_builders.begin(), all_builders.end(),
                         unavailable_builders.begin(), unavailable_builders.end(),
                         std::inserter(available_builders, available_builders.begin()));

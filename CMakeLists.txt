@@ -4,7 +4,7 @@ project(ContainerBuilder)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include_directories(BuilderQueue/include Common/include)
+include_directories(BuilderQueue/include Builder/include Client/include Common/include)
 
 set(SOURCE_FILES_QUEUE
         BuilderQueue/src/main.cpp
@@ -16,27 +16,31 @@ set(SOURCE_FILES_QUEUE
         BuilderQueue/include/Reservation.h
         BuilderQueue/include/ReservationRequest.h
         BuilderQueue/include/BuilderQueue.h
-        Common/include/Builder.h
+        Common/include/BuilderData.h
         Common/src/Logger.cpp
         Common/include/Logger.h
         Common/include/Messenger.h
         BuilderQueue/src/OpenStackBuilder.cpp
-        BuilderQueue/include/OpenStackBuilder.h Common/src/Builder.cpp Common/src/Messenger.cpp Common/include/ClientData.h)
+        BuilderQueue/include/OpenStackBuilder.h Common/src/BuilderData.cpp Common/src/Messenger.cpp Common/include/ClientData.h)
 
 set(SOURCE_FILES_BUILDER
         Builder/main.cpp
-        Common/include/Builder.h
+        Common/include/BuilderData.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/include/Messenger.h Common/src/Messenger.cpp)
+        Common/include/Messenger.h Common/src/Messenger.cpp Builder/src/Builder.cpp Builder/include/Builder.h)
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT
-        Client/main.cpp
-        Common/include/Builder.h
+        Client/src/main.cpp
+        Common/include/BuilderData.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/include/Messenger.h Common/src/Builder.cpp Common/src/Messenger.cpp Common/include/ClientData.h)
+        Common/include/Messenger.h
+        Common/src/BuilderData.cpp
+        Common/src/Messenger.cpp
+        Common/include/ClientData.h
+        Client/include/WaitingAnimation.h Client/src/Client.cpp Client/include/Client.h)
 
 # Scripts required for runtime
 set(SCRIPTS

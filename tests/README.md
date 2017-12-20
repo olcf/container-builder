@@ -1,7 +1,7 @@
 Test Scripts
 ============
 
-Example exercises of the Container Builder to make sure it continues to work
+Example exercises of the Container BuilderData to make sure it continues to work
 as advertised.
 
 ### Running

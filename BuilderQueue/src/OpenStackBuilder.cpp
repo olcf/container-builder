@@ -8,7 +8,7 @@ namespace bp = boost::process;
 namespace pt = boost::property_tree;
 
 namespace OpenStackBuilder {
-    std::set<Builder> get_builders(asio::io_service &io_service, asio::yield_context yield) {
+    std::set<BuilderData> get_builders(asio::io_service &io_service, asio::yield_context yield) {
         std::string list_command("/usr/local/bin/GetBuilders");
         bp::group group;
         bp::async_pipe std_pipe(io_service);
@@ -42,7 +42,7 @@ namespace OpenStackBuilder {
            [
              {
                "Status": "ACTIVE",
-               "Name": "Builder",
+               "Name": "BuilderData",
                "Image": "BuilderImage",
                "ID": "adeda126-18d4-423f-a499-84651937cdc0",
                "Flavor": "m1.medium",
@@ -55,10 +55,10 @@ namespace OpenStackBuilder {
         pt::read_json(is_buffer, builder_tree);
 
         // Fill a set of builders from the property tree data
-        std::set<Builder> builders;
+        std::set<BuilderData> builders;
         try {
             for (const auto &builder_node : builder_tree) {
-                Builder builder;
+                BuilderData builder;
                 auto network = builder_node.second.get<std::string>("Networks");
                 size_t eq_pos = network.find('=');
                 builder.host = network.substr(eq_pos + 1);
@@ -105,7 +105,7 @@ namespace OpenStackBuilder {
         }
     }
 
-    void destroy(Builder builder, asio::io_service &io_service, asio::yield_context yield) {
+    void destroy(BuilderData builder, asio::io_service &io_service, asio::yield_context yield) {
         std::string destroy_command("/usr/local/bin/DestroyBuilder " + builder.id);
         bp::group group;
         bp::async_pipe std_pipe(io_service);
@@ -133,7 +133,7 @@ namespace OpenStackBuilder {
 
         // TODO an error "can't" occur, if an error deleting is detected it should make all attempts to fix it
         if (exit_code != 0) {
-            logger::write("Builder with ID " + builder.id + " failed to be destroyed");
+            logger::write("BuilderData with ID " + builder.id + " failed to be destroyed");
         }
     }
 }

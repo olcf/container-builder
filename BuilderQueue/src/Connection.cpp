@@ -34,7 +34,7 @@ void Connection::checkout_builder(asio::yield_context yield) {
     // Request a builder
     logger::write(socket, "Requesting builder from the queue");
     ReservationRequest reservation(queue);
-    Builder builder = reservation.async_wait(yield[error]);
+    BuilderData builder = reservation.async_wait(yield[error]);
     if (error) {
         logger::write("reservation builder request failed: " + error.message());
         return;

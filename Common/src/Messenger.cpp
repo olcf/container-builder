@@ -268,18 +268,18 @@ void Messenger::async_send_file(boost::filesystem::path file_path, asio::yield_c
     }
 }
 
-Builder Messenger::async_receive_builder(asio::yield_context yield) {
+BuilderData Messenger::async_receive_builder(asio::yield_context yield) {
     // Read in the serialized builder as a string
     boost::system::error_code error;
     auto serialized_builder = async_receive(yield[error], MessageType::builder);
     if (error) {
         logger::write("Received bad builder" + error.message());
-        Builder builder;
+        BuilderData builder;
         return builder;
     }
 
-    // de-serialize Builder
-    Builder builder;
+    // de-serialize BuilderData
+    BuilderData builder;
     std::istringstream archive_stream(serialized_builder);
     boost::archive::text_iarchive archive(archive_stream);
     archive >> builder;
@@ -287,7 +287,7 @@ Builder Messenger::async_receive_builder(asio::yield_context yield) {
     return builder;
 }
 
-void Messenger::async_send(Builder builder, asio::yield_context yield) {
+void Messenger::async_send(BuilderData builder, asio::yield_context yield) {
     // Serialize the builder into a string
     std::ostringstream archive_stream;
     boost::archive::text_oarchive archive(archive_stream);
@@ -337,7 +337,7 @@ ClientData Messenger::async_receive_client_data(asio::yield_context yield) {
         return client_data;
     }
 
-    // de-serialize Builder
+    // de-serialize BuilderData
     std::istringstream archive_stream(serialized_client_data);
     boost::archive::text_iarchive archive(archive_stream);
     ClientData client_data;

@@ -18,16 +18,16 @@ int main(int argc, char *argv[]) {
     // Wait for connections from either Clients or Builders
     asio::spawn(io_service,
                 [&](asio::yield_context yield) {
-                    tcp::acceptor acceptor(io_service,
-                                           tcp::endpoint(tcp::v4(), 8080));
+                    // Listen for incoming connections
+                    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8080));
                     for (;;) {
                         boost::system::error_code error;
-                        tcp::socket socket(io_service);
-                        acceptor.async_accept(socket, yield[error]);
+                        Messenger client(io_service, acceptor, yield[error]);
+
                         if (error) {
-                            logger::write(socket, "Error accepting new connection");
+                            logger::write(client.socket, "Error accepting new connection");
                         } else {
-                            std::make_shared<Connection>(std::move(socket), builder_queue)->begin();
+                            std::make_shared<Connection>(std::move(client), builder_queue)->begin();
                         }
                     }
                 });
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
         try {
             io_service.run();
         } catch(...) {
-            logger::write("Unknown io_service exception run");
+            logger::write("Unknown io_service exception during run");
         }
     }
 

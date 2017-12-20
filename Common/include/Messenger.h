@@ -41,21 +41,24 @@ struct Header {
 class Messenger {
 
 public:
-    // Create a client messenger by connecting to the specified host
+    // Create a client messenger by asyncronously connecting to the specified host
     explicit Messenger(asio::io_service& io_service, std::string host, std::string port, asio::yield_context yield) : socket(io_service) {
-        tcp::resolver queue_resolver(io_service);
         boost::system::error_code error;
-
+        tcp::resolver queue_resolver(io_service);
         asio::async_connect(socket, queue_resolver.resolve({host, port}), yield[error]);
     }
 
-    // Create a server messenger on the specified port
-    explicit Messenger(asio::io_service io_service, std::string port) : socket(io_service) {
-        tcp::resolver queue_resolver(io_service);
+    // Create a server messenger by doing an async block listen on the specified port
+    explicit Messenger(asio::io_service& io_service, std::string port, asio::yield_context yield) : socket(io_service) {
         boost::system::error_code error;
+        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), std::stoi(port)), error);
+        acceptor.async_accept(socket, yield[error]);
+    }
 
-        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), std::stoi(port)));
-        acceptor.accept(socket);
+    // Create a server messenger by doing an async block listen on the specified port
+    explicit Messenger(asio::io_service& io_service, tcp::acceptor& acceptor, asio::yield_context yield) : socket(io_service) {
+        boost::system::error_code error;
+        acceptor.async_accept(socket, yield[error]);
     }
 
     std::string async_receive(asio::yield_context yield, MessageType type=MessageType::string);

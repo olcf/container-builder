@@ -24,7 +24,7 @@ set(SOURCE_FILES_QUEUE
         BuilderQueue/include/OpenStackBuilder.h Common/src/BuilderData.cpp Common/src/Messenger.cpp Common/include/ClientData.h)
 
 set(SOURCE_FILES_BUILDER
-        Builder/main.cpp
+        Builder/src/main.cpp
         Common/include/BuilderData.h
         Common/src/Logger.cpp
         Common/include/Logger.h

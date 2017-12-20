@@ -94,13 +94,13 @@ public:
                         } while (read_size > 0 && !error);
 
                         // Get the return value from the build subprocess
-                        logger::write(socket, "Waiting on build process to exit");
+                        logger::write("Waiting on build process to exit");
                         build_child.wait();
                         int build_code = build_child.exit_code();
 
                         // Send the container to the client
                         if (build_code == 0) {
-                            logger::write(socket, "Build complete, sending container");
+                            logger::write("Build complete, sending container");
                             client.async_send_file("container.img", yield[error]);
                             if (error) {
                                 throw std::runtime_error("Sending file to client failed: " + error.message());

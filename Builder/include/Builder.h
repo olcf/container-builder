@@ -114,7 +114,6 @@ public:
     // Start the IO service
     void run();
 
-    Messenger connect_to_client(asio::yield_context yield);
 private:
     asio::io_service io_service;
 };

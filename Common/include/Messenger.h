@@ -45,8 +45,10 @@ public:
     explicit Messenger(asio::io_service &io_service, const std::string &host, const std::string &port,
                        asio::yield_context yield) : socket(io_service),
                                                     yield(yield) {
-        tcp::resolver queue_resolver(io_service);
-        asio::async_connect(socket, queue_resolver.resolve({host, port}), yield[error]);
+        do {
+            tcp::resolver queue_resolver(io_service);
+            asio::async_connect(socket, queue_resolver.resolve({host, port}), yield[error]);
+        } while(error);
     }
 
     // Create a server messenger by doing an async block listen on the specified port

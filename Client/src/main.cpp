@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
         client.run();
     }
     catch (std::exception &exception) {
-        logger::write(exception.what(), logger::severity_level::fatal);
+        logger::write(std::string() + "Client exception: " + exception.what(), logger::severity_level::fatal);
     }
     catch (...) {
         logger::write("Unknown ContainerBuilder exception: ", logger::severity_level::fatal);

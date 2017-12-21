@@ -59,7 +59,6 @@ public:
                             std::cout << line;
                         } while (!line.empty());
 
-
                         builder_messenger.async_receive_file(container_path, yield[error], true);
                         if (error) {
                             throw std::runtime_error("Error downloading container image!");

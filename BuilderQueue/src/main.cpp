@@ -21,13 +21,14 @@ int main(int argc, char *argv[]) {
                     // Listen for incoming connections
                     tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8080));
                     for (;;) {
+                        tcp::socket socket(io_service);
                         boost::system::error_code error;
-                        Messenger client(io_service, acceptor, yield[error]);
+                        acceptor.async_accept(socket, yield[error]);
 
                         if (error) {
-                            logger::write(client.socket, "Error accepting new connection");
+                            logger::write(socket, "Error accepting new connection");
                         } else {
-                            std::make_shared<Connection>(std::move(client), builder_queue)->begin();
+                            std::make_shared<Connection>(std::move(socket), builder_queue)->begin();
                         }
                     }
                 });

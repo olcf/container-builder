@@ -8,6 +8,7 @@ void Connection::begin() {
         auto self(shared_from_this());
         asio::spawn(client.socket.get_io_service(),
                     [this, self](asio::yield_context yield) {
+
                         boost::system::error_code error;
                         auto request = client.async_receive(yield[error], MessageType::string);
                         if (error) {

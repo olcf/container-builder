@@ -8,9 +8,10 @@ using asio::ip::tcp;
 
 class Connection : public std::enable_shared_from_this<Connection> {
 public:
-    explicit Connection(Messenger client, BuilderQueue &queue) : client(std::move(client)),
-                                                                 queue(queue) {
-        logger::write(client.socket, "Established connection");
+    explicit Connection(tcp::socket socket, BuilderQueue &queue) : client(std::move(socket)),
+                                                                   queue(queue)
+    {
+        logger::write(socket, "Established connection");
     }
 
     ~Connection() {

@@ -42,45 +42,62 @@ class Messenger {
 
 public:
     // Create a client messenger by asyncronously connecting to the specified host
-    explicit Messenger(asio::io_service& io_service, const std::string& host, const std::string& port, asio::yield_context yield) : socket(io_service) {
-        boost::system::error_code error;
+    explicit Messenger(asio::io_service &io_service, const std::string &host, const std::string &port,
+                       asio::yield_context yield, boost::system::error_code &error) : socket(io_service),
+                                                                                      yield(yield),
+                                                                                      error(error) {
         tcp::resolver queue_resolver(io_service);
         asio::async_connect(socket, queue_resolver.resolve({host, port}), yield[error]);
     }
 
     // Create a server messenger by doing an async block listen on the specified port
-    explicit Messenger(asio::io_service& io_service, const std::string& port, asio::yield_context yield) : socket(io_service) {
-        boost::system::error_code error;
+    explicit Messenger(asio::io_service &io_service, const std::string &port, asio::yield_context yield,
+                       boost::system::error_code &error) : socket(io_service),
+                                                           yield(yield),
+                                                           error(error) {
         tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), std::stoi(port)));
         acceptor.async_accept(socket, yield[error]);
     }
 
     // Create a server messenger by doing an async block listen on the specified port
-    explicit Messenger(asio::io_service& io_service, tcp::acceptor& acceptor, asio::yield_context yield) : socket(io_service) {
-        boost::system::error_code error;
-        acceptor.async_accept(socket, yield[error]);
-    }
+    explicit Messenger(asio::io_service &io_service, tcp::socket &socket, asio::yield_context yield,
+                       boost::system::error_code &error) : socket(std::move(socket)),
+                                                           yield(yield),
+                                                           error(error) {}
 
-    std::string async_receive(asio::yield_context yield, MessageType type=MessageType::string);
-    std::string async_receive(asio::yield_context yield, MessageType* type);
+    std::string async_receive(MessageType type = MessageType::string);
 
-    void async_send(const std::string &message, asio::yield_context yield, MessageType type=MessageType::string);
-    void async_send(asio::streambuf &message_body, asio::yield_context yield);
+    std::string async_receive(MessageType *type);
 
-    void async_receive_file(boost::filesystem::path file_path, asio::yield_context yield, const bool print_progress=false);
-    void async_send_file(boost::filesystem::path file_path, asio::yield_context yield, const bool print_progress=false);
+    void async_send(const std::string &message, MessageType type = MessageType::string);
 
-    BuilderData async_receive_builder(asio::yield_context yield);
-    void async_send(BuilderData builder, asio::yield_context yield);
+    void async_send(asio::streambuf &message_body);
 
-    ClientData async_receive_client_data(asio::yield_context yield);
-    void async_send(ClientData client_data, asio::yield_context yield);
+    void
+    async_receive_file(boost::filesystem::path file_pathconst bool print_progress = false);
+
+    void async_send_file(boost::filesystem::path file_path, const bool print_progress = false);
+
+    BuilderData async_receive_builder();
+
+    void async_send(BuilderData builder);
+
+    ClientData async_receive_client_data();
+
+    void async_send(ClientData client_data);
 
     tcp::socket socket;
 
 private:
-    void async_send_header(std::size_t message_size, MessageType type, asio::yield_context yield);
-    Header async_receive_header(asio::yield_context yield);
+    // asio yield_context.ec_ is private and so i'd prefer to not (ab)use it, as such hold on to a single error variable that gets set
+    // by any Messenger failure. Taking the yield_context and error seperately in the constructor is one way to handle this
+    // This guards somewhat against passing yield[ec] to one of the messenger functions on accident
+    asio::yield_context &yield;
+    boost::system::error_code &error;
+
+    void async_send_header(std::size_t message_size, MessageType type);
+
+    Header async_receive_header();
 
     static constexpr std::size_t header_size() {
         return sizeof(Header);

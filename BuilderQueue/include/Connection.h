@@ -16,7 +16,7 @@ public:
         try {
             auto self(shared_from_this());
             asio::spawn(socket.get_io_service(),
-                        [&](asio::yield_context yield) {
+                        [this, self, socket=std::move(socket)](asio::yield_context yield) mutable {
                             Messenger client(std::move(socket), yield);
 
                             auto request = client.async_receive(MessageType::string);

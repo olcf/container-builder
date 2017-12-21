@@ -11,7 +11,7 @@ using namespace std::chrono_literals;
 // Print animated ellipses, used to indicate to the user we're waiting on an async routine
 class WaitingAnimation {
 public:
-    WaitingAnimation(const std::string &message) : active(false) {
+    WaitingAnimation(const std::string &message) : active(true) {
          animation = std::thread([this, message]() {
              for(;;) {
                  if(!active)

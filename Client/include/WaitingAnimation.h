@@ -1,58 +1,47 @@
 #pragma once
 
 #include <iostream>
-#include <boost/asio/spawn.hpp>
-#include <boost/asio/deadline_timer.hpp>
+#include <thread>
+#include <atomic>
+#include <chrono>
 #include "Logger.h"
 
-namespace asio = boost::asio;
+using namespace std::chrono_literals;
 
 // Print animated ellipses, used to indicate to the user we're waiting on an async routine
-// Great care must be taken to ensure this class doesn't destruct before the timer is completely finished
-// https://stackoverflow.com/questions/13070754/how-can-i-prevent-a-deadline-timer-from-calling-a-function-in-a-deleted-class
 class WaitingAnimation {
 public:
-    WaitingAnimation(asio::io_service &io_service) : io_service(io_service),
-                                                     timer(io_service),
-                                                     frame_interval(
-                                                             boost::posix_time::milliseconds(500)),
-                                                     active(false) {
-        asio::spawn(io_service,
-                    [this](asio::yield_context yield) {
-                        boost::system::error_code error;
+    WaitingAnimation(const std::string &message) : active(false) {
+         animation = std::thread([this, message]() {
+             for(;;) {
+                 if(!active)
+                     break;
+                 std::cout << "\r" << message << ".  ";
+                 std::this_thread::sleep_for(300ms);
 
-                        if (active) {
-                            std::cout << "\r" << message << ".  ";
-                            timer.expires_from_now(frame_interval);
-                            timer.async_wait(yield[error]);
+                 if(!active)
+                     break;
+                 std::cout << "\b\b.";
+                 std::this_thread::sleep_for(300ms);
 
-                            std::cout << "\b\b.";
-                            timer.expires_from_now(frame_interval);
-                            timer.async_wait(yield[error]);
-
-                            std::cout << ".";
-                            timer.expires_from_now(frame_interval);
-                            timer.async_wait(yield[error]);
-                        }
-                    });
+                 if(!active)
+                     break;
+                 std::cout << ".";
+                 std::this_thread::sleep_for(300ms);
+             }
+        });
     }
 
-    void start(std::string &message) {
-        this->message = message;
-        timer.expires_from_now(frame_interval);
-    }
-
-    // Cancel any outstanding timers and set the expire time to not a date, stopping the animation
+    // Stop and join the thread
     void stop(const std::string &message, logger::severity_level level) {
-        boost::system::error_code error;
+        active = false;
+        animation.join();
+
         std::cout << "\r" << std::flush;
         logger::write(message, level);
     }
 
 private:
-    asio::io_service &io_service;
-    boost::asio::deadline_timer timer;
-    boost::posix_time::time_duration frame_interval;
-    std::string message;
-    bool active;
+    std::thread animation;
+    std::atomic<bool> active;
 };

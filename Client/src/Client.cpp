@@ -1,6 +1,7 @@
 #include "Client.h"
 #include <boost/program_options.hpp>
 #include <boost/process.hpp>
+#include "WaitingAnimation.h"
 
 namespace bp = boost::process;
 
@@ -66,7 +67,7 @@ void Client::parse_environment() {
 
 Messenger Client::connect_to_queue(asio::yield_context yield) {
     // Start waiting animation
-    WaitingAnimation wait_queue(io_service, "Connecting to BuilderQueue: ");
+    WaitingAnimation wait_queue("Connecting to BuilderQueue: ");
 
     boost::system::error_code error;
     Messenger queue_messenger(io_service, queue_host, queue_port, yield[error]);
@@ -80,7 +81,7 @@ Messenger Client::connect_to_queue(asio::yield_context yield) {
 }
 
 Messenger Client::connect_to_builder(Messenger &queue_messenger, asio::yield_context yield) {
-    WaitingAnimation wait_builder(io_service, "Requesting BuilderData: ");
+    WaitingAnimation wait_builder("Requesting BuilderData: ");
     boost::system::error_code error;
 
     // Request a builder from the queue

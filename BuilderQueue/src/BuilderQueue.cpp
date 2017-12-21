@@ -7,11 +7,12 @@ Reservation &BuilderQueue::enter() {
 }
 
 void BuilderQueue::tick(asio::yield_context yield) {
+    boost::system::error_code get_error;
+
     // Update list of "Active" OpenStack builders
-    boost::system::error_code error;
-    auto all_builders = OpenStackBuilder::get_builders(io_service, yield[error]);
-    if (error) {
-        logger::write("Error calling get_builders" + error.message());
+    auto all_builders = OpenStackBuilder::get_builders(io_service, yield[get_error]);
+    if (get_error) {
+        logger::write("Error calling get_builders" + get_error.message());
         return;
     }
 
@@ -33,10 +34,10 @@ void BuilderQueue::tick(asio::yield_context yield) {
                 reservation.set_enter_cleanup();
                 asio::spawn(io_service,
                             [this, &reservation](asio::yield_context destroy_yield) {
-                                boost::system::error_code error;
-                                OpenStackBuilder::destroy(reservation.builder.get(), io_service, destroy_yield[error]);
-                                if (error) {
-                                    logger::write("Error destryoing builder " + error.message());
+                                boost::system::error_code cleanup_error;
+                                OpenStackBuilder::destroy(reservation.builder.get(), io_service, destroy_yield[cleanup_error]);
+                                if (cleanup_error) {
+                                    logger::write("Error destryoing builder " + cleanup_error.message());
                                 } else {
                                     reservation.set_finalize();
                                 }
@@ -69,10 +70,10 @@ void BuilderQueue::tick(asio::yield_context yield) {
         pending_requests++;
         asio::spawn(io_service,
                     [this](asio::yield_context request_yield) {
-                        boost::system::error_code error;
-                        OpenStackBuilder::request_create(io_service, request_yield[error]);
-                        if (error) {
-                            logger::write("Error requesting builder create " + error.message());
+                        boost::system::error_code create_error;
+                        OpenStackBuilder::request_create(io_service, request_yield[create_error]);
+                        if (create_error) {
+                            logger::write("Error requesting builder create " + create_error.message());
                         } else {
                             pending_requests--;
                         }

@@ -19,15 +19,16 @@ enum class ReservationStatus {
 // Reservations are handled by the queue and assigned builders as available
 class Reservation {
 public:
-    explicit Reservation(asio::io_service& io_service) : status(ReservationStatus::pending),
-                                                         ready_timer(io_service) {}
+    explicit Reservation(asio::io_service& io_service) :
+            status(ReservationStatus::pending),
+            ready_timer(io_service) {}
 
     ~Reservation() {
         status = ReservationStatus::request_complete;
     }
 
     // Create an infinite timer that will be cancelled by the queue when the job is ready
-    void async_wait(asio::yield_context yield);
+    void async_wait(Messenger& client);
 
     // Callback used by BuilderQueue to cancel the timer which signals our reservation is ready
     void ready(BuilderData acquired_builder);
@@ -63,6 +64,7 @@ public:
 
     boost::optional<BuilderData> builder;
     ReservationStatus status;
+    boost::system::error_code error;
 private:
     asio::deadline_timer ready_timer;
 };

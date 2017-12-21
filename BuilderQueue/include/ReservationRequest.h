@@ -8,15 +8,22 @@
 // The reservation to have a handle to the queue, else we have a weird circular dependency: reservation<-->queue
 class ReservationRequest {
 public:
-    explicit ReservationRequest(BuilderQueue &queue) :  queue(queue),
-                                               reservation(queue.enter()){}
+    explicit ReservationRequest(BuilderQueue &queue, Messenger& client) :
+                                               queue(queue),
+                                               client(client),
+                                               reservation(queue.enter()),
+                                               error(reservation.error)
+    {}
 
     ~ReservationRequest() {
         reservation.set_request_complete();
     }
 
-    BuilderData async_wait(asio::yield_context yield);
+    BuilderData async_wait();
+    boost::system::error_code& error;
+
 private:
     BuilderQueue &queue;
+    Messenger& client;
     Reservation &reservation;
 };

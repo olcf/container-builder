@@ -26,49 +26,48 @@ public:
         // Full client connection - this will not run until the io_service is started
         asio::spawn(io_service,
                     [this](asio::yield_context yield) {
-                        boost::system::error_code error;
 
-                        auto queue_messenger = connect_to_queue(yield[error]);
-                        if (error) {
-                            throw std::runtime_error("Error connecting to queue_messenger: " + error.message());
+                        auto queue_messenger = connect_to_queue(yield);
+                        if (queue_messenger.error) {
+                            throw std::runtime_error("Error connecting to queue_messenger: " + queue_messenger.error.message());
                         }
 
-                        auto builder_messenger = connect_to_builder(queue_messenger, yield[error]);
-                        if (error) {
-                            throw std::runtime_error("Error connecting to builder: " + error.message());
+                        auto builder_messenger = connect_to_builder(queue_messenger, yield);
+                        if (builder_messenger.error) {
+                            throw std::runtime_error("Error connecting to builder: " + builder_messenger.error.message());
                         }
 
                         // Send client data to builder
-                        builder_messenger.async_send(client_data(), yield[error]);
-                        if (error) {
+                        builder_messenger.async_send(client_data());
+                        if (builder_messenger.error) {
                             throw std::runtime_error("Error sending client data to builder!");
                         }
 
                         logger::write("Sending definition: " + definition_path);
-                        builder_messenger.async_send_file(definition_path, yield[error], true);
-                        if (error) {
-                            throw std::runtime_error("Error sending definition file to builder!");
+                        builder_messenger.async_send_file(definition_path, true);
+                        if (builder_messenger.error) {
+                            throw std::runtime_error("Error sending definition file to builder: " + builder_messenger.error.message());
                         }
 
                         std::string line;
                         do {
-                            line = builder_messenger.async_receive(yield[error]);
-                            if (error) {
+                            line = builder_messenger.async_receive();
+                            if (builder_messenger.error) {
                                 throw std::runtime_error("Error streaming build output!");
                             }
                             std::cout << line;
                         } while (!line.empty());
 
-                        builder_messenger.async_receive_file(container_path, yield[error], true);
-                        if (error) {
-                            throw std::runtime_error("Error downloading container image!");
+                        builder_messenger.async_receive_file(container_path, true);
+                        if (builder_messenger.error) {
+                            throw std::runtime_error("Error downloading container image: " + builder_messenger.error.message());
                         }
 
                         logger::write("Container received: " + container_path, logger::severity_level::success);
 
                         // Inform the queue we're done
-                        queue_messenger.async_send(std::string("checkout_builder_complete"), yield[error]);
-                        if (error) {
+                        queue_messenger.async_send(std::string("checkout_builder_complete"));
+                        if (queue_messenger.error) {
                             throw std::runtime_error("Error ending build!");
                         }
                     });

@@ -69,9 +69,8 @@ Messenger Client::connect_to_queue(asio::yield_context yield) {
     // Start waiting animation
     WaitingAnimation wait_queue("Connecting to BuilderQueue: ");
 
-    boost::system::error_code error;
-    Messenger queue_messenger(io_service, queue_host, queue_port, yield[error]);
-    if (error) {
+    Messenger queue_messenger(io_service, queue_host, queue_port, yield);
+    if (queue_messenger.error) {
         wait_queue.stop("Failed\n", logger::severity_level::fatal);
         throw std::runtime_error("Failed to connect to builder queue!");
     }
@@ -82,25 +81,24 @@ Messenger Client::connect_to_queue(asio::yield_context yield) {
 
 Messenger Client::connect_to_builder(Messenger &queue_messenger, asio::yield_context yield) {
     WaitingAnimation wait_builder("Requesting BuilderData: ");
-    boost::system::error_code error;
 
     // Request a builder from the queue
-    queue_messenger.async_send("checkout_builder_request", yield[error]);
-    if (error) {
+    queue_messenger.async_send("checkout_builder_request");
+    if (queue_messenger.error) {
         wait_builder.stop("Failed\n", logger::severity_level::fatal);
         throw std::runtime_error("Error communicating with the builder queue!");
     }
 
     // Wait to receive the builder from the queue
-    auto builder = queue_messenger.async_receive_builder(yield[error]);
-    if (error) {
+    auto builder = queue_messenger.async_receive_builder();
+    if (queue_messenger.error) {
         wait_builder.stop("Failed\n", logger::severity_level::fatal);
         throw std::runtime_error("Error obtaining VM builder from builder queue!");
     }
 
     // Create a messenger to the builder
-    Messenger builder_messenger(io_service, builder.host, builder.port, yield[error]);
-    if (error) {
+    Messenger builder_messenger(io_service, builder.host, builder.port, yield);
+    if (builder_messenger.error) {
         wait_builder.stop("Failed\n", logger::severity_level::fatal);
         throw std::runtime_error("Failed to connect to builder!");
     }

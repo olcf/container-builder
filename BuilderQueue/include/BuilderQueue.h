@@ -12,11 +12,10 @@ public:
     explicit BuilderQueue(asio::io_service &io_service) : io_service(io_service),
                                                           max_builders(20),
                                                           max_available_builders(5),
-                                                          pending_requests(0)
-                                                          {}
+                                                          pending_requests(0) {}
 
     // Create a new queue reservation and return it to the requester
-    Reservation& enter();
+    Reservation &enter();
 
     // Attempt to process the queue after an event that adds/removes builders or requests
     void tick(asio::yield_context yield);

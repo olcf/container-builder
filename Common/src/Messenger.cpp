@@ -259,7 +259,7 @@ void Messenger::async_send_file(boost::filesystem::path file_path, const bool pr
 
 BuilderData Messenger::async_receive_builder() {
     // Read in the serialized builder as a string
-    auto serialized_builder = async_receive(yield[error], MessageType::builder);
+    auto serialized_builder = async_receive(MessageType::builder);
     if (error) {
         logger::write("Received bad builder: " + error.message());
         BuilderData builder;
@@ -337,7 +337,7 @@ void Messenger::async_send(ClientData client_data) {
     archive << client_data;
     auto serialized_client_data = archive_stream.str();
 
-    async_send(serialized_client_data, yield[error], MessageType::client_data);
+    async_send(serialized_client_data, MessageType::client_data);
     if (error) {
         logger::write("Error sending client data: " + error.message());
     }

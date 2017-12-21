@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
                         if (error) {
                             logger::write(socket, "Error accepting new connection");
                         } else {
-                            std::make_shared<Connection>(std::move(socket), builder_queue)->begin();
+                            std::make_shared<Connection>(std::move(socket), builder_queue);
                         }
                     }
                 });

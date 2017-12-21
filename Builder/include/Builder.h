@@ -22,20 +22,18 @@ public:
         // Full build connection - this will not run until the io_service is started
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
-                        Messenger client = connect_to_client(yield);
-
-                        boost::system::error_code error;
+                        Messenger client(io_service, "8080", yield);
 
                         // Receive client data
-                        ClientData client_data = client.async_receive_client_data(yield[error]);
-                        if (error) {
-                            throw std::runtime_error("Error receiving client data: " + error.message());
+                        ClientData client_data = client.async_receive_client_data();
+                        if (client.error) {
+                            throw std::runtime_error("Error receiving client data: " + client.error.message());
                         }
 
                         // Receive the definition file from the client
-                        client.async_receive_file("container.def", yield[error]);
-                        if (error) {
-                            throw std::runtime_error("Error receiving definition file: " + error.message());
+                        client.async_receive_file("container.def");
+                        if (client.error) {
+                            throw std::runtime_error("Error receiving definition file: " + client.error.message());
                         }
 
                         logger::write(client.socket, "Received container.def");
@@ -80,18 +78,19 @@ public:
                         asio::streambuf buffer;
                         boost::regex line_matcher{"\\r|\\n"};
                         std::size_t read_size = 0;
+                        boost::system::error_code stream_error;
                         do {
                             // Read from the pipe into a buffer
-                            read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield[error]);
-                            if (error) {
-                                throw std::runtime_error("reading process pipe failed: " + error.message());
+                            read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield[stream_error]);
+                            if (stream_error) {
+                                throw std::runtime_error("reading process pipe failed: " + stream_error.message());
                             }
                             // Write the buffer to our socket
-                            client.async_send(buffer, yield[error]);
-                            if (error) {
-                                throw std::runtime_error("sending process pipe failed: " + error.message());
+                            client.async_send(buffer);
+                            if (stream_error) {
+                                throw std::runtime_error("sending process pipe failed: " + stream_error.message());
                             }
-                        } while (read_size > 0 && !error);
+                        } while (read_size > 0 && !stream_error);
 
                         // Get the return value from the build subprocess
                         logger::write("Waiting on build process to exit");
@@ -101,9 +100,9 @@ public:
                         // Send the container to the client
                         if (build_code == 0) {
                             logger::write("Build complete, sending container");
-                            client.async_send_file("container.img", yield[error]);
-                            if (error) {
-                                throw std::runtime_error("Sending file to client failed: " + error.message());
+                            client.async_send_file("container.img");
+                            if (client.error) {
+                                throw std::runtime_error("Sending file to client failed: " + client.error.message());
                             }
                         } else {
                             throw std::runtime_error("Build failed, not sending container");

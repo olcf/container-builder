@@ -82,7 +82,7 @@ public:
                         do {
                             // Read from the pipe into a buffer
                             read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield[stream_error]);
-                            if (stream_error != boost::system::errc::success || stream_error != boost::asio::error::eof) {
+                            if (stream_error != boost::system::errc::success && stream_error != boost::asio::error::eof) {
                                 throw std::runtime_error("reading process pipe failed: " + stream_error.message());
                             }
                             // Write the buffer to our socket

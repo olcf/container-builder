@@ -11,6 +11,7 @@ void Reservation::async_wait(Messenger& client) {
         ready_timer.async_wait(client.yield[error]);
         if (error != asio::error::operation_aborted) {
             logger::write("Error in reservation async_wait" + error.message());
+            client.error = error;
             return;
         }
     }

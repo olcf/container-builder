@@ -9,7 +9,7 @@ void Connection::checkout_builder(Messenger& client) {
     logger::write(client.socket, "Requesting builder from the queue");
     ReservationRequest reservation(queue, client);
     BuilderData builder = reservation.async_wait();
-    if (reservation.error) {
+    if (client.error) {
         logger::write("reservation builder request failed: " + client.error.message());
         return;
     }

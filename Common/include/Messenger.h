@@ -62,7 +62,8 @@ public:
     // Create a server messenger by doing an async block give the socket
     // The messenger will assume ownership of the socket
     explicit Messenger(tcp::socket socket, asio::yield_context yield) : socket(std::move(socket)),
-                                                                        yield(yield) {}
+                                                                        yield(yield) {
+    }
 
     std::string async_receive(MessageType type = MessageType::string);
 

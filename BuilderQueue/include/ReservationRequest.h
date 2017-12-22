@@ -7,6 +7,11 @@
 // We must remove a reservation from the queue if it is destructed but we don't want
 // The reservation to have a handle to the queue, else we have a weird circular dependency: reservation<-->queue
 class ReservationRequest {
+private:
+    BuilderQueue &queue;
+    Messenger& client;
+    Reservation &reservation;
+
 public:
     explicit ReservationRequest(BuilderQueue &queue, Messenger& client) :
                                                queue(queue),
@@ -21,9 +26,4 @@ public:
 
     BuilderData async_wait();
     boost::system::error_code& error;
-
-private:
-    BuilderQueue &queue;
-    Messenger& client;
-    Reservation &reservation;
 };

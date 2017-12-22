@@ -9,14 +9,21 @@ using asio::ip::tcp;
 
 class Connection : public std::enable_shared_from_this<Connection> {
 public:
-    explicit Connection(tcp::socket socket, BuilderQueue &queue) : queue(queue)
-    {
-        logger::write(socket, "Established connection");
+    explicit Connection(BuilderQueue &queue) : queue(queue) {}
 
+    ~Connection() {
+        logger::write("Ending connection");
+    }
+
+    void start(tcp::socket socket) {
         try {
             auto self(shared_from_this());
+
+            logger::write(socket, "Established connection");
+
             asio::spawn(socket.get_io_service(),
                         [this, self, socket=std::move(socket)](asio::yield_context yield) mutable {
+
                             Messenger client(std::move(socket), yield);
 
                             auto request = client.async_receive(MessageType::string);
@@ -27,15 +34,13 @@ public:
                             } else {
                                 logger::write(client.socket, "Invalid request message received: " + request);
                             }
+
                         });
-        } catch (...) {
-            logger::write("Unknown connection exception caught");
+        } catch (std::exception& ex) {
+            logger::write(std::string() + "Connection exception: " + ex.what());
+        } catch(...) {
+            logger::write("Unknown connection exception caught!");
         }
-
-    }
-
-    ~Connection() {
-        logger::write("Ending connection");
     }
 
 private:

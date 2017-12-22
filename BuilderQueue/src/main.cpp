@@ -24,11 +24,10 @@ int main(int argc, char *argv[]) {
                         tcp::socket socket(io_service);
                         boost::system::error_code error;
                         acceptor.async_accept(socket, yield[error]);
-
                         if (error) {
                             logger::write(socket, "Error accepting new connection");
                         } else {
-                            std::make_shared<Connection>(std::move(socket), builder_queue);
+                            std::make_shared<Connection>(builder_queue)->start(std::move(socket));
                         }
                     }
                 });

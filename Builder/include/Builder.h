@@ -88,7 +88,7 @@ public:
                             // Write the buffer to our socket
                             client.async_send(buffer);
                             if (client.error) {
-                                throw std::runtime_error("sending process pipe failed: " + stream_error.message());
+                                throw std::runtime_error("sending process pipe failed: " + client.error.message());
                             }
                         } while (read_size > 0 && !stream_error);
 

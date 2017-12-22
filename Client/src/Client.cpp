@@ -2,6 +2,7 @@
 #include <boost/program_options.hpp>
 #include <boost/process.hpp>
 #include "WaitingAnimation.h"
+#include "pwd.h"
 
 namespace bp = boost::process;
 
@@ -45,12 +46,12 @@ void Client::parse_arguments(int argc, char **argv) {
 }
 
 void Client::parse_environment() {
-    char user[15];
-    int err = getlogin_r(user, 15);
-    if (err) {
+    struct passwd *pws;
+    pws = getpwuid(getuid());
+    if (pws == NULL) {
         throw std::runtime_error("Error get login name for client data!");
     }
-    user_id = std::string(user);
+    user_id = std::string(pws->pw_name);
 
     auto host = std::getenv("QUEUE_HOST");
     if (!host) {

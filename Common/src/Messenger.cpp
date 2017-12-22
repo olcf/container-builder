@@ -18,7 +18,7 @@ std::string Messenger::async_receive(MessageType type) {
 
     auto header = async_receive_header();
     if (error) {
-        logger::write("Header receive error: " + error.message());
+        logger::write("Header receive error: " + error.message(), logger::severity_level::error);
         return std::string();
     }
 
@@ -31,7 +31,7 @@ std::string Messenger::async_receive(MessageType type) {
     asio::streambuf buffer;
     asio::async_read(socket, buffer, asio::transfer_exactly(header.size), yield[error]);
     if (header.type != type) {
-        logger::write("Received bad message: " + error.message());
+        logger::write("Received bad message: " + error.message(), logger::severity_level::error);
         return std::string();
     }
 
@@ -45,7 +45,7 @@ std::string Messenger::async_receive(MessageType type) {
 std::string Messenger::async_receive(MessageType *type) {
     auto header = async_receive_header();
     if (error) {
-        logger::write("Received bad header" + error.message());
+        logger::write("Received bad header" + error.message(), logger::severity_level::error);
         *type = MessageType::error;
         return std::string();
     }
@@ -55,7 +55,7 @@ std::string Messenger::async_receive(MessageType *type) {
     asio::streambuf buffer;
     asio::async_read(socket, buffer, asio::transfer_exactly(header.size), yield[error]);
     if (error) {
-        logger::write("Received bad message : " + error.message());
+        logger::write("Received bad message : " + error.message(), logger::severity_level::error);
         *type = MessageType::error;
         return std::string();
     }
@@ -78,18 +78,18 @@ void Messenger::async_receive_file(boost::filesystem::path file_path, const bool
     // Openfile for writing
     file.open(file_path.string(), std::fstream::out | std::fstream::binary | std::fstream::trunc);
     if (!file) {
-        logger::write("Error opening file: " + file_path.string() + " " + std::strerror(errno));
+        logger::write("Error opening file: " + file_path.string() + " " + std::strerror(errno), logger::severity_level::error);
         return;
     }
 
     auto header = async_receive_header();
     if (error) {
-        logger::write("Received bad header: " + error.message());
+        logger::write("Received bad header: " + error.message(), logger::severity_level::error);
         return;
     }
 
     if (header.type != MessageType::file) {
-        logger::write("Recieved message header not of file type");
+        logger::write("Recieved message header not of file type", logger::severity_level::error);
         return;
     }
     auto total_size = header.size;
@@ -111,7 +111,7 @@ void Messenger::async_receive_file(boost::filesystem::path file_path, const bool
 
         auto bytes_received = asio::async_read(socket, buffer, asio::transfer_exactly(bytes_to_receive), yield[error]);
         if (error) {
-            logger::write("Invalid file chunk read: " + error.message());
+            logger::write("Invalid file chunk read: " + error.message(), logger::severity_level::error);
             return;
         }
 
@@ -129,7 +129,7 @@ void Messenger::async_receive_file(boost::filesystem::path file_path, const bool
 
     file.close();
     if (!file) {
-        logger::write("Error closing file: " + file_path.string() + " " + std::strerror(errno));
+        logger::write("Error closing file: " + file_path.string() + " " + std::strerror(errno), logger::severity_level::error);
     }
 
     // After we've read the file we read the checksum and print a message if they do not match
@@ -140,7 +140,7 @@ void Messenger::async_receive_file(boost::filesystem::path file_path, const bool
     asio::async_read(socket, asio::buffer(&sent_checksum, checksum_size), asio::transfer_exactly(checksum_size),
                      yield[error]);
     if (error) {
-        logger::write("Invalid file chunk read: " + error.message());
+        logger::write("Invalid file chunk read: " + error.message(), logger::severity_level::error);
         return;
     }
 
@@ -156,7 +156,7 @@ void Messenger::async_send(const std::string &message, MessageType type) {
 
     async_send_header(message_size, type);
     if (error) {
-        logger::write("Bad header send: " + error.message());
+        logger::write("Bad header send: " + error.message(), logger::severity_level::error);
         return;
     }
 
@@ -164,7 +164,7 @@ void Messenger::async_send(const std::string &message, MessageType type) {
     auto body = asio::buffer(message.data(), message_size);
     asio::async_write(socket, body, asio::transfer_exactly(message_size), yield[error]);
     if (error) {
-        logger::write("Bad message send: " + error.message());
+        logger::write("Bad message send: " + error.message(), logger::severity_level::error);
         return;
     }
 }
@@ -175,14 +175,14 @@ void Messenger::async_send(asio::streambuf &message_body) {
 
     async_send_header(message_size, MessageType::string);
     if (error) {
-        logger::write("Bad header send: " + error.message());
+        logger::write("Bad header send: " + error.message(), logger::severity_level::error);
         return;
     }
 
     // Write the message body
     asio::async_write(socket, message_body, asio::transfer_exactly(message_size), yield[error]);
     if (error) {
-        logger::write("Bad message send: " + error.message());
+        logger::write("Bad message send: " + error.message(), logger::severity_level::error);
         return;
     }
 }
@@ -199,13 +199,13 @@ void Messenger::async_send_file(boost::filesystem::path file_path, const bool pr
     // Open file and get size
     file.open(file_path.string(), std::fstream::in | std::fstream::binary);
     if (!file) {
-        logger::write("Error opening file: " + file_path.string() + " " + std::strerror(errno));
+        logger::write("Error opening file: " + file_path.string() + " " + std::strerror(errno), logger::severity_level::error);
     }
     auto file_size = boost::filesystem::file_size(file_path);
 
     async_send_header(file_size, MessageType::file);
     if (error) {
-        logger::write("Bad header send: " + error.message());
+        logger::write("Bad header send: " + error.message(), logger::severity_level::error);
         return;
     }
 
@@ -229,7 +229,7 @@ void Messenger::async_send_file(boost::filesystem::path file_path, const bool pr
 
         auto bytes_sent = asio::async_write(socket, buffer, asio::transfer_exactly(bytes_to_send), yield[error]);
         if (error) {
-            logger::write("Bad file chunk send: " + error.message());
+            logger::write("Bad file chunk send: " + error.message(), logger::severity_level::error);
             return;
         }
 
@@ -242,7 +242,7 @@ void Messenger::async_send_file(boost::filesystem::path file_path, const bool pr
 
     file.close();
     if (!file) {
-        logger::write("Error closing file: " + file_path.string() + " " + std::strerror(errno));
+        logger::write("Error closing file: " + file_path.string() + " " + std::strerror(errno), logger::severity_level::error);
     }
 
     // After we've sent the file we send the checksum
@@ -252,7 +252,7 @@ void Messenger::async_send_file(boost::filesystem::path file_path, const bool pr
     asio::async_write(socket, asio::buffer(&checksum, checksum_size), asio::transfer_exactly(checksum_size),
                       yield[error]);
     if (error) {
-        logger::write("Bad file checksum send: " + error.message());
+        logger::write("Bad file checksum send: " + error.message(), logger::severity_level::error);
         return;
     }
 }
@@ -261,7 +261,7 @@ BuilderData Messenger::async_receive_builder() {
     // Read in the serialized builder as a string
     auto serialized_builder = async_receive(MessageType::builder);
     if (error) {
-        logger::write("Received bad builder: " + error.message());
+        logger::write("Received bad builder: " + error.message(), logger::severity_level::error);
         BuilderData builder;
         return builder;
     }
@@ -284,7 +284,7 @@ void Messenger::async_send(BuilderData builder) {
 
     async_send(serialized_builder, MessageType::builder);
     if (error) {
-        logger::write("Error sending builder: " + error.message());
+        logger::write("Error sending builder: " + error.message(), logger::severity_level::error);
     }
 }
 
@@ -295,7 +295,7 @@ void  Messenger::async_send_header(std::size_t message_size, MessageType type) {
 
     asio::async_write(socket, header_buffer, asio::transfer_exactly(header_size()), yield[error]);
     if (error) {
-        logger::write("Error sending header: " + error.message());
+        logger::write("Error sending header: " + error.message(), logger::severity_level::error);
     }
 }
 
@@ -305,7 +305,7 @@ Header  Messenger::async_receive_header() {
     auto header_buffer = asio::buffer(&header, header_size());
     asio::async_read(socket, header_buffer, asio::transfer_exactly(header_size()), yield[error]);
     if (error) {
-        logger::write("Error receiving header: " + error.message());
+        logger::write("Error receiving header: " + error.message(), logger::severity_level::error);
         header.type = MessageType::error;
         header.size = 0;
     }
@@ -316,7 +316,7 @@ ClientData Messenger::async_receive_client_data() {
     // Read in the serialized client data as a string
     auto serialized_client_data = async_receive(MessageType::client_data);
     if (error) {
-        logger::write("Received bad client data: " + error.message());
+        logger::write("Received bad client data: " + error.message(), logger::severity_level::error);
         ClientData client_data;
         return client_data;
     }
@@ -339,6 +339,6 @@ void Messenger::async_send(ClientData client_data) {
 
     async_send(serialized_client_data, MessageType::client_data);
     if (error) {
-        logger::write("Error sending client data: " + error.message());
+        logger::write("Error sending client data: " + error.message(), logger::severity_level::error);
     }
 }

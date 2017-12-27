@@ -3,9 +3,9 @@
 #include "Messenger.h"
 #include "Logger.h"
 #include "Messenger.h"
-#include <boost/asio/io_service.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/websocket.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/read_until.hpp>
 #include <boost/asio/spawn.hpp>
 #include <boost/process.hpp>
 #include <boost/regex.hpp>

@@ -22,21 +22,25 @@ public:
         // Full build connection - this will not run until the io_service is started
         asio::spawn(io_service,
                     [&](asio::yield_context yield) {
-                        Messenger client(io_service, "8080", yield);
+                        boost::system::error_code error;
+                        Messenger client(io_service, "8080", yield, error);
+                        if(error) {
+                            throw std::runtime_error("Error connecting to client: " + error.message());
+                        }
 
                         // Receive client data
-                        ClientData client_data = client.async_receive_client_data();
-                        if (client.error) {
-                            throw std::runtime_error("Error receiving client data: " + client.error.message());
+                        ClientData client_data = client.async_read_client_data(yield, error);
+                        if (error) {
+                            throw std::runtime_error("Error receiving client data: " + error.message());
                         }
 
                         // Receive the definition file from the client
-                        client.async_receive_file("container.def");
-                        if (client.error) {
-                            throw std::runtime_error("Error receiving definition file: " + client.error.message());
+                        client.async_read_file("container.def", yield, error);
+                        if (error) {
+                            throw std::runtime_error("Error receiving definition file: " + error.message());
                         }
 
-                        logger::write(client.socket, "Received container.def");
+                        logger::write("Received container.def");
 
                         if(client_data.arch == Architecture::ppc64le) {
                             // A dirty hack but the ppc64le qemu executable must be in the place the kernel expects it
@@ -52,8 +56,7 @@ public:
                         // Launch our build as a subprocess
                         // We use "unbuffer" to fake the build into thinking it has a real TTY, which the command output eventually will
                         // This causes things like wget and color ls to work nicely
-                        std::string build_command(
-                                "/usr/bin/sudo ");
+                        std::string build_command("/usr/bin/sudo ");
                         // If the cleint has a tty trick the subprocess into thinking that as well
                         if(client_data.tty) {
                             build_command += "/usr/bin/unbuffer ";
@@ -68,29 +71,28 @@ public:
                             throw std::runtime_error("subprocess error: " + build_ec.message());
                         }
 
-                        logger::write(client.socket, "launched build process: " + build_command);
+                        logger::write("launched build process: " + build_command);
 
-                        // Read process pipe output and write it to the client
-                        // line buffer(ish) by reading from the pipe until we hit \n, \r
-                        // NOTE: read_until will fill buffer until line_matcher is satisfied but generally will contain additional data.
-                        // This is fine as all we care about is dumping everything from std_pipe to our buffer and don't require exact line buffering
-                        // TODO: just call read_some perhaps?
+                        // stream from the async pipe process output to the socket
                         asio::streambuf buffer;
-                        boost::regex line_matcher{"\\r|\\n"};
                         std::size_t read_size = 0;
                         boost::system::error_code stream_error;
+                        bool fin = false;
                         do {
                             // Read from the pipe into a buffer
-                            read_size = asio::async_read_until(std_pipe, buffer, line_matcher, yield[stream_error]);
+                            std_pipe.async_read_some(buffer, yield[stream_error]);
                             if (stream_error != boost::system::errc::success && stream_error != boost::asio::error::eof) {
                                 throw std::runtime_error("reading process pipe failed: " + stream_error.message());
                             }
-                            // Write the buffer to our socket
-                            client.async_send(buffer);
-                            if (client.error) {
-                                throw std::runtime_error("sending process pipe failed: " + client.error.message());
+                            if(read_size == 0 || stream_error) {
+                                fin = true;
                             }
-                        } while (read_size > 0 && !stream_error);
+                            // Write the buffer to our socket
+                            client.async_write_some_streambuf(fin, buffer, yield, error);
+                            if (error) {
+                                throw std::runtime_error("sending process pipe failed: " + error.message());
+                            }
+                        } while (!fin);
 
                         // Get the return value from the build subprocess
                         logger::write("Waiting on build process to exit");

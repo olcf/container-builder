@@ -19,7 +19,7 @@ chmod 0440 /etc/sudoers.d/builder
 
 apt-get -y update
 apt-get -y install expect
-apt-get -y install yum rpm
+apt-get -y install yum rpm dnf
 
 #####################################
 # begin ppc64le QUEMU stuff

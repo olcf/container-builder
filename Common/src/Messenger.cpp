@@ -12,7 +12,6 @@
 #include <boost/archive/text_oarchive.hpp>
 #include "Builder.h"
 
-
 namespace asio = boost::asio;
 using asio::ip::tcp;
 

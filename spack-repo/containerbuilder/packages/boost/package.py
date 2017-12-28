@@ -46,6 +46,8 @@ class Boost(Package):
             branch='develop',
             submodules=True)
 
+    version('1.66.0', '5721818253e6a0989583192f96782c4a',
+            url='https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.bz2')
     version('1.65.1', '41d7542ce40e171f3f7982aff008ff0d',
             url='https://dl.bintray.com/boostorg/release/1.65.1/source/boost_1_65_1.tar.bz2')
     version('1.65.0', '5512d3809801b0a1b9dd58447b70915d',

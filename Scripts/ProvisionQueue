@@ -21,13 +21,13 @@ cd /
 rm -rf /cmake-3.9.5-Linux-x86_64
 
 # Install a new version of boost
-wget https://dl.bintray.com/boostorg/release/1.65.1/source/boost_1_65_1.tar.gz
-tar xf boost_1_65_1.tar.gz
-cd boost_1_65_1
+wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
+tar xf boost_1_66_0.tar.gz
+cd boost_1_66_0
 ./bootstrap.sh --with-libraries=filesystem,regex,system,coroutine,serialization,log,thread,program_options
 ./b2 install || :
 cd /
-rm -rf /boost_1_65_1
+rm -rf /boost_1_66_0
 
 # Install ContainerBuilder
 cd /

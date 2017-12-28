@@ -1,4 +1,4 @@
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/spawn.hpp>
 #include <iostream>
@@ -11,29 +11,29 @@ namespace asio = boost::asio;
 using asio::ip::tcp;
 
 int main(int argc, char *argv[]) {
-    asio::io_service io_service;
+    asio::io_context io_context;
 
-    BuilderQueue builder_queue(io_service);
+    BuilderQueue builder_queue(io_context);
 
     // Wait for connections from either Clients or Builders
-    asio::spawn(io_service,
+    asio::spawn(io_context,
                 [&](asio::yield_context yield) {
-                    // Listen for incoming connections
-                    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8080));
+                    boost::system::error_code error;
+                    tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), 8080));
                     for (;;) {
-                        tcp::socket socket(io_service);
-                        boost::system::error_code error;
-                        acceptor.async_accept(socket, yield[error]);
+                        // Wait for new connections
+                        Messenger messenger(acceptor, yield, error);
                         if (error) {
-                            logger::write(socket, "Error accepting new connection");
+                            logger::write("Error accepting new connection");
                         } else {
-                            std::make_shared<Connection>(builder_queue)->start(std::move(socket));
+                            // Create a new connection and give it our messenger
+                            std::make_shared<Connection>(builder_queue, std::move(messenger))->start(io_context);
                         }
                     }
                 });
 
     // Start the queue which ticks at the specified interval
-    asio::spawn(io_service,
+    asio::spawn(io_context,
                 [&](asio::yield_context yield) {
                     for (;;) {
                         try {
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     // Keep running even in the event of an exception
     for(;;) {
         try {
-            io_service.run();
+            io_context.run();
         } catch(...) {
             logger::write("Unknown io_service exception during run");
         }

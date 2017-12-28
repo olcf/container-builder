@@ -52,9 +52,8 @@ public:
     // Create a server messenger by doing an async block give the socket
     // The messenger will assume ownership of the socket
     explicit Messenger(tcp::acceptor &acceptor,
-                       asio::io_service &io_service,
                        asio::yield_context yield,
-                       boost::system::error_code error) : stream(io_service) {
+                       boost::system::error_code error) : stream(acceptor.get_io_context()) {
         acceptor.async_accept(stream.next_layer(), yield[error]);
         stream.binary(true);
     }

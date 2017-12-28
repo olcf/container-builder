@@ -9,7 +9,7 @@
 
 class BuilderQueue {
 public:
-    explicit BuilderQueue(asio::io_service &io_service) : io_service(io_service),
+    explicit BuilderQueue(asio::io_context &io_context) : io_context(io_context),
                                                           max_builders(20),
                                                           max_available_builders(5),
                                                           pending_requests(0) {}
@@ -21,7 +21,7 @@ public:
     void tick(asio::yield_context yield);
 
 private:
-    asio::io_service &io_service;
+    asio::io_context &io_context;
 
     // Hold reservations that are to be fulfilled
     std::list<Reservation> reservations;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BuilderQueue.h"
-#include "Builder.h"
+#include "BuilderData.h"
 
 // ReservationRequest breaks circular dependence between Reservation and BuilderQueue
 // We must remove a reservation from the queue if it is destructed but we don't want
@@ -9,9 +9,8 @@
 class ReservationRequest {
 
 public:
-    explicit ReservationRequest(BuilderQueue &queue, Messenger& client) :
+    explicit ReservationRequest(BuilderQueue &queue) :
                                                queue(queue),
-                                               client(client),
                                                reservation(queue.enter())
     {}
 
@@ -19,10 +18,9 @@ public:
         reservation.set_request_complete();
     }
 
-    BuilderData async_wait();
+    BuilderData async_wait(asio::yield_context yield, boost::system::error_code &error);
 
 private:
     BuilderQueue &queue;
-    Messenger& client;
     Reservation &reservation;
 };

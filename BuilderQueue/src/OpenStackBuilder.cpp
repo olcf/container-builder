@@ -8,7 +8,8 @@ namespace bp = boost::process;
 namespace pt = boost::property_tree;
 
 namespace OpenStackBuilder {
-    std::set<BuilderData> get_builders(asio::io_context &io_context, asio::yield_context yield, boost::system::error_code &error) {
+    std::set<BuilderData>
+    get_builders(asio::io_context &io_context, asio::yield_context yield, boost::system::error_code &error) {
         std::string list_command("/usr/local/bin/GetBuilders");
         bp::group group;
         bp::async_pipe std_pipe(io_context);
@@ -16,7 +17,8 @@ namespace OpenStackBuilder {
 
         // Asynchronously launch the list command
         std::error_code list_error;
-        bp::child list_child(list_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group, list_error);
+        bp::child list_child(list_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group,
+                             list_error);
         if (list_error) {
             logger::write("subprocess error: " + error.message());
         }
@@ -65,7 +67,7 @@ namespace OpenStackBuilder {
                 builder.port = "8080";
                 builders.insert(builder);
             }
-        } catch(const pt::ptree_error &e) {
+        } catch (const pt::ptree_error &e) {
             logger::write(std::string() + "Error parsing builders: " + e.what());
         }
 
@@ -101,7 +103,8 @@ namespace OpenStackBuilder {
         }
     }
 
-    void destroy(BuilderData builder, asio::io_context &io_context, asio::yield_context yield, boost::system::error_code &error) {
+    void destroy(BuilderData builder, asio::io_context &io_context, asio::yield_context yield,
+                 boost::system::error_code &error) {
         std::string destroy_command("/usr/local/bin/DestroyBuilder " + builder.id);
         bp::group group;
         bp::async_pipe std_pipe(io_context);

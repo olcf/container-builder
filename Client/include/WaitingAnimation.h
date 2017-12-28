@@ -12,23 +12,23 @@ using namespace std::chrono_literals;
 class WaitingAnimation {
 public:
     WaitingAnimation(const std::string &message) : active(true) {
-         animation = std::thread([this, message]() {
-             for(;;) {
-                 if(!active)
-                     break;
-                 std::cout << "\r" << message << ".  ";
-                 std::this_thread::sleep_for(300ms);
+        animation = std::thread([this, message]() {
+            for (;;) {
+                if (!active)
+                    break;
+                std::cout << "\r" << message << ".  ";
+                std::this_thread::sleep_for(300ms);
 
-                 if(!active)
-                     break;
-                 std::cout << "\b\b.";
-                 std::this_thread::sleep_for(300ms);
+                if (!active)
+                    break;
+                std::cout << "\b\b.";
+                std::this_thread::sleep_for(300ms);
 
-                 if(!active)
-                     break;
-                 std::cout << ".";
-                 std::this_thread::sleep_for(300ms);
-             }
+                if (!active)
+                    break;
+                std::cout << ".";
+                std::this_thread::sleep_for(300ms);
+            }
         });
     }
 

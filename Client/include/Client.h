@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/spawn.hpp>
 #include "Messenger.h"
 #include "ClientData.h"
@@ -24,8 +24,9 @@ public:
 
     // Start the IO service
     void run();
+
 private:
-    asio::io_service io_service;
+    asio::io_context io_context;
     std::string definition_path;
     std::string container_path;
     std::string user_id;
@@ -35,5 +36,6 @@ private:
     Architecture arch;
 
     void parse_environment();
+
     void parse_arguments(int argc, char **argv);
 };

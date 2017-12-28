@@ -2,7 +2,7 @@
 
 #include <functional>
 #include <boost/asio.hpp>
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/asio/spawn.hpp>
@@ -25,13 +25,13 @@ class Messenger {
 
 public:
     // Create a client messenger by asyncronously connecting to the specified host
-    explicit Messenger(asio::io_service &io_service,
+    explicit Messenger(asio::io_context &io_context,
                        const std::string &host,
                        const std::string &port,
                        asio::yield_context yield,
-                       boost::system::error_code error) : stream(io_service) {
+                       boost::system::error_code error) : stream(io_context) {
         do {
-            tcp::resolver queue_resolver(io_service);
+            tcp::resolver queue_resolver(io_context);
             asio::async_connect(stream.next_layer(), queue_resolver.resolve({host, port}), yield[error]);
         } while (error);
 
@@ -96,5 +96,5 @@ public:
                             boost::system::error_code &error);
 
 private:
-    websocket::stream <tcp::socket> stream;
+    websocket::stream<tcp::socket> stream;
 };

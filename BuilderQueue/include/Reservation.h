@@ -20,7 +20,7 @@ enum class ReservationStatus {
 // Reservations are handled by the queue and assigned builders as available
 class Reservation {
 public:
-    explicit Reservation(asio::io_context& io_context) :
+    explicit Reservation(asio::io_context &io_context) :
             status(ReservationStatus::pending),
             ready_timer(io_context) {}
 

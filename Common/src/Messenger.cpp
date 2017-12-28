@@ -1,25 +1,16 @@
 #include "Messenger.h"
-#include <functional>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/spawn.hpp>
-#include <boost/asio/buffer.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/filesystem.hpp>
-#include <iostream>
+#include "boost/asio/buffer.hpp"
 #include <boost/progress.hpp>
 #include <boost/crc.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include "Builder.h"
 
-namespace asio = boost::asio;
-using asio::ip::tcp;
-
 // Read a string message asynchronously
 std::string Messenger::async_read_string(asio::yield_context yield,
                                          boost::system::error_code &error) {
     std::string message;
-    auto buffer = asio::dynamic_buffer(message);
+    auto buffer = boost::asio::dynamic_buffer(message);
     stream.async_read(buffer, yield[error]);
     return message;
 }
@@ -28,7 +19,7 @@ std::string Messenger::async_read_string(asio::yield_context yield,
 void Messenger::async_write_string(const std::string &message,
                                    asio::yield_context yield,
                                    boost::system::error_code &error) {
-    stream.async_write(boost::asio::buffer(message), yield[error]);
+    stream.async_write(asio::buffer(message), yield[error]);
 }
 
 void Messenger::async_read_file(boost::filesystem::path file_path,
@@ -177,7 +168,7 @@ void Messenger::async_write_builder(BuilderData builder,
 }
 
 ClientData Messenger::async_read_client_data(asio::yield_context yield,
-                                                boost::system::error_code &error) {
+                                             boost::system::error_code &error) {
     // Read in the serialized client data as a string
     auto serialized_client_data = async_read_string(yield, error);
     if (error) {
@@ -198,7 +189,7 @@ ClientData Messenger::async_read_client_data(asio::yield_context yield,
 
 void Messenger::async_write_client_data(ClientData client_data,
                                         asio::yield_context yield,
-                      boost::system::error_code &error) {
+                                        boost::system::error_code &error) {
     // Serialize the client data into a string
     std::ostringstream archive_stream;
     boost::archive::text_oarchive archive(archive_stream);
@@ -213,9 +204,9 @@ void Messenger::async_write_client_data(ClientData client_data,
     }
 }
 
-void Messenger::async_write_pipe(bp::async_pipe& pipe,
-                      asio::yield_context yield,
-                      boost::system::error_code &error) {
+void Messenger::async_write_pipe(bp::async_pipe &pipe,
+                                 asio::yield_context yield,
+                                 boost::system::error_code &error) {
     std::array<char, 4096> buffer;
     boost::system::error_code stream_error;
     bool fin = false;
@@ -239,7 +230,7 @@ void Messenger::async_write_pipe(bp::async_pipe& pipe,
 
 //  Print a large message as it arrives to the socket
 void Messenger::async_stream_print(asio::yield_context yield,
-                                 boost::system::error_code& error) {
+                                   boost::system::error_code &error) {
     const auto max_read_bytes = 4096;
     std::array<char, max_read_bytes> buffer;
     do {

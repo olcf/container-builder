@@ -71,7 +71,7 @@ void logger::color_log_severity(logging::record_view const &rec, logging::format
         }
     }
     // Print formatted log message
-    auto* facet = new boost::posix_time::time_facet;
+    auto *facet = new boost::posix_time::time_facet;
     facet->format("%Y-%b-%d %H:%M:%S");
     strm.imbue(std::locale(strm.getloc(), facet));
 

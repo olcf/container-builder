@@ -45,10 +45,10 @@ int main(int argc, char *argv[]) {
                 });
 
     // Keep running even in the event of an exception
-    for(;;) {
+    for (;;) {
         try {
             io_context.run();
-        } catch(...) {
+        } catch (...) {
             logger::write("Unknown io_service exception during run");
         }
     }

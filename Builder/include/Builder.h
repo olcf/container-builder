@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
 
 namespace asio = boost::asio;
 
@@ -8,9 +8,8 @@ class Builder {
 public:
     explicit Builder();
 
-    // Start the IO service
     void run();
 
 private:
-    asio::io_service io_service;
+    asio::io_context io_context;
 };

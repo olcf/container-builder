@@ -36,7 +36,8 @@ void BuilderQueue::tick(asio::yield_context yield) {
                 asio::spawn(io_context,
                             [this, &reservation](asio::yield_context destroy_yield) {
                                 boost::system::error_code cleanup_error;
-                                OpenStackBuilder::destroy(reservation.builder.get(), io_context, destroy_yield, cleanup_error);
+                                OpenStackBuilder::destroy(reservation.builder.get(), io_context, destroy_yield,
+                                                          cleanup_error);
                                 if (cleanup_error) {
                                     logger::write("Error destryoing builder " + cleanup_error.message());
                                 } else {

@@ -4,10 +4,10 @@
 
 Builder::Builder() {
     // Full build connection - this will not run until the io_service is started
-    asio::spawn(io_service,
+    asio::spawn(io_context,
                 [&](asio::yield_context yield) {
                     boost::system::error_code error;
-                    Messenger client(io_service, "8080", yield, error);
+                    Messenger client(io_context, "8080", yield, error);
                     if (error) {
                         throw std::runtime_error("Error connecting to client: " + error.message());
                     }
@@ -38,7 +38,7 @@ Builder::Builder() {
                     }
 
                     // Create a pipe to communicate with our build subprocess
-                    bp::async_pipe std_pipe(io_service);
+                    bp::async_pipe std_pipe(io_context);
 
                     // Launch our build as a subprocess
                     // We use "unbuffer" to fake the build into thinking it has a real TTY, which the command output eventually will
@@ -83,5 +83,5 @@ Builder::Builder() {
 }
 
 void Builder::run() {
-    io_service.run();
+    io_context.run();
 }

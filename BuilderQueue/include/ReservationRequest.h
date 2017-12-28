@@ -10,9 +10,8 @@ class ReservationRequest {
 
 public:
     explicit ReservationRequest(BuilderQueue &queue) :
-                                               queue(queue),
-                                               reservation(queue.enter())
-    {}
+            queue(queue),
+            reservation(queue.enter()) {}
 
     ~ReservationRequest() {
         reservation.set_request_complete();

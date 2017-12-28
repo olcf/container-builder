@@ -62,6 +62,7 @@ void logger::color_log_severity(logging::record_view const &rec, logging::format
                 break;
             case logger::severity_level::error:
                 strm << "\033[31m";
+                break;
             case logger::severity_level::fatal:
                 strm << "\033[31m";
                 break;

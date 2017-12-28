@@ -12,4 +12,4 @@ class ContainerBuilder(CMakePackage):
     if ci_tag:
         version(ci_tag, git="https://code.ornl.gov/olcf/ContainerBuilder.git", tag=ci_tag)
 
-    depends_on('boost@1.65.1+coroutine')
+    depends_on('boost@1.66.0+coroutine')

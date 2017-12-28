@@ -1,10 +1,58 @@
 #include "Client.h"
+#include <iostream>
 #include <boost/program_options.hpp>
 #include <boost/process.hpp>
 #include "WaitingAnimation.h"
 #include "pwd.h"
 
 namespace bp = boost::process;
+
+Client::Client(int argc, char **argv) {
+    parse_environment();
+    parse_arguments(argc, argv);
+
+    // Hide the cursor and disable buffering for cleaner builder output
+    std::cout << "\e[?25l" << std::flush;
+    std::cout.setf(std::ios::unitbuf);
+
+    // Full client connection - this will not run until the io_context is started
+    asio::spawn(io_context,
+                [this](asio::yield_context yield) {
+
+                    auto queue_messenger = connect_to_queue(yield);
+
+                    auto builder_messenger = connect_to_builder(queue_messenger, yield);
+
+                    boost::system::error_code error;
+
+                    // Send client data to builder
+                    builder_messenger.async_write_client_data(client_data(), yield, error);
+                    if (error) {
+                        throw std::runtime_error("Error sending client data to builder!");
+                    }
+
+                    logger::write("Sending definition: " + definition_path);
+                    builder_messenger.async_write_file(definition_path, yield, error);
+                    if (error) {
+                        throw std::runtime_error("Error sending definition file to builder: " + error.message());
+                    }
+
+                    builder_messenger.async_stream_print(yield, error);
+
+
+                    builder_messenger.async_read_file(container_path, yield, error);
+                    if (error) {
+                        throw std::runtime_error("Error downloading container image: " + error.message());
+                    }
+
+                    logger::write("Container received: " + container_path, logger::severity_level::success);
+
+                    queue_messenger.async_write_string("checkout_builder_complete", yield, error);
+                    if (error) {
+                        throw std::runtime_error("Error ending build!");
+                    }
+                });
+}
 
 void Client::parse_arguments(int argc, char **argv) {
     namespace po = boost::program_options;
@@ -70,10 +118,11 @@ Messenger Client::connect_to_queue(asio::yield_context yield) {
     // Start waiting animation
     WaitingAnimation wait_queue("Connecting to BuilderQueue: ");
 
-    Messenger queue_messenger(io_service, queue_host, queue_port, yield);
-    if (queue_messenger.error) {
+    boost::system::error_code error;
+    Messenger queue_messenger(io_context, queue_host, queue_port, yield, error);
+    if (error) {
         wait_queue.stop("Failed\n", logger::severity_level::fatal);
-        throw std::runtime_error("Failed to connect to builder queue!");
+        throw std::runtime_error("The ContainerBuilder queue is currently unreachable.");
     }
     wait_queue.stop("Connected to queue: " + queue_host + ":" + queue_port, logger::severity_level::success);
 
@@ -83,23 +132,25 @@ Messenger Client::connect_to_queue(asio::yield_context yield) {
 Messenger Client::connect_to_builder(Messenger &queue_messenger, asio::yield_context yield) {
     WaitingAnimation wait_builder("Requesting BuilderData: ");
 
+    boost::system::error_code error;
+
     // Request a builder from the queue
-    queue_messenger.async_send("checkout_builder_request");
-    if (queue_messenger.error) {
+    queue_messenger.async_write_string("checkout_builder_request", yield, error);
+    if (error) {
         wait_builder.stop("Failed\n", logger::severity_level::fatal);
         throw std::runtime_error("Error communicating with the builder queue!");
     }
 
     // Wait to receive the builder from the queue
-    auto builder = queue_messenger.async_receive_builder();
-    if (queue_messenger.error) {
+    auto builder = queue_messenger.async_read_builder(yield, error);
+    if (error) {
         wait_builder.stop("Failed\n", logger::severity_level::fatal);
         throw std::runtime_error("Error obtaining VM builder from builder queue!");
     }
 
     // Create a messenger to the builder
-    Messenger builder_messenger(io_service, builder.host, builder.port, yield);
-    if (builder_messenger.error) {
+    Messenger builder_messenger(io_context, builder.host, builder.port, yield, error);
+    if (error) {
         wait_builder.stop("Failed\n", logger::severity_level::fatal);
         throw std::runtime_error("Failed to connect to builder!");
     }
@@ -118,5 +169,5 @@ ClientData Client::client_data() {
 }
 
 void Client::run() {
-    io_service.run();
+    io_context.run();
 }

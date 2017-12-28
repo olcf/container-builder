@@ -21,14 +21,20 @@ set(SOURCE_FILES_QUEUE
         Common/include/Logger.h
         Common/include/Messenger.h
         BuilderQueue/src/OpenStackBuilder.cpp
-        BuilderQueue/include/OpenStackBuilder.h Common/src/BuilderData.cpp Common/src/Messenger.cpp Common/include/ClientData.h)
+        BuilderQueue/include/OpenStackBuilder.h
+        Common/src/BuilderData.cpp
+        Common/src/Messenger.cpp
+        Common/include/ClientData.h)
 
 set(SOURCE_FILES_BUILDER
         Builder/src/main.cpp
         Common/include/BuilderData.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/include/Messenger.h Common/src/Messenger.cpp Builder/src/Builder.cpp Builder/include/Builder.h)
+        Common/include/Messenger.h
+        Common/src/Messenger.cpp
+        Builder/src/Builder.cpp
+        Builder/include/Builder.h)
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT
@@ -82,7 +88,7 @@ target_link_libraries(builder_server ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(container_builder ${CMAKE_THREAD_LIBS_INIT})
 
 
-find_package(Boost 1.64.0 COMPONENTS system coroutine filesystem serialization regex log log_setup thread program_options REQUIRED)
+find_package(Boost 1.66.0 COMPONENTS system coroutine filesystem serialization regex log log_setup thread program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(builder_queue ${Boost_LIBRARIES})
 target_link_libraries(builder_server ${Boost_LIBRARIES})

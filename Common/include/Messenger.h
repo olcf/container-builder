@@ -2,101 +2,99 @@
 
 #include <functional>
 #include <boost/asio.hpp>
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/buffer.hpp>
-#include <boost/asio/spawn.hpp>
-#include <boost/asio/streambuf.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/asio/read.hpp>
-#include <boost/asio/write.hpp>
+#include <boost/asio/spawn.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/websocket.hpp>
 #include <iostream>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
 #include "BuilderData.h"
-#include <boost/progress.hpp>
-#include <boost/crc.hpp>
 #include <memory.h>
 #include "Logger.h"
 #include "ClientData.h"
+#include <boost/process.hpp>
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
-
-// Enum to handle message type, used to ensure
-enum class MessageType : unsigned char {
-    string,
-    builder,
-    client_data,
-    file,
-    error
-};
-
-// Message header
-struct Header {
-    std::size_t size;
-    MessageType type;
-};
+namespace bp = boost::process;
+namespace beast = boost::beast;
+namespace websocket = beast::websocket;
 
 class Messenger {
 
 public:
     // Create a client messenger by asyncronously connecting to the specified host
-    explicit Messenger(asio::io_service &io_service, const std::string &host, const std::string &port,
-                       asio::yield_context yield) : socket(io_service),
-                                                    yield(yield) {
+    explicit Messenger(asio::io_context &io_context,
+                       const std::string &host,
+                       const std::string &port,
+                       asio::yield_context yield,
+                       boost::system::error_code error) : stream(io_context) {
         do {
-            tcp::resolver queue_resolver(io_service);
-            asio::async_connect(socket, queue_resolver.resolve({host, port}), yield[error]);
-        } while(error);
+            tcp::resolver queue_resolver(io_context);
+            asio::async_connect(stream.next_layer(), queue_resolver.resolve({host, port}), yield[error]);
+        } while (error);
+
+        stream.async_handshake(host, "/", yield[error]);
+        stream.binary(true);
     }
 
     // Create a server messenger by doing an async block listen on the specified port
-    explicit Messenger(asio::io_service &io_service, const std::string &port, asio::yield_context yield) :
-            socket(io_service),
-            yield(yield) {
+    explicit Messenger(asio::io_service &io_service,
+                       const std::string &port,
+                       asio::yield_context yield,
+                       boost::system::error_code error) : stream(io_service) {
         tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), std::stoi(port)));
-        acceptor.async_accept(socket, yield[error]);
+        acceptor.async_accept(stream.next_layer(), yield[error]);
+        stream.binary(true);
     }
 
     // Create a server messenger by doing an async block give the socket
     // The messenger will assume ownership of the socket
-    explicit Messenger(tcp::socket socket, asio::yield_context yield) : socket(std::move(socket)),
-                                                                        yield(yield) {
+    explicit Messenger(tcp::acceptor &acceptor,
+                       asio::yield_context yield,
+                       boost::system::error_code error) : stream(acceptor.get_io_context()) {
+        acceptor.async_accept(stream.next_layer(), yield[error]);
+        stream.binary(true);
     }
 
-    std::string async_receive(MessageType type = MessageType::string);
+    std::string async_read_string(asio::yield_context yield,
+                                  boost::system::error_code &error);
 
-    std::string async_receive(MessageType *type);
+    void async_write_string(const std::string &message,
+                            asio::yield_context yield,
+                            boost::system::error_code &error);
 
-    void async_send(const std::string &message, MessageType type = MessageType::string);
+    void async_read_file(boost::filesystem::path file_path,
+                         asio::yield_context yield,
+                         boost::system::error_code &error);
 
-    void async_send(asio::streambuf &message_body);
+    void async_write_file(boost::filesystem::path file_path,
+                          asio::yield_context yield,
+                          boost::system::error_code &error);
 
-    void async_receive_file(boost::filesystem::path file_path, const bool print_progress = false);
+    BuilderData async_read_builder(asio::yield_context yield,
+                                   boost::system::error_code &error);
 
-    void async_send_file(boost::filesystem::path file_path, const bool print_progress = false);
+    void async_write_builder(BuilderData builder,
+                             asio::yield_context yield,
+                             boost::system::error_code &error);
 
-    BuilderData async_receive_builder();
+    ClientData async_read_client_data(asio::yield_context yield,
+                                      boost::system::error_code &error);
 
-    void async_send(BuilderData builder);
+    void async_write_client_data(ClientData client_data,
+                                 asio::yield_context yield,
+                                 boost::system::error_code &error);
 
-    ClientData async_receive_client_data();
 
-    void async_send(ClientData client_data);
+    void async_write_pipe(bp::async_pipe &pipe,
+                          asio::yield_context yield,
+                          boost::system::error_code &error);
 
-    tcp::socket socket;
-    // asio yield_context.ec_ is private and so i'd prefer to not (ab)use it, as such hold on to a single error variable that gets set
-    // by any Messenger failure. Taking the yield_context and error seperately in the constructor is one way to handle this
-    // This guards somewhat against passing yield[ec] to one of the messenger functions on accident
-    asio::yield_context yield;
-    boost::system::error_code error;
+    void async_stream_print(asio::yield_context yield,
+                            boost::system::error_code &error);
+
 private:
-    void async_send_header(std::size_t message_size, MessageType type);
-
-    Header async_receive_header();
-
-    static constexpr std::size_t header_size() {
-        return sizeof(Header);
-    }
+    websocket::stream<tcp::socket> stream;
 };

@@ -1,10 +1,11 @@
 #pragma once
 
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/spawn.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/optional.hpp>
-#include "Builder.h"
+#include "BuilderData.h"
+#include "Messenger.h"
 
 namespace asio = boost::asio;
 
@@ -19,16 +20,16 @@ enum class ReservationStatus {
 // Reservations are handled by the queue and assigned builders as available
 class Reservation {
 public:
-    explicit Reservation(asio::io_service& io_service) :
+    explicit Reservation(asio::io_context &io_context) :
             status(ReservationStatus::pending),
-            ready_timer(io_service) {}
+            ready_timer(io_context) {}
 
     ~Reservation() {
         status = ReservationStatus::request_complete;
     }
 
     // Create an infinite timer that will be cancelled by the queue when the job is ready
-    void async_wait(Messenger& client);
+    void async_wait(asio::yield_context yield, boost::system::error_code &error);
 
     // Callback used by BuilderQueue to cancel the timer which signals our reservation is ready
     void ready(BuilderData acquired_builder);
@@ -64,7 +65,6 @@ public:
 
     boost::optional<BuilderData> builder;
     ReservationStatus status;
-    boost::system::error_code error;
 private:
     asio::deadline_timer ready_timer;
 };

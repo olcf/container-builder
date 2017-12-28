@@ -68,7 +68,8 @@ public:
                     asio::yield_context yield,
                     boost::system::error_code& error);
 
-    void async_write_streambuf(asio::streambuf &message_body,
+    void async_write_some_streambuf(bool fin,
+            asio::streambuf &message,
                     asio::yield_context yield,
                     boost::system::error_code& error);
 

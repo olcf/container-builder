@@ -16,7 +16,7 @@ using asio::ip::tcp;
 
 // Read a string message asynchronously
 std::string Messenger::async_read_string(asio::yield_context yield,
-                                  boost::system::error_code& error) {
+                                         boost::system::error_code &error) {
     std::string message;
     auto buffer = asio::dynamic_buffer(message);
     stream.async_read(buffer, yield[error]);
@@ -25,44 +25,47 @@ std::string Messenger::async_read_string(asio::yield_context yield,
 
 // Write a string message asynchronously
 void Messenger::async_write_string(const std::string &message,
-                            asio::yield_context yield,
-                            boost::system::error_code& error) {
+                                   asio::yield_context yield,
+                                   boost::system::error_code &error) {
     stream.async_write(boost::asio::buffer(message), yield[error]);
 }
 
 void Messenger::async_read_file(boost::filesystem::path file_path,
-                                   asio::yield_context yield,
-                                   boost::system::error_code& error) {
+                                asio::yield_context yield,
+                                boost::system::error_code &error) {
     std::ofstream file;
 
     // Openfile for writing
     file.open(file_path.string(), std::fstream::out | std::fstream::binary | std::fstream::trunc);
     if (!file) {
         error = boost::system::errc::make_error_code(boost::system::errc::io_error);
-        logger::write("Error opening file: " + file_path.string() + " " + std::strerror(errno), logger::severity_level::error);
+        logger::write("Error opening file: " + file_path.string() + " " + std::strerror(errno),
+                      logger::severity_level::error);
         return;
     }
 
     const auto chunk_size = 4096;
-    char buffer[chunk_size];
+    std::array<char, chunk_size> buffer;
     boost::crc_32_type csc_result;
 
     // Read file in chunks
     do {
         auto bytes_read = stream.async_read_some(buffer, chunk_size, yield[error]);
-        if(error != beast::errc::success && error != asio::error::eof) {
-            logger::write("Error reading file: " + file_path.string() + " " + std::strerror(errno), logger::severity_level::error);
+        if (error != beast::errc::success && error != asio::error::eof) {
+            logger::write("Error reading file: " + file_path.string() + " " + std::strerror(errno),
+                          logger::severity_level::error);
             file.close();
             return;
         }
         file.write(buffer, bytes_read);
         csc_result.process_bytes(buffer, bytes_read);
-    } while(!stream.is_message_done());
+    } while (!stream.is_message_done());
 
     file.close();
     if (!file) {
         error = boost::system::errc::make_error_code(boost::system::errc::io_error);
-        logger::write("Error closing file: " + file_path.string() + " " + std::strerror(errno), logger::severity_level::error);
+        logger::write("Error closing file: " + file_path.string() + " " + std::strerror(errno),
+                      logger::severity_level::error);
     }
 
     // Read remote file checksum and verify
@@ -81,28 +84,30 @@ void Messenger::async_read_file(boost::filesystem::path file_path,
 }
 
 // Send a streambuf message asynchronously
-void Messenger::async_write_steambuf(asio::streambuf &message,
-                                     asio::yield_context yield,
-                                     boost::system::error_code& error) {
+void Messenger::async_write_some_steambuf(bool fin,
+                                          asio::streambuf &message,
+                                          asio::yield_context yield,
+                                          boost::system::error_code &error) {
     // Write the message body
-    stream.async_write(message, yield[error]);
+    stream.async_write_some(fin, message, yield[error]);
 }
 
 // Send a file as a message asynchronously
 void Messenger::async_write_file(boost::filesystem::path file_path,
-                                asio::yield_context yield,
-                                boost::system::error_code& error) {
+                                 asio::yield_context yield,
+                                 boost::system::error_code &error) {
     std::ifstream file;
 
     // Open file and get size
     file.open(file_path.string(), std::fstream::in | std::fstream::binary);
     if (!file) {
-        logger::write("Error opening file: " + file_path.string() + " " + std::strerror(errno), logger::severity_level::error);
+        logger::write("Error opening file: " + file_path.string() + " " + std::strerror(errno),
+                      logger::severity_level::error);
     }
     auto file_size = boost::filesystem::file_size(file_path);
 
     const auto chunk_size = 4096;
-    char buffer[chunk_size];
+    std::array<char, chunk_size> buffer;
     boost::crc_32_type csc_result;
 
     auto bytes_remaining = file_size;
@@ -115,7 +120,7 @@ void Messenger::async_write_file(boost::filesystem::path file_path,
         file.read(buffer_storage, bytes_to_send);
         csc_result.process_bytes(buffer_storage, bytes_to_send);
         bytes_remaining -= bytes_to_send;
-        if(bytes_remaining == 0) {
+        if (bytes_remaining == 0) {
             bool fin = true;
         }
         stream.async_write_some(fin, asio::buffer(buffer, bytes_to_send), yield[error]);
@@ -129,7 +134,8 @@ void Messenger::async_write_file(boost::filesystem::path file_path,
     file.close();
     if (!file) {
         error = boost::system::errc::make_error_code(boost::system::errc::io_error);
-        logger::write("Error closing file: " + file_path.string() + " " + std::strerror(errno), logger::severity_level::error);
+        logger::write("Error closing file: " + file_path.string() + " " + std::strerror(errno),
+                      logger::severity_level::error);
     }
 
     // After we've sent the file we send the checksum
@@ -145,7 +151,7 @@ void Messenger::async_write_file(boost::filesystem::path file_path,
 }
 
 BuilderData Messenger::async_read_builder(asio::yield_context yield,
-                                          boost::system::error_code& error) {
+                                          boost::system::error_code &error) {
     // Read in the serialized builder as a string
     auto serialized_builder = this->async_read_string(yield, error);
     if (error) {
@@ -166,7 +172,7 @@ BuilderData Messenger::async_read_builder(asio::yield_context yield,
 
 void Messenger::async_write_builder(BuilderData builder,
                                     asio::yield_context yield,
-                                    boost::system::error_code& error) {
+                                    boost::system::error_code &error) {
     // Serialize the builder into a string
     std::ostringstream archive_stream;
     boost::archive::text_oarchive archive(archive_stream);
@@ -182,7 +188,7 @@ void Messenger::async_write_builder(BuilderData builder,
 }
 
 ClientData Messenger::async_receive_client_data(asio::yield_context yield,
-                                                boost::system::error_code& error) {
+                                                boost::system::error_code &error) {
     // Read in the serialized client data as a string
     auto serialized_client_data = this->async_read_string(yield, error);
     if (error) {

@@ -7,6 +7,7 @@
 #include <boost/beast/websocket.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/spawn.hpp>
+#include <boost/asio/buffer.hpp>
 #include <boost/process.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
@@ -74,21 +75,22 @@ public:
                         logger::write("launched build process: " + build_command);
 
                         // stream from the async pipe process output to the socket
-                        asio::streambuf buffer;
+                        std::array<char, 4096> buffer;
                         std::size_t read_size = 0;
                         boost::system::error_code stream_error;
                         bool fin = false;
                         do {
                             // Read from the pipe into a buffer
-                            std_pipe.async_read_some(buffer, yield[stream_error]);
+                            auto read_bytes = std_pipe.async_read_some(buffer, yield[stream_error]);
                             if (stream_error != boost::system::errc::success && stream_error != boost::asio::error::eof) {
                                 throw std::runtime_error("reading process pipe failed: " + stream_error.message());
                             }
-                            if(read_size == 0 || stream_error) {
+                            // Wrap it up if we've hit EOF
+                            if(stream_error == boost::asio::error::eof) {
                                 fin = true;
                             }
                             // Write the buffer to our socket
-                            client.async_write_some_streambuf(fin, buffer, yield, error);
+                            client.async_write_some(fin, asio::buffer(buffer, read_bytes), yield, error);
                             if (error) {
                                 throw std::runtime_error("sending process pipe failed: " + error.message());
                             }
@@ -102,9 +104,9 @@ public:
                         // Send the container to the client
                         if (build_code == 0) {
                             logger::write("Build complete, sending container");
-                            client.async_send_file("container.img");
-                            if (client.error) {
-                                throw std::runtime_error("Sending file to client failed: " + client.error.message());
+                            client.async_write_file("container.img", yield, error);
+                            if (error) {
+                                throw std::runtime_error("Sending file to client failed: " + error.message());
                             }
                         } else {
                             throw std::runtime_error("Build failed, not sending container");

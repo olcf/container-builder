@@ -51,7 +51,7 @@ void Messenger::async_read_file(boost::filesystem::path file_path,
 
     // Read file in chunks
     do {
-        auto bytes_read = stream.async_read_some(buffer, chunk_size, yield[error]);
+        auto bytes_read = stream.async_read_some(buffer, yield[error]);
         if (error != beast::errc::success && error != asio::error::eof) {
             logger::write("Error reading file: " + file_path.string() + " " + std::strerror(errno),
                           logger::severity_level::error);
@@ -154,7 +154,7 @@ void Messenger::async_write_file(boost::filesystem::path file_path,
 BuilderData Messenger::async_read_builder(asio::yield_context yield,
                                           boost::system::error_code &error) {
     // Read in the serialized builder as a string
-    auto serialized_builder = this->async_read_string(yield, error);
+    auto serialized_builder = async_read_string(yield, error);
     if (error) {
         error = boost::system::errc::make_error_code(boost::system::errc::io_error);
         logger::write("Received bad builder: " + error.message(), logger::severity_level::error);
@@ -191,7 +191,7 @@ void Messenger::async_write_builder(BuilderData builder,
 ClientData Messenger::async_receive_client_data(asio::yield_context yield,
                                                 boost::system::error_code &error) {
     // Read in the serialized client data as a string
-    auto serialized_client_data = this->async_read_string(yield, error);
+    auto serialized_client_data = async_read_string(yield, error);
     if (error) {
         error = boost::system::errc::make_error_code(boost::system::errc::io_error);
         logger::write("Received bad client data: " + error.message(), logger::severity_level::error);
@@ -245,4 +245,20 @@ void Messenger::async_write_pipe(bp::async_pipe pipe,
             throw std::runtime_error("sending process pipe failed: " + error.message());
         }
     } while (!fin);
+}
+
+//  Print a large message as it arrives to the socket
+void Messenger::async_stream_print(asio::yield_context yield,
+                                 boost::system::error_code& error) {
+    const auto max_read_bytes = 4096;
+    std::array<char, 4096> buffer;
+    do {
+        auto bytes_read = stream.async_read_some(buffer, yield[error]);
+        if (error != beast::errc::success && error != asio::error::eof) {
+            logger::write(std::string() + "Error reading process output: " + std::strerror(errno),
+                          logger::severity_level::error);
+            return;
+        }
+        std::cout.write(buffer.data(), bytes_read);
+    } while (!stream.is_message_done());
 }

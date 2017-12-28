@@ -98,6 +98,9 @@ public:
                           asio::yield_context yield,
                           boost::system::error_code& error);
 
+    void async_stream_print(asio::yield_context yield,
+                          boost::system::error_code& error);
+
 private:
     websocket::stream<tcp::socket> stream;
 };

@@ -1,3 +1,4 @@
+#include "Messenger.h"
 #include <functional>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/spawn.hpp>
@@ -51,15 +52,15 @@ void Messenger::async_read_file(boost::filesystem::path file_path,
 
     // Read file in chunks
     do {
-        auto bytes_read = stream.async_read_some(buffer, yield[error]);
+        auto bytes_read = stream.async_read_some(asio::buffer(buffer), yield[error]);
         if (error != beast::errc::success && error != asio::error::eof) {
             logger::write("Error reading file: " + file_path.string() + " " + std::strerror(errno),
                           logger::severity_level::error);
             file.close();
             return;
         }
-        file.write(buffer, bytes_read);
-        csc_result.process_bytes(buffer, bytes_read);
+        file.write(buffer.data(), bytes_read);
+        csc_result.process_bytes(buffer.data(), bytes_read);
     } while (!stream.is_message_done());
 
     file.close();
@@ -70,9 +71,8 @@ void Messenger::async_read_file(boost::filesystem::path file_path,
     }
 
     // Read remote file checksum and verify
-    auto local_checksum = csc_result.checksum();
-    boost::crc_32_type::value_type remote_checksum;
-    stream.async_read(asio::buffer(&remote_checksum, sizeof(boost::crc_32_type::value_type), yield[error]);
+    auto local_checksum = std::to_string(csc_result.checksum());
+    auto remote_checksum = async_read_string(yield, error);
     if (error) {
         logger::write("Invalid file chunk read: " + error.message(), logger::severity_level::error);
         return;
@@ -82,15 +82,6 @@ void Messenger::async_read_file(boost::filesystem::path file_path,
         logger::write("File checksums do not match, file corrupted!", logger::severity_level::fatal);
         return;
     }
-}
-
-// Send a streambuf message asynchronously
-void Messenger::async_write_some_steambuf(bool fin,
-                                          asio::streambuf &message,
-                                          asio::yield_context yield,
-                                          boost::system::error_code &error) {
-    // Write the message body
-    stream.async_write_some(fin, message, yield[error]);
 }
 
 // Send a file as a message asynchronously
@@ -107,9 +98,8 @@ void Messenger::async_write_file(boost::filesystem::path file_path,
     }
     auto file_size = boost::filesystem::file_size(file_path);
 
-    const auto chunk_size = 4096;
+    const std::size_t chunk_size = 4096;
     std::array<char, chunk_size> buffer;
-    boost::crc_32_type csc_result;
 
     auto bytes_remaining = file_size;
     char buffer_storage[chunk_size];
@@ -122,7 +112,7 @@ void Messenger::async_write_file(boost::filesystem::path file_path,
         csc_result.process_bytes(buffer_storage, bytes_to_send);
         bytes_remaining -= bytes_to_send;
         if (bytes_remaining == 0) {
-            bool fin = true;
+            fin = true;
         }
         stream.async_write_some(fin, asio::buffer(buffer, bytes_to_send), yield[error]);
         if (error != beast::errc::success) {
@@ -141,9 +131,8 @@ void Messenger::async_write_file(boost::filesystem::path file_path,
 
     // After we've sent the file we send the checksum
     // This would make more logical sense in the header but would require us to traverse a potentialy large file twice
-    auto checksum = csc_result.checksum();
-    auto checksum_size = sizeof(boost::crc_32_type::value_type);
-    stream.async_write(asio::buffer(&checksum, checksum_size), yield[error]);
+    auto checksum = std::to_string(csc_result.checksum());
+    async_write_string(checksum, yield, error);
     if (error) {
         error = boost::system::errc::make_error_code(boost::system::errc::io_error);
         logger::write("Bad file checksum send: " + error.message(), logger::severity_level::error);
@@ -180,7 +169,7 @@ void Messenger::async_write_builder(BuilderData builder,
     archive << builder;
     auto serialized_builder = archive_stream.str();
 
-    this->async_write_string(serialized_builder);
+    async_write_string(serialized_builder, yield, error);
     if (error) {
         error = boost::system::errc::make_error_code(boost::system::errc::io_error);
         logger::write("Error sending builder: " + error.message(), logger::severity_level::error);
@@ -188,7 +177,7 @@ void Messenger::async_write_builder(BuilderData builder,
     }
 }
 
-ClientData Messenger::async_receive_client_data(asio::yield_context yield,
+ClientData Messenger::async_read_client_data(asio::yield_context yield,
                                                 boost::system::error_code &error) {
     // Read in the serialized client data as a string
     auto serialized_client_data = async_read_string(yield, error);
@@ -208,14 +197,16 @@ ClientData Messenger::async_receive_client_data(asio::yield_context yield,
     return client_data;
 }
 
-void Messenger::async_write_client_data(ClientData client_data) {
+void Messenger::async_write_client_data(ClientData client_data,
+                                        asio::yield_context yield,
+                      boost::system::error_code &error) {
     // Serialize the client data into a string
     std::ostringstream archive_stream;
     boost::archive::text_oarchive archive(archive_stream);
     archive << client_data;
     auto serialized_client_data = archive_stream.str();
 
-    this->async_send_string(serialized_client_data);
+    async_write_string(serialized_client_data, yield, error);
     if (error) {
         error = boost::system::errc::make_error_code(boost::system::errc::io_error);
         logger::write("Error sending client data: " + error.message(), logger::severity_level::error);
@@ -223,7 +214,7 @@ void Messenger::async_write_client_data(ClientData client_data) {
     }
 }
 
-void Messenger::async_write_pipe(bp::async_pipe pipe,
+void Messenger::async_write_pipe(bp::async_pipe& pipe,
                       asio::yield_context yield,
                       boost::system::error_code &error) {
     std::array<char, 4096> buffer;
@@ -231,7 +222,7 @@ void Messenger::async_write_pipe(bp::async_pipe pipe,
     bool fin = false;
     do {
         // Read from the pipe into a buffer
-        auto read_bytes = pipe.async_read_some(buffer, yield[stream_error]);
+        auto read_bytes = pipe.async_read_some(asio::buffer(buffer), yield[stream_error]);
         if (stream_error != boost::system::errc::success && stream_error != boost::asio::error::eof) {
             throw std::runtime_error("reading process pipe failed: " + stream_error.message());
         }
@@ -239,8 +230,8 @@ void Messenger::async_write_pipe(bp::async_pipe pipe,
         if (stream_error == boost::asio::error::eof) {
             fin = true;
         }
-        // Write the buffer to our socket
-        stream.async_write_some(fin, asio::buffer(buffer.data(), read_bytes), yield, error);
+        // Write read_bytes of the buffer to our socket
+        stream.async_write_some(fin, asio::buffer(buffer.data(), read_bytes), yield[error]);
         if (error) {
             throw std::runtime_error("sending process pipe failed: " + error.message());
         }
@@ -251,9 +242,9 @@ void Messenger::async_write_pipe(bp::async_pipe pipe,
 void Messenger::async_stream_print(asio::yield_context yield,
                                  boost::system::error_code& error) {
     const auto max_read_bytes = 4096;
-    std::array<char, 4096> buffer;
+    std::array<char, max_read_bytes> buffer;
     do {
-        auto bytes_read = stream.async_read_some(buffer, yield[error]);
+        auto bytes_read = stream.async_read_some(asio::buffer(buffer), yield[error]);
         if (error != beast::errc::success && error != asio::error::eof) {
             logger::write(std::string() + "Error reading process output: " + std::strerror(errno),
                           logger::severity_level::error);

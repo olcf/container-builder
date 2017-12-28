@@ -51,8 +51,8 @@ public:
 
     // Create a server messenger by doing an async block give the socket
     // The messenger will assume ownership of the socket
-    explicit Messenger(tcp::acceptor& acceptor,
-            asio::io_service &io_service,
+    explicit Messenger(tcp::acceptor &acceptor,
+                       asio::io_service &io_service,
                        asio::yield_context yield,
                        boost::system::error_code error) : stream(io_service) {
         acceptor.async_accept(stream.next_layer(), yield[error]);
@@ -60,47 +60,42 @@ public:
     }
 
     std::string async_read_string(asio::yield_context yield,
-                           boost::system::error_code& error);
+                                  boost::system::error_code &error);
 
     void async_write_string(const std::string &message,
-                    asio::yield_context yield,
-                    boost::system::error_code& error);
-
-    void async_write_some_streambuf(bool fin,
-            asio::streambuf &message,
-                    asio::yield_context yield,
-                    boost::system::error_code& error);
+                            asio::yield_context yield,
+                            boost::system::error_code &error);
 
     void async_read_file(boost::filesystem::path file_path,
-                            asio::yield_context yield,
-                            boost::system::error_code& error);
+                         asio::yield_context yield,
+                         boost::system::error_code &error);
 
     void async_write_file(boost::filesystem::path file_path,
-                         asio::yield_context yield,
-                         boost::system::error_code& error);
+                          asio::yield_context yield,
+                          boost::system::error_code &error);
 
     BuilderData async_read_builder(asio::yield_context yield,
-                                      boost::system::error_code& error);
+                                   boost::system::error_code &error);
 
     void async_write_builder(BuilderData builder,
-                    asio::yield_context yield,
-                    boost::system::error_code& error);
+                             asio::yield_context yield,
+                             boost::system::error_code &error);
 
     ClientData async_read_client_data(asio::yield_context yield,
-                                         boost::system::error_code& error);
+                                      boost::system::error_code &error);
 
     void async_write_client_data(ClientData client_data,
-                    asio::yield_context yield,
-                    boost::system::error_code& error);
+                                 asio::yield_context yield,
+                                 boost::system::error_code &error);
 
 
-    void async_write_pipe(bp::async_pipe& pipe,
+    void async_write_pipe(bp::async_pipe &pipe,
                           asio::yield_context yield,
-                          boost::system::error_code& error);
+                          boost::system::error_code &error);
 
     void async_stream_print(asio::yield_context yield,
-                          boost::system::error_code& error);
+                            boost::system::error_code &error);
 
 private:
-    websocket::stream<tcp::socket> stream;
+    websocket::stream <tcp::socket> stream;
 };

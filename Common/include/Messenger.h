@@ -9,17 +9,15 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
 #include <iostream>
-//#include <boost/archive/text_iarchive.hpp>
-//#include <boost/archive/text_oarchive.hpp>
 #include "BuilderData.h"
-//#include <boost/progress.hpp>
-//#include <boost/crc.hpp>
 #include <memory.h>
 #include "Logger.h"
 #include "ClientData.h"
+#include <boost/process.hpp>
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
+namespace bp = boost::process;
 namespace beast = boost::beast;
 namespace websocket = beast::websocket;
 
@@ -79,8 +77,7 @@ public:
 
     void async_write_file(boost::filesystem::path file_path,
                          asio::yield_context yield,
-                         boost::system::error_code& error,
-    );
+                         boost::system::error_code& error);
 
     BuilderData async_read_builder(asio::yield_context yield,
                                       boost::system::error_code& error);
@@ -95,6 +92,11 @@ public:
     void async_write_client_data(ClientData client_data,
                     asio::yield_context yield,
                     boost::system::error_code& error);
+
+
+    void async_write_pipe(bp::async_pipe& pipe,
+                          asio::yield_context yield,
+                          boost::system::error_code& error);
 
 private:
     websocket::stream<tcp::socket> stream;

@@ -11,6 +11,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include "Builder.h"
 
+
 namespace asio = boost::asio;
 using asio::ip::tcp;
 
@@ -220,4 +221,28 @@ void Messenger::async_write_client_data(ClientData client_data) {
         logger::write("Error sending client data: " + error.message(), logger::severity_level::error);
         return;
     }
+}
+
+void Messenger::async_write_pipe(bp::async_pipe pipe,
+                      asio::yield_context yield,
+                      boost::system::error_code &error) {
+    std::array<char, 4096> buffer;
+    boost::system::error_code stream_error;
+    bool fin = false;
+    do {
+        // Read from the pipe into a buffer
+        auto read_bytes = pipe.async_read_some(buffer, yield[stream_error]);
+        if (stream_error != boost::system::errc::success && stream_error != boost::asio::error::eof) {
+            throw std::runtime_error("reading process pipe failed: " + stream_error.message());
+        }
+        // Wrap it up if we've hit EOF on our process output
+        if (stream_error == boost::asio::error::eof) {
+            fin = true;
+        }
+        // Write the buffer to our socket
+        stream.async_write_some(fin, asio::buffer(buffer.data(), read_bytes), yield, error);
+        if (error) {
+            throw std::runtime_error("sending process pipe failed: " + error.message());
+        }
+    } while (!fin);
 }

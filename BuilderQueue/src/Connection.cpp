@@ -24,9 +24,11 @@ void Connection::checkout_builder(asio::yield_context yield, std::error_code &er
 
     // Wait on connection to finish
     logger::write("Sent builder: " + builder.id + "(" + builder.host + ")");
-    std::string complete = messenger.async_read_string(yield, error);
-    if (error || complete != "checkout_builder_complete") {
-        logger::write("Failed to receive completion message from client" + error.message());
+
+    // Wait on client to close the connection after it's done with the builder resource
+    messenger.async_wait_for_close(yield, error);
+    if(error) {
+        logger::write("Failed to cleanly close messenger: " + error.message());
         return;
     }
 

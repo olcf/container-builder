@@ -264,3 +264,27 @@ void Messenger::async_stream_print(asio::yield_context yield,
         std::cout.write(buffer.data(), bytes_read);
     } while (!stream.is_message_done());
 }
+
+void Messenger::async_close_connection(beast::websocket::close_code close_code,
+                            asio::yield_context yield,
+                            std::error_code &error) {
+    beast::error_code close_error;
+    stream.async_close(close_code, yield[close_error]);
+    if(close_error) {
+        logger::write(std::string() + "Error closing websocket: " + close_error.message());
+        error = std::error_code(close_error.value(), std::generic_category());
+        return;
+    }
+}
+
+void Messenger::async_wait_for_close(asio::yield_context yield,
+                          std::error_code &error) {
+    beast::error_code close_error;
+    beast::flat_buffer dummy_buffer;
+    stream.async_read(dummy_buffer, yield[close_error]);
+    if(close_error != websocket::error::closed) {
+        logger::write(std::string() + "Error closing websocket: expected websocket::error::closed but got " + close_error.message());
+        error = std::error_code(close_error.value(), std::generic_category());
+        return;
+    }
+}

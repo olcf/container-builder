@@ -77,6 +77,13 @@ Builder::Builder() {
                     } else {
                         throw std::runtime_error("Build failed, not sending container");
                     }
+
+                    // Close connection cleanly
+                    client.async_wait_for_close(yield, error);
+                    if(error) {
+                        logger::write("Failed to cleanly close messenger: " + error.message());
+                        return;
+                    }
                 });
 
 }

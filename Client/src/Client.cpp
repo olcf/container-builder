@@ -51,10 +51,18 @@ Client::Client(int argc, char **argv) {
 
                     logger::write("Container received: " + container_path, logger::severity_level::success);
 
-                    queue_messenger.async_write_string("checkout_builder_complete", yield, error);
-                    if (error) {
-                        throw std::runtime_error("Error ending build!");
+                    // Close messengers cleanly
+                    builder_messenger.async_close_connection(websocket::close_code::normal, yield, error);
+                    if(error) {
+                        logger::write("Failed to cleanly close builder messenger");
+                        return;
                     }
+                    queue_messenger.async_close_connection(websocket::close_code::normal, yield, error);
+                    if(error) {
+                        logger::write("Failed to cleanly close queue messenger");
+                        return;
+                    }
+
                 });
 }
 

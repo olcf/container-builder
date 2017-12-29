@@ -123,8 +123,9 @@ Messenger Client::connect_to_queue(asio::yield_context yield) {
     if (error) {
         wait_queue.stop("Failed\n", logger::severity_level::fatal);
         throw std::runtime_error("The ContainerBuilder queue is currently unreachable.");
+    } else {
+        wait_queue.stop("Connected to queue: " + queue_host + ":" + queue_port, logger::severity_level::success);
     }
-    wait_queue.stop("Connected to queue: " + queue_host + ":" + queue_port, logger::severity_level::success);
 
     return queue_messenger;
 }

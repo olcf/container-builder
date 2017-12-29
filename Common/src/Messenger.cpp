@@ -227,23 +227,22 @@ void Messenger::async_write_pipe(bp::async_pipe &pipe,
     boost::system::error_code process_error;
     do {
         // Read from the pipe into a buffer
-        auto read_bytes = pipe.async_read_some(asio::buffer(buffer), yield[process_error]);
-        if (process_error && process_error != boost::asio::error::eof) {
-            logger::write("reading process pipe failed: " + process_error.message());
-            error = std::error_code(process_error.value(), std::generic_category());
-            return;
-        }
-        // Wrap it up if we've hit EOF on our process output
-        if (process_error == boost::asio::error::eof) {
+        auto bytes_read = pipe.async_read_some(asio::buffer(buffer), yield[process_error]);
+        if (process_error) {
+            if (process_error != boost::asio::error::eof) {
+                logger::write("reading process pipe failed: " + process_error.message());
+                error = std::error_code(process_error.value(), std::generic_category());
+            }
             fin = true;
         }
+
         // Write read_bytes of the buffer to our socket
         beast::error_code write_error;
-        stream.async_write_some(fin, asio::buffer(buffer.data(), read_bytes), yield[write_error]);
+        stream.async_write_some(fin, asio::buffer(buffer.data(), bytes_read, yield[write_error]);
         if (write_error) {
             logger::write("sending process pipe failed: " + write_error.message());
             error = std::error_code(write_error.value(), std::generic_category());
-            return;
+            fin = true;
         }
     } while (!fin);
 }

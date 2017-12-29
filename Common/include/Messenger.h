@@ -38,15 +38,15 @@ public:
         } while (connect_error);
 
         if(connect_error) {
-            logger::write("error with async_connect: " + connect_error.message(), logger::severity_level::error);
+            logger::write("Initial connection failed: " + connect_error.message(), logger::severity_level::error);
             error = std::error_code(connect_error.value(), connect_error.category());
             return;
         }
 
         beast::error_code handshake_error;
-        stream.async_handshake(host, "/", yield[handshake_error]);
+        stream.async_handshake(host + ":" + port, "/", yield[handshake_error]);
         if(handshake_error) {
-            logger::write("Handshake failed: " + handshake_error.message(), logger::severity_level::error);
+            logger::write("WebSocket handshake failed: " + handshake_error.message(), logger::severity_level::error);
             error = std::error_code(handshake_error.value(), handshake_error.category());
             return;
         }
@@ -65,7 +65,14 @@ public:
         boost::system::error_code accept_error;
         acceptor.async_accept(stream.next_layer(), yield[accept_error]);
         if(accept_error) {
-            logger::write("error with async_connect: " + accept_error.message(), logger::severity_level::error);
+            logger::write("Initial connection failed: " + accept_error.message(), logger::severity_level::error);
+            error = std::error_code(accept_error.value(), accept_error.category());
+            return;
+        }
+
+        stream.async_accept(yield[accept_error]);
+        if(accept_error) {
+            logger::write("WebSocket handshake failed: " + accept_error.message(), logger::severity_level::error);
             error = std::error_code(accept_error.value(), accept_error.category());
             return;
         }
@@ -81,6 +88,13 @@ public:
 
         boost::system::error_code accept_error;
         acceptor.async_accept(stream.next_layer(), yield[accept_error]);
+        if(accept_error) {
+            logger::write("error with async_connect: " + accept_error.message(), logger::severity_level::error);
+            error = std::error_code(accept_error.value(), accept_error.category());
+            return;
+        }
+
+        stream.async_accept(yield[accept_error]);
         if(accept_error) {
             logger::write("error with async_connect: " + accept_error.message(), logger::severity_level::error);
             error = std::error_code(accept_error.value(), accept_error.category());

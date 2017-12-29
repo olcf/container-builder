@@ -16,7 +16,7 @@ std::string Messenger::async_read_string(asio::yield_context yield,
     stream.async_read(buffer, yield[read_error]);
     if(read_error) {
         logger::write("Failed to read string: " + read_error.message(), logger::severity_level::error);
-        error = std::error_code(read_error.value(), read_error.category());
+        error = std::error_code(read_error.value(), std::generic_category());
         return message;
     }
     return message;
@@ -30,7 +30,7 @@ void Messenger::async_write_string(const std::string &message,
     stream.async_write(asio::buffer(message), yield[write_error]);
     if(write_error) {
         logger::write("Failed to write string: " + write_error.message());
-        error = std::error_code(write_error.value(), write_error.category());
+        error = std::error_code(write_error.value(), std::generic_category());
         return;
     }
 }
@@ -59,7 +59,7 @@ void Messenger::async_read_file(boost::filesystem::path file_path,
         auto bytes_read = stream.async_read_some(asio::buffer(buffer), yield[read_error]);
         if (read_error && read_error != asio::error::eof) {
             logger::write("Error file chunk read: " + read_error.message(), logger::severity_level::error);
-            error = std::error_code(read_error.value(), read_error.category());
+            error = std::error_code(read_error.value(), std::generic_category());
             file.close();
             return;
         }
@@ -125,8 +125,8 @@ void Messenger::async_write_file(boost::filesystem::path file_path,
         }
         stream.async_write_some(fin, asio::buffer(buffer, bytes_to_send), yield[write_error]);
         if (write_error) {
-            logger::write("Bad file chunk send: " + write_error.message(), logger::severity_level::error);
-            error = std::error_code(write_error.value(), write_error.category());
+            logger::write("Error file chunk write: " + write_error.message(), logger::severity_level::error);
+            error = std::error_code(write_error.value(), std::generic_category());
             return;
         }
 
@@ -231,7 +231,7 @@ void Messenger::async_write_pipe(bp::async_pipe &pipe,
         auto read_bytes = pipe.async_read_some(asio::buffer(buffer), yield[process_error]);
         if (process_error && process_error != boost::asio::error::eof) {
             logger::write("reading process pipe failed: " + process_error.message());
-            error = std::error_code(process_error.value(), process_error.category());
+            error = std::error_code(process_error.value(), std::generic_category());
             return;
         }
         // Wrap it up if we've hit EOF on our process output
@@ -243,7 +243,7 @@ void Messenger::async_write_pipe(bp::async_pipe &pipe,
         stream.async_write_some(fin, asio::buffer(buffer.data(), read_bytes), yield[write_error]);
         if (write_error) {
             logger::write("sending process pipe failed: " + write_error.message());
-            error = std::error_code(write_error.value(), write_error.category());
+            error = std::error_code(write_error.value(), std::generic_category());
             return;
         }
     } while (!fin);
@@ -259,7 +259,7 @@ void Messenger::async_stream_print(asio::yield_context yield,
         auto bytes_read = stream.async_read_some(asio::buffer(buffer), yield[read_error]);
         if (read_error && read_error != asio::error::eof) {
             logger::write(std::string() + "Error reading process output: " + read_error.message());
-            error = std::error_code(read_error.value(), read_error.category());
+            error = std::error_code(read_error.value(), std::generic_category());
             return;
         }
         std::cout.write(buffer.data(), bytes_read);

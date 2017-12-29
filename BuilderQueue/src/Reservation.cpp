@@ -12,7 +12,7 @@ void Reservation::async_wait(asio::yield_context yield, std::error_code &error) 
         ready_timer.async_wait(yield[wait_error]);
         if (wait_error != asio::error::operation_aborted) {
             logger::write("Error in reservation async_wait" + error.message());
-            error = std::error_code(wait_error.value(), wait_error.category());
+            error = std::error_code(wait_error.value(), std::generic_category());
             return;
         }
     }

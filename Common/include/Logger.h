@@ -43,7 +43,7 @@ namespace logger {
     void write(const std::string &message, severity_level severity=severity_level::info);
 
     // Write a log mesage with socket information appended
-    void write(const tcp::socket &socket, const std::string &message, severity_level severity=severity_level::info);
+//    void write(const tcp::socket &socket, const std::string &message, severity_level severity=severity_level::info);
 
     BOOST_LOG_GLOBAL_LOGGER(global_log, src::severity_logger<severity_level>)
 }

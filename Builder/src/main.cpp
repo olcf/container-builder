@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
         logger::write("Unknown exception caught!", logger::severity_level::fatal);
     }
 
-    logger::write("BuilderData shutting down");
+    logger::write("Builder shutting down");
 
     return 0;
 }

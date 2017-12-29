@@ -12,7 +12,7 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(logger::global_log, src::severity_logger<logger::se
     console_sink->set_formatter(&color_log_severity);
 #else
     // Log to a file, we don't want the log full of color sequence characters so we use a simple formatting
-    logging::add_file_log("ContainerBuilder.log",
+    logging::add_file_log(keywords::file_name = "ContainerBuilder.log",
                           keywords::auto_flush = true,
                           keywords::open_mode = (std::ios::out | std::ios::app),
                           keywords::format = "%TimeStamp% [%Severity%]: %Message%");
@@ -29,7 +29,7 @@ void logger::write(const std::string &message, severity_level severity) {
         std::cerr << "Error writing message: " << message << std::endl;
     }
 }
-
+/*
 void logger::write(const tcp::socket &socket, const std::string &message, severity_level severity) {
     try {
         auto &lg = global_log::get();
@@ -44,7 +44,7 @@ void logger::write(const tcp::socket &socket, const std::string &message, severi
         std::cerr << "Error writing message: " << message << std::endl;
     }
 }
-
+*/
 // Custom formatter to color text output to console based on severity level
 void logger::color_log_severity(logging::record_view const &rec, logging::formatting_ostream &strm) {
     // Add color based on severity

@@ -31,7 +31,7 @@ namespace OpenStackBuilder {
         asio::async_read(std_pipe, buffer, yield[read_error]);
         if (read_error != asio::error::eof) {
             logger::write("OpenStack destroy error: " + error.message());
-            error = std::error_code(read_error.value(), read_error.category());
+            error = std::error_code(read_error.value(), std::generic_category());
             return builders;
         }
 
@@ -104,7 +104,7 @@ namespace OpenStackBuilder {
         boost::asio::async_read(std_pipe, buffer, yield[read_error]);
         if (read_error != asio::error::eof) {
             logger::write("OpenStack create error: " + read_error.message());
-            error = std::error_code(read_error.value(), read_error.category());
+            error = std::error_code(read_error.value(), std::generic_category());
             return;
         }
 
@@ -140,7 +140,7 @@ namespace OpenStackBuilder {
         boost::asio::async_read(std_pipe, buffer, yield[read_error]);
         if (read_error != asio::error::eof) {
             logger::write("OpenStack destroy error: " + read_error.message());
-            error = std::error_code(read_error.value(), read_error.category());
+            error = std::error_code(read_error.value(), std::generic_category());
             return;
         }
 

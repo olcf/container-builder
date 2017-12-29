@@ -37,9 +37,13 @@ Client::Client(int argc, char **argv) {
                         throw std::runtime_error("Error sending definition file to builder: " + error.message());
                     }
 
+                    // Stream the builder output
                     builder_messenger.async_stream_print(yield, error);
+                    if (error) {
+                        throw std::runtime_error("Error streaming builder output: " + error.message());
+                    }
 
-
+                    // Read the container from the builder
                     builder_messenger.async_read_file(container_path, yield, error);
                     if (error) {
                         throw std::runtime_error("Error downloading container image: " + error.message());
@@ -124,7 +128,7 @@ Messenger Client::connect_to_queue(asio::yield_context yield) {
         wait_queue.stop("Failed\n", logger::severity_level::fatal);
         throw std::runtime_error("The ContainerBuilder queue is currently unreachable.");
     } else {
-        wait_queue.stop("Connected to queue: " + queue_host + ":" + queue_port, logger::severity_level::success);
+        wait_queue.stop("Connected to queue: " + queue_host, logger::severity_level::success);
     }
 
     return queue_messenger;
@@ -156,7 +160,7 @@ Messenger Client::connect_to_builder(Messenger &queue_messenger, asio::yield_con
         throw std::runtime_error("Failed to connect to builder!");
     }
 
-    wait_builder.stop("", logger::severity_level::success);
+    wait_builder.stop("Connected to builder: " + builder.host, logger::severity_level::success);
     return builder_messenger;
 }
 

@@ -5,6 +5,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include "Builder.h"
+#include <system_error>
 
 // Read a string message asynchronously
 std::string Messenger::async_read_string(asio::yield_context yield,
@@ -14,7 +15,7 @@ std::string Messenger::async_read_string(asio::yield_context yield,
     beast::error_code read_error;
     stream.async_read(buffer, yield[read_error]);
     if(read_error) {
-        logger::write("Failed to read string: " + read_error.message());
+        logger::write("Failed to read string: " + read_error.message(), logger::severity_level::error);
         error = std::error_code(read_error.value(), read_error.category());
         return message;
     }
@@ -78,12 +79,12 @@ void Messenger::async_read_file(boost::filesystem::path file_path,
     auto local_checksum = std::to_string(csc_result.checksum());
     auto remote_checksum = async_read_string(yield, error);
     if (error) {
-        logger::write("Invalid file chunk read: " + error.message(), logger::severity_level::error);
+        logger::write("Error reading remote checksum: " + error.message(), logger::severity_level::error);
         return;
     }
     if (local_checksum != remote_checksum) {
-        logger::write("File checksums do not match, file corrupted!", logger::severity_level::fatal);
-        error = std::error_code(errno, std::generic_category());
+        logger::write("File checksums do not match: " + local_checksum + " != " + remote_checksum, logger::severity_level::fatal);
+        error = std::error_code(EILSEQ, std::generic_category());
         return;
     }
 }
@@ -144,7 +145,7 @@ void Messenger::async_write_file(boost::filesystem::path file_path,
     auto checksum = std::to_string(csc_result.checksum());
     async_write_string(checksum, yield, error);
     if (error) {
-        logger::write("Bad file checksum send: " + error.message(), logger::severity_level::error);
+        logger::write("Error sending file checksum:: " + error.message(), logger::severity_level::error);
         return;
     }
 }

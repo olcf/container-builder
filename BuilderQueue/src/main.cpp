@@ -21,13 +21,17 @@ int main(int argc, char *argv[]) {
                     std::error_code error;
                     tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), 8080));
                     for (;;) {
-                        // Wait for new connections
-                        Messenger messenger(acceptor, yield, error);
-                        if (error) {
-                            logger::write("Error accepting new connection");
-                        } else {
-                            // Create a new connection and give it our messenger
-                            std::make_shared<Connection>(builder_queue, std::move(messenger))->start(io_context);
+                        try {
+                            // Wait for new connections
+                            Messenger messenger(acceptor, yield, error);
+                            if (error) {
+                                logger::write("Error accepting new connection");
+                            } else {
+                                // Create a new connection and give it our messenger
+                                std::make_shared<Connection>(builder_queue, std::move(messenger))->start(io_context);
+                            }
+                        } catch (...) {
+                            logger::write("Unknown connection exception", logger::severity_level::error);
                         }
                     }
                 });
@@ -39,7 +43,7 @@ int main(int argc, char *argv[]) {
                         try {
                             builder_queue.tick(yield);
                         } catch (...) {
-                            logger::write("Unknown queue tick exception");
+                            logger::write("Unknown queue tick exception", logger::severity_level::error);
                         }
                     }
                 });
@@ -49,7 +53,7 @@ int main(int argc, char *argv[]) {
         try {
             io_context.run();
         } catch (...) {
-            logger::write("Unknown io_service exception during run");
+            logger::write("Unknown io_service exception during run", logger::severity_level::error);
         }
     }
 

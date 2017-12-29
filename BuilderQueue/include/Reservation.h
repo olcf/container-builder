@@ -29,7 +29,7 @@ public:
     }
 
     // Create an infinite timer that will be cancelled by the queue when the job is ready
-    void async_wait(asio::yield_context yield, boost::system::error_code &error);
+    void async_wait(asio::yield_context yield, std::error_code &error);
 
     // Callback used by BuilderQueue to cancel the timer which signals our reservation is ready
     void ready(BuilderData acquired_builder);

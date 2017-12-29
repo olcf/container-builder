@@ -17,7 +17,7 @@ public:
         reservation.set_request_complete();
     }
 
-    BuilderData async_wait(asio::yield_context yield, boost::system::error_code &error);
+    BuilderData async_wait(asio::yield_context yield, std::error_code &error);
 
 private:
     BuilderQueue &queue;

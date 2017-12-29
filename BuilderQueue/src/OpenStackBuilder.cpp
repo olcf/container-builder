@@ -42,6 +42,7 @@ namespace OpenStackBuilder {
         if (exit_code != 0) {
             logger::write("Failed to fetch server list");
             error = std::error_code(exit_code, std::generic_category());
+            return builders;
         }
 
         // Read the json output into a property tree
@@ -75,7 +76,8 @@ namespace OpenStackBuilder {
             }
         } catch (const pt::ptree_error &e) {
             logger::write(std::string() + "Error parsing builders: " + e.what());
-            error = std::error_code(EDOM, std::generic_category());
+            error = std::error_code(EBADMSG, std::generic_category());
+            return builders;
         }
 
         return builders;
@@ -112,7 +114,8 @@ namespace OpenStackBuilder {
 
         if (exit_code != 0) {
             logger::write("Error in making call to RequestBuilder");
-            error = std::error_code(EDOM, std::generic_category());
+            error = std::error_code(EBADMSG, std::generic_category());
+            return;
         }
     }
 
@@ -148,6 +151,7 @@ namespace OpenStackBuilder {
         if (exit_code != 0) {
             logger::write("BuilderData with ID " + builder.id + " failed to be destroyed");
             error = std::error_code(EDOM, std::generic_category());
+            return;
         }
     }
 }

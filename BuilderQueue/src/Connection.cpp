@@ -3,7 +3,7 @@
 #include <boost/asio/spawn.hpp>
 
 // Handle a client builder request
-void Connection::checkout_builder(asio::yield_context yield, boost::system::error_code &error) {
+void Connection::checkout_builder(asio::yield_context yield, std::error_code &error) {
     logger::write("Checkout resource request");
 
     // Request a builder
@@ -42,7 +42,7 @@ void Connection::start(asio::io_context &io_context) {
 
         asio::spawn(io_context,
                     [this, self](asio::yield_context yield) {
-                        boost::system::error_code error;
+                        std::error_code error;
                         auto request = messenger.async_read_string(yield, error);
                         if (error) {
                             logger::write("Request failure" + error.message());

@@ -23,7 +23,7 @@ Client::Client(int argc, char **argv) {
 
                     auto builder_messenger = connect_to_builder(queue_messenger, yield);
 
-                    boost::system::error_code error;
+                    std::error_code error;
 
                     // Send client data to builder
                     builder_messenger.async_write_client_data(client_data(), yield, error);
@@ -118,7 +118,7 @@ Messenger Client::connect_to_queue(asio::yield_context yield) {
     // Start waiting animation
     WaitingAnimation wait_queue("Connecting to BuilderQueue: ");
 
-    boost::system::error_code error;
+    std::error_code error;
     Messenger queue_messenger(io_context, queue_host, queue_port, yield, error);
     if (error) {
         wait_queue.stop("Failed\n", logger::severity_level::fatal);
@@ -133,7 +133,7 @@ Messenger Client::connect_to_queue(asio::yield_context yield) {
 Messenger Client::connect_to_builder(Messenger &queue_messenger, asio::yield_context yield) {
     WaitingAnimation wait_builder("Requesting BuilderData: ");
 
-    boost::system::error_code error;
+    std::error_code error;
 
     // Request a builder from the queue
     queue_messenger.async_write_string("checkout_builder_request", yield, error);

@@ -6,7 +6,7 @@ Builder::Builder() {
     // Full build connection - this will not run until the io_service is started
     asio::spawn(io_context,
                 [&](asio::yield_context yield) {
-                    boost::system::error_code error;
+                    std::error_code error;
                     Messenger client(io_context, "8080", yield, error);
                     if (error) {
                         throw std::runtime_error("Error connecting to client: " + error.message());
@@ -51,11 +51,10 @@ Builder::Builder() {
                     build_command += "/usr/local/bin/singularity build ./container.img ./container.def";
 
                     bp::group group;
-                    std::error_code build_ec;
                     bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe,
-                                          group, build_ec);
-                    if (build_ec) {
-                        throw std::runtime_error("subprocess error: " + build_ec.message());
+                                          group, error);
+                    if (error) {
+                        throw std::runtime_error("subprocess error: " + error.message());
                     }
 
                     logger::write("launched build process: " + build_command);

@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     // Wait for connections from either Clients or Builders
     asio::spawn(io_context,
                 [&](asio::yield_context yield) {
-                    boost::system::error_code error;
+                    std::error_code error;
                     tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), 8080));
                     for (;;) {
                         // Wait for new connections

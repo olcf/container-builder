@@ -22,5 +22,5 @@ private:
     BuilderQueue &queue;
     Messenger messenger;
 
-    void checkout_builder(asio::yield_context yield, boost::system::error_code &error);
+    void checkout_builder(asio::yield_context yield, std::error_code &error);
 };

@@ -5,7 +5,7 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(logger::global_log, src::severity_logger<logger::se
     // Global logger object
     src::severity_logger<logger::severity_level> lg;
     // Register the severity attribute
-    boost::log::register_simple_formatter_factory<boost::log::trivial::severity_level, char>("Severity");
+    boost::log::register_simple_formatter_factory<logger::severity_level, char>("Severity");
 #ifdef LOG_TO_CONSOLE
     // Define a sink to std::cerr and format it with color
     auto console_sink = logging::add_console_log(std::cerr);

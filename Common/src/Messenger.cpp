@@ -109,7 +109,6 @@ void Messenger::async_write_file(boost::filesystem::path file_path,
     std::array<char, chunk_size> buffer;
 
     auto bytes_remaining = file_size;
-    char buffer_storage[chunk_size];
     boost::crc_32_type csc_result;
     bool fin = false;
 
@@ -117,20 +116,20 @@ void Messenger::async_write_file(boost::filesystem::path file_path,
     beast::error_code write_error;
     do {
         auto bytes_to_send = std::min(bytes_remaining, chunk_size);
-        file.read(buffer_storage, bytes_to_send);
-        csc_result.process_bytes(buffer_storage, bytes_to_send);
+        file.read(buffer.data(), bytes_to_send);
+        csc_result.process_bytes(buffer.data(), bytes_to_send);
         bytes_remaining -= bytes_to_send;
         if (bytes_remaining == 0) {
             fin = true;
         }
-        stream.async_write_some(fin, asio::buffer(buffer, bytes_to_send), yield[write_error]);
+        stream.async_write_some(fin, asio::buffer(buffer.data(), bytes_to_send), yield[write_error]);
         if (write_error) {
             logger::write("Error file chunk write: " + write_error.message(), logger::severity_level::error);
             error = std::error_code(write_error.value(), std::generic_category());
             return;
         }
 
-    } while (bytes_remaining);
+    } while (!fin);
 
     file.close();
     if (!file) {

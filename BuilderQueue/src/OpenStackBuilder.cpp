@@ -9,7 +9,9 @@ namespace pt = boost::property_tree;
 
 namespace OpenStackBuilder {
     std::set<BuilderData>
-    get_builders(asio::io_context &io_context, asio::yield_context yield, boost::system::error_code &error) {
+    get_builders(asio::io_context &io_context, asio::yield_context yield, std::error_code &error) {
+        std::set<BuilderData> builders;
+
         std::string list_command("/usr/local/bin/GetBuilders");
         bp::group group;
         bp::async_pipe std_pipe(io_context);
@@ -20,13 +22,17 @@ namespace OpenStackBuilder {
         bp::child list_child(list_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group,
                              list_error);
         if (list_error) {
-            logger::write("subprocess error: " + error.message());
+            error = list_error;
+            return builders;
         }
 
         // Read the list command output until we reach EOF, which is returned as an error
-        asio::async_read(std_pipe, buffer, yield[error]);
-        if (error != asio::error::eof) {
+        boost::system::error_code read_error;
+        asio::async_read(std_pipe, buffer, yield[read_error]);
+        if (read_error != asio::error::eof) {
             logger::write("OpenStack destroy error: " + error.message());
+            error = std::error_code(read_error.value(), read_error.category());
+            return builders;
         }
 
         // Grab exit code from destroy command
@@ -35,6 +41,7 @@ namespace OpenStackBuilder {
 
         if (exit_code != 0) {
             logger::write("Failed to fetch server list");
+            error = std::error_code(exit_code, std::generic_category());
         }
 
         // Read the json output into a property tree
@@ -55,7 +62,6 @@ namespace OpenStackBuilder {
         pt::read_json(is_buffer, builder_tree);
 
         // Fill a set of builders from the property tree data
-        std::set<BuilderData> builders;
         try {
             for (const auto &builder_node : builder_tree) {
                 BuilderData builder;
@@ -69,12 +75,13 @@ namespace OpenStackBuilder {
             }
         } catch (const pt::ptree_error &e) {
             logger::write(std::string() + "Error parsing builders: " + e.what());
+            error = std::error_code(EDOM, std::generic_category());
         }
 
         return builders;
     }
 
-    void request_create(asio::io_context &io_context, asio::yield_context yield, boost::system::error_code &error) {
+    void request_create(asio::io_context &io_context, asio::yield_context yield, std::error_code &error) {
         std::string create_command("/usr/local/bin/RequestCreateBuilder");
         bp::group group;
         bp::async_pipe std_pipe(io_context);
@@ -85,13 +92,18 @@ namespace OpenStackBuilder {
         bp::child build_child(create_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group,
                               create_error);
         if (create_error) {
-            logger::write("subprocess error: " + error.message());
+            logger::write("subprocess error: " + create_error.message());
+            error = create_error;
+            return;
         }
 
         // Read the create_command output until we reach EOF, which is returned as an error
-        boost::asio::async_read(std_pipe, buffer, yield[error]);
-        if (error != asio::error::eof) {
-            logger::write("OpenStack create error: " + error.message());
+        boost::system::error_code read_error;
+        boost::asio::async_read(std_pipe, buffer, yield[read_error]);
+        if (read_error != asio::error::eof) {
+            logger::write("OpenStack create error: " + read_error.message());
+            error = std::error_code(read_error.value(), read_error.category());
+            return;
         }
 
         // Grab exit code  from builder
@@ -100,11 +112,11 @@ namespace OpenStackBuilder {
 
         if (exit_code != 0) {
             logger::write("Error in making call to RequestBuilder");
+            error = std::error_code(EDOM, std::generic_category());
         }
     }
 
-    void destroy(BuilderData builder, asio::io_context &io_context, asio::yield_context yield,
-                 boost::system::error_code &error) {
+    void destroy(BuilderData builder, asio::io_context &io_context, asio::yield_context yield, std::error_code &error) {
         std::string destroy_command("/usr/local/bin/DestroyBuilder " + builder.id);
         bp::group group;
         bp::async_pipe std_pipe(io_context);
@@ -116,12 +128,17 @@ namespace OpenStackBuilder {
                                 destroy_error);
         if (destroy_error) {
             logger::write("subprocess error: " + error.message());
+            error = destroy_error;
+            return;
         }
 
         // Read the destroy_command output until we reach EOF, which is returned as an error
-        boost::asio::async_read(std_pipe, buffer, yield[error]);
-        if (error != asio::error::eof) {
-            logger::write("OpenStack destroy error: " + error.message());
+        boost::system::error_code read_error;
+        boost::asio::async_read(std_pipe, buffer, yield[read_error]);
+        if (read_error != asio::error::eof) {
+            logger::write("OpenStack destroy error: " + read_error.message());
+            error = std::error_code(read_error.value(), read_error.category());
+            return;
         }
 
         // Grab exit code from destroy command
@@ -130,6 +147,7 @@ namespace OpenStackBuilder {
 
         if (exit_code != 0) {
             logger::write("BuilderData with ID " + builder.id + " failed to be destroyed");
+            error = std::error_code(EDOM, std::generic_category());
         }
     }
 }

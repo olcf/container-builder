@@ -8,7 +8,7 @@ Reservation &BuilderQueue::enter() {
 }
 
 void BuilderQueue::tick(asio::yield_context yield) {
-    boost::system::error_code get_error;
+    std::error_code get_error;
 
     // Update list of "Active" OpenStack builders
     auto all_builders = OpenStackBuilder::get_builders(io_context, yield, get_error);
@@ -35,7 +35,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
                 reservation.set_enter_cleanup();
                 asio::spawn(io_context,
                             [this, &reservation](asio::yield_context destroy_yield) {
-                                boost::system::error_code cleanup_error;
+                                std::error_code cleanup_error;
                                 OpenStackBuilder::destroy(reservation.builder.get(), io_context, destroy_yield,
                                                           cleanup_error);
                                 if (cleanup_error) {
@@ -72,7 +72,7 @@ void BuilderQueue::tick(asio::yield_context yield) {
         pending_requests++;
         asio::spawn(io_context,
                     [this](asio::yield_context request_yield) {
-                        boost::system::error_code create_error;
+                        std::error_code create_error;
                         OpenStackBuilder::request_create(io_context, request_yield, create_error);
                         if (create_error) {
                             logger::write("Error requesting builder create " + create_error.message());

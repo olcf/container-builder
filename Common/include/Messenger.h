@@ -51,7 +51,9 @@ public:
             return;
         }
 
+        // Set the stream to handle binary data and have an unlimited(uint64_t) message size
         stream.binary(true);
+        stream.read_message_max(0);
     }
 
     // Create a server messenger by doing an async block listen on the specified port
@@ -77,7 +79,9 @@ public:
             return;
         }
 
+        // Set the stream to handle binary data and have an unlimited(uint64_t) message size
         stream.binary(true);
+        stream.read_message_max(0);
     }
 
     // Create a server messenger by doing an async block give the socket
@@ -101,7 +105,9 @@ public:
             return;
         }
 
+        // Set the stream to handle binary data and have an unlimited(uint64_t) message size
         stream.binary(true);
+        stream.read_message_max(0);
     }
 
     std::string async_read_string(asio::yield_context yield,

@@ -103,7 +103,7 @@ void Messenger::async_write_file(boost::filesystem::path file_path,
         error = std::error_code(errno, std::generic_category());
         return;
     }
-    auto file_size = boost::filesystem::file_size(file_path);
+    const auto file_size = boost::filesystem::file_size(file_path);
 
     const std::size_t chunk_size = 4096;
     std::array<char, chunk_size> buffer;

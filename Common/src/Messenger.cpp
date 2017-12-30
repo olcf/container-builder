@@ -238,7 +238,7 @@ void Messenger::async_write_pipe(bp::async_pipe &pipe,
 
         // Write read_bytes of the buffer to our socket
         beast::error_code write_error;
-        stream.async_write_some(fin, asio::buffer(buffer.data(), bytes_read, yield[write_error]);
+        stream.async_write_some(fin, asio::buffer(buffer.data(), bytes_read), yield[write_error]);
         if (write_error) {
             logger::write("sending process pipe failed: " + write_error.message());
             error = std::error_code(write_error.value(), std::generic_category());

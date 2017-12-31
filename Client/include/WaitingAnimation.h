@@ -32,12 +32,19 @@ public:
         });
     }
 
+    ~WaitingAnimation() {
+        if(active) {
+            stop("Failed",logger::severity_level::error);
+        }
+    }
+
     // Stop and join the thread
     void stop(const std::string &message, logger::severity_level level) {
         active = false;
         animation.join();
 
-        std::cout << "\r" << std::flush;
+        // Erase current line and set cursor at begining, overwriting current line
+        std::cout << "\33[2K\r" << std::flush;
         logger::write(message, level);
     }
 

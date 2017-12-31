@@ -39,11 +39,8 @@ set(SOURCE_FILES_CLIENT
         Common/include/BuilderData.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/include/Messenger.h
         Common/src/BuilderData.cpp
-        Common/src/Messenger.cpp
-        Common/include/ClientData.h
-        Client/include/WaitingAnimation.h Client/src/Client.cpp Client/include/Client.h)
+        Common/include/ClientData.h)
 
 # Scripts required for runtime
 set(SCRIPTS

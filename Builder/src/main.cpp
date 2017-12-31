@@ -1,11 +1,129 @@
-#include "Builder.h"
+#include <fstream>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/websocket.hpp>
+#include <boost/exception/all.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/crc.hpp>
+#include <boost/process.hpp>
+#include "ClientData.h"
 #include "Logger.h"
 
+namespace asio = boost::asio;
+using asio::ip::tcp;
+namespace beast = boost::beast;
+namespace websocket = beast::websocket;
+namespace bp = boost::process;
+
+// A blocking I/O container building websocket server
 int main(int argc, char *argv[]) {
 
     try {
-        Builder builder;
-        builder.run();
+        ///////////////////////////////////////////
+        // Initialize websocket
+        ///////////////////////////////////////////
+        // Accept an in coming websocket connection
+        boost::asio::io_context io_context;
+        websocket::stream<tcp::socket> websocket;
+        tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), 8080));
+        acceptor.accept(websocket.next_layer());
+        websocket.accept();
+
+        // Set the websocket stream to handle binary data and have an unlimited(uint64_t) message size
+        websocket.binary(true);
+        websocket.read_message_max(0);
+
+        ///////////////////////////////////////////
+        // Read basic client data
+        ///////////////////////////////////////////
+        // Read serialized client data
+        std::string client_data_string;
+        auto client_data_buffer = boost::asio::dynamic_buffer(client_data_string);
+        websocket.read(client_data_buffer);
+
+        // Deserialize client data string
+        ClientData client_data;
+        std::istringstream archive_stream(client_data_string);
+        boost::archive::text_iarchive archive(archive_stream);
+        archive >> client_data;
+
+        ///////////////////////////////////////////
+        // Read client definition file
+        ///////////////////////////////////////////
+        // Open the file
+        std::ofstream definition;
+        definition.exceptions ( std::ofstream::failbit | std::ofstream::badbit );
+        definition.open("container.definition", std::fstream::out | std::fstream::binary | std::fstream::trunc);
+
+        // Read in file from websocket in chunks
+        const auto chunk_size = 4096;
+        std::array<char, chunk_size> definition_buffer;
+        boost::crc_32_type csc_result;
+        do {
+            // Read chunk
+            auto bytes_read = websocket.read_some(asio::buffer(definition_buffer));
+            // Write chunk to disk
+            definition.write(definition_buffer.data(), bytes_read);
+            // Checksum chunk
+            csc_result.process_bytes(definition_buffer.data(), bytes_read);
+        } while (!websocket.is_message_done());
+        definition.close();
+
+        // Read remote checksum and verify
+        auto local_checksum = std::to_string(csc_result.checksum());
+        std::string remote_checksum;
+        auto remote_checksum_buffer = boost::asio::dynamic_buffer(remote_checksum);
+        websocket.read(remote_checksum_buffer);
+        if (local_checksum != remote_checksum) {
+            throw std::runtime_error("Definition file checksums do not match");
+        }
+
+        ///////////////////////////////////////////
+        // Construct build command
+        ///////////////////////////////////////////
+        if (client_data.arch == Architecture::ppc64le) {
+            // A dirty hack but the ppc64le qemu executable must be in the place the kernel expects it
+            // Modify the definition to copy this executable in during %setup
+            // NOTE: singularity currently doesn't have a way to inject this file in before bootstrap
+            //       and so DockerHub or local singularity files are the only supported ppc64le bootstrapper
+            std::ofstream def{"container.def", std::ios::app};
+            std::string copy_qemu(
+                    "\n%setup\ncp /usr/bin/qemu-ppc64le  ${SINGULARITY_ROOTFS}/usr/bin/qemu-ppc64le");
+            def << copy_qemu;
+        }
+        std::string build_command("/usr/bin/sudo ");
+        // If the client is called from a TTY we use "unbuffer" to fake the build into thinking it has a real TTY
+        // This allows utilities like wget and color ls to work nicely
+        if (client_data.tty) {
+            build_command += "/usr/bin/unbuffer ";
+        }
+        build_command += "/usr/local/bin/singularity build ./container.img ./container.def";
+
+        // launch build command
+        bp::ipstream std_pipe;
+        bp::group group;
+        bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group);
+
+        ///////////////////////////////////////////
+        // Stream build output to client
+        ///////////////////////////////////////////
+        const auto max_read_bytes = 4096;
+        std::array<char, max_read_bytes> std_buffer;
+        do {
+            auto bytes_read = std_pipe.readsome(std_buffer.data(), std_buffer.size());
+            websocket.write_some(std_pipe.eofbit, asio::buffer(std_buffer.data(), bytes_read));
+        } while (!std_pipe.eof());
+
+        ///////////////////////////////////////////
+        // Stream build output to client
+        ///////////////////////////////////////////
+
+        // Close connection
+    }
+    catch (const boost::exception &ex) {
+        auto diagnostics = diagnostic_information(ex);
+        logger::write(std::string() + "Builder exception encountered: " + diagnostics, logger::severity_level::fatal);
     }
     catch (const std::exception &ex) {
         logger::write(std::string() + "Builder exception encountered: " + ex.what(), logger::severity_level::fatal);

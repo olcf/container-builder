@@ -34,7 +34,7 @@ set(SOURCE_FILES_BUILDER
         Common/include/Messenger.h
         Common/src/Messenger.cpp
         Builder/src/Builder.cpp
-        Builder/include/Builder.h)
+        )
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT

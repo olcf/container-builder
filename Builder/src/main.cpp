@@ -86,7 +86,7 @@ std::string build_command(const ClientData& client_data) {
     return build_command;
 }
 
-int stream_build(websocket::stream<tcp::socket>& websocket,
+void stream_build(websocket::stream<tcp::socket>& websocket,
                             const std::string& build_command) {
 
     // Start the subprocess and redirect output to pipe
@@ -115,7 +115,9 @@ int stream_build(websocket::stream<tcp::socket>& websocket,
 
     // Wait for the process to complete and return exit code
     build_child.wait();
-    return build_child.exit_code();
+    if(build_child.exit_code() != 0) {
+        throw std::runtime_error("Container build failed");
+    }
 }
 
 void write_file(websocket::stream<tcp::socket>& websocket,
@@ -173,7 +175,7 @@ int main(int argc, char *argv[]) {
         auto build_string = build_command(client_data);
 
         // launch build process and stream the output to the client
-        auto std_pipe = stream_build(websocket, build_string);
+        stream_build(websocket, build_string);
 
     }
     catch (const boost::exception &ex) {

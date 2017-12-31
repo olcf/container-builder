@@ -16,6 +16,8 @@ namespace beast = boost::beast;
 namespace websocket = beast::websocket;
 namespace bp = boost::process;
 
+using callback_type = std::function<void(const boost::system::error_code&, std::size_t size)>;
+
 // A blocking I/O container building websocket server
 int main(int argc, char *argv[]) {
 
@@ -25,7 +27,7 @@ int main(int argc, char *argv[]) {
         ///////////////////////////////////////////
         // Accept an in coming websocket connection
         boost::asio::io_context io_context;
-        websocket::stream<tcp::socket> websocket;
+        websocket::stream<tcp::socket> websocket(io_context);
         tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), 8080));
         acceptor.accept(websocket.next_layer());
         websocket.accept();
@@ -101,22 +103,33 @@ int main(int argc, char *argv[]) {
         build_command += "/usr/local/bin/singularity build ./container.img ./container.def";
 
         // launch build command
-        bp::ipstream std_pipe;
+        bp::async_pipe std_pipe{io_context};
         bp::group group;
         bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group);
 
         ///////////////////////////////////////////
         // Stream build output to client
         ///////////////////////////////////////////
+        // boost process doesn't fully support istream interface as the documentation implies
+        // so we use async IO for this
         const auto max_read_bytes = 4096;
         std::array<char, max_read_bytes> std_buffer;
-        do {
-            auto bytes_read = std_pipe.readsome(std_buffer.data(), std_buffer.size());
-            websocket.write_some(std_pipe.eofbit, asio::buffer(std_buffer.data(), bytes_read));
-        } while (!std_pipe.eof());
+
+        callback_type stream_output = [&] (const boost::system::error_code& error,
+                                            std::size_t bytes_read) {
+            if(error == asio::error::eof) {
+                websocket.write_some(true, asio::buffer(std_buffer.data(), bytes_read));
+                return;
+            } else {
+                websocket.write_some(false, asio::buffer(std_buffer.data(), bytes_read));
+                std_pipe.async_read_some(asio::buffer(std_buffer), stream_output);
+            }
+        };
+        std_pipe.async_read_some(asio::buffer(std_buffer), stream_output);
+        io_context.run();
 
         ///////////////////////////////////////////
-        // Stream build output to client
+        // Write container to client
         ///////////////////////////////////////////
 
         // Close connection

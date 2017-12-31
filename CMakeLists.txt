@@ -31,9 +31,6 @@ set(SOURCE_FILES_BUILDER
         Common/include/BuilderData.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/include/Messenger.h
-        Common/src/Messenger.cpp
-        Builder/src/Builder.cpp
         )
 
 # Files related to the API

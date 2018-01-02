@@ -9,22 +9,18 @@ include_directories(BuilderQueue/include Builder/include Client/include Common/i
 set(SOURCE_FILES_QUEUE
         BuilderQueue/src/main.cpp
         BuilderQueue/src/Connection.cpp
-        BuilderQueue/src/Reservation.cpp
-        BuilderQueue/src/ReservationRequest.cpp
         BuilderQueue/src/BuilderQueue.cpp
         BuilderQueue/include/Connection.h
-        BuilderQueue/include/Reservation.h
-        BuilderQueue/include/ReservationRequest.h
         BuilderQueue/include/BuilderQueue.h
         Common/include/BuilderData.h
         Common/src/Logger.cpp
         Common/include/Logger.h
         Common/include/Messenger.h
-        BuilderQueue/src/OpenStackBuilder.cpp
-        BuilderQueue/include/OpenStackBuilder.h
+        BuilderQueue/src/OpenStack.cpp
+        BuilderQueue/include/OpenStack.h
         Common/src/BuilderData.cpp
         Common/src/Messenger.cpp
-        Common/include/ClientData.h)
+        Common/include/ClientData.h BuilderQueue/src/Server.cpp BuilderQueue/include/Server.h)
 
 set(SOURCE_FILES_BUILDER
         Builder/src/main.cpp

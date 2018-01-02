@@ -1,63 +1,33 @@
 #include "Connection.h"
-#include "ReservationRequest.h"
-#include <boost/asio/spawn.hpp>
 
-// Handle a client builder request
-void Connection::checkout_builder(asio::yield_context yield, std::error_code &error) {
-    logger::write("Checkout resource request");
-
-    // Request a builder
-    logger::write("Requesting builder from the queue");
-    ReservationRequest reservation(queue);
-    BuilderData builder = reservation.async_wait(yield, error);
-    if (error) {
-        logger::write("reservation builder request failed: " + error.message());
-        return;
-    }
-
-    // Send the fulfilled builder to the client
-    messenger.async_write_builder(builder, yield, error);
-    if (error) {
-        logger::write("Error sending builder: " + builder.id + "(" + builder.host + ")");
-        return;
-    }
-
-    // Wait on connection to finish
-    logger::write("Sent builder: " + builder.id + "(" + builder.host + ")");
-
-    // Wait on client to close the connection after it's done with the builder resource
-    messenger.async_wait_for_close(yield, error);
-    if(error) {
-        logger::write("Failed to cleanly close messenger: " + error.message());
-        return;
-    }
-
-    logger::write("Connection completed successfully");
+void Connection::wait_for_close() {
+    // stream.async_read()
 }
 
+void Connection::builder_ready(BuilderData builder) {
+    // Persist this connection
+    auto self(shared_from_this());
 
-void Connection::start(asio::io_context &io_context) {
-    try {
+    // this->builder = builder
+
+    // Create buffer from builder
+
+    //stream.async_write(builder, wait_for_close())
+}
+
+void Connection::start() {
+        // Persist this connection
         auto self(shared_from_this());
 
-        logger::write("Established connection");
-
-        asio::spawn(io_context,
-                    [this, self](asio::yield_context yield) {
-                        std::error_code error;
-                        auto request = messenger.async_read_string(yield, error);
-                        if (error) {
-                            logger::write("Request failure" + error.message());
-                        } else if (request == "checkout_builder_request") {
-                            checkout_builder(yield, error);
-                        } else {
-                            logger::write("Invalid request message received: " + request);
-                        }
-
-                    });
-    } catch (std::exception &ex) {
-        logger::write(std::string() + "Connection exception: " + ex.what());
-    } catch (...) {
-        logger::write("Unknown connection exception caught!");
-    }
+        // Read the initial request string
+        stream.async_read(buffer, [this, self](boost::system::error_code error, std::size_t) {
+            if(!error) {
+                beast::buffers_to_string(buffer);
+                if(beast::buffers_to_string(buffer) == "checkout_builder_request") {
+                    // Pass the provide_builder callback to the queue, that copy will keep this connection alive
+                    // When a builder is available provide_builder() will be called
+                    queue.fetch_builder(builder_ready);
+                }
+            }
+        });
 }

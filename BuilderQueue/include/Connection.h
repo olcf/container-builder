@@ -1,26 +1,35 @@
 #pragma once
 
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/beast.hpp>
+#include <boost/beast/websocket.hpp>
 #include "BuilderQueue.h"
 #include "Logger.h"
-#include "Messenger.h"
-#include <boost/asio/spawn.hpp>
 
 namespace asio = boost::asio;
+using asio::ip::tcp;
+namespace beast = boost::beast;
+namespace websocket = beast::websocket;
 
 class Connection : public std::enable_shared_from_this<Connection> {
 public:
-    explicit Connection(BuilderQueue &queue, Messenger messenger) : queue(queue),
-                                                                    messenger(std::move(messenger)) {}
+    explicit Connection(tcp::socket socket, BuilderQueue queue) : stream(std::move(socket)),
+                                                                  queue(queue)
+    {};
 
     ~Connection() {
-        logger::write("Ending connection");
-    }
+        if(builder.get()) {
+            queue.return_builder(builder.get());
+        }
+    };
 
-    void start(asio::io_context &io_context);
+    void start();
 
 private:
+    websocket::stream<tcp::socket> stream;
     BuilderQueue &queue;
-    Messenger messenger;
+    beast::flat_buffer buffer;
+    boost::optional<BuilderData> builder;
 
-    void checkout_builder(asio::yield_context yield, std::error_code &error);
+    void builder_ready(BuilderData builder);
 };

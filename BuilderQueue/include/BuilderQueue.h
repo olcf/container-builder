@@ -1,37 +1,54 @@
 #pragma once
 
-#include "Builder.h"
-#include "Reservation.h"
-#include "boost/optional.hpp"
+#include "BuilderData.h"
+#include <boost/asio/io_context.hpp>
+#include <boost/optional.hpp>
 #include <list>
 #include <queue>
 #include <set>
 
+namespace asio = boost::asio;
+using FetchHandler = std::function<void (BuilderData builder)>;
+
 class BuilderQueue {
 public:
     explicit BuilderQueue(asio::io_context &io_context) : io_context(io_context),
-                                                          max_builders(20),
-                                                          max_available_builders(5),
-                                                          pending_requests(0) {}
+                                                          max_builder_count(20),
+                                                          max_reserve_builder_count(5),
+                                                          outstanding_create_count(0)
+    {
+        create_reserve_builders();
+    }
 
-    // Create a new queue reservation and return it to the requester
-    Reservation &enter();
+    // Add the specified handler to the queue
+    // When a builder is ready the handler will be called and passed the builder
+    void fetch_builder(FetchHandler&& handler);
 
-    // Attempt to process the queue after an event that adds/removes builders or requests
-    void tick(asio::yield_context yield);
+    // Return the builder to the queue which will destroy it
+    void return_builder(BuilderData builder);
 
+    // Process the next handler that is waiting to receive a builder, if one exists
+    void process_pending_handler();
+
+    // Create reserve builders as needed
+    void create_reserve_builders();
 private:
     asio::io_context &io_context;
 
-    // Hold reservations that are to be fulfilled
-    std::list<Reservation> reservations;
+    // Handlers waiting to be fulfilled
+    std::list<FetchHandler> pending_handlers;
 
-    // Maximum number of active and cached builders
-    const std::size_t max_builders;
+    // Builders currently available to use
+    std::list<BuilderData> reserve_builders;
 
+    // Builders currently in use by connections
+    std::list<BuilderData> active_builders;
+
+    // Maximum number of active and reserve builders
+    const std::size_t max_builder_count;
     // Maximum number of builders to spin and keep up in reserve
-    const std::size_t max_available_builders;
+    const std::size_t max_reserve_builder_count;
 
-    // Number of build requests that have been submitted but not processed by OpenStack yet
-    int pending_requests;
+    // Number of build requests that have been requested but not yet compelted
+    int outstanding_create_count;
 };

@@ -1,4 +1,4 @@
-#include "OpenStackBuilder.h"
+#include "OpenStack.h"
 #include <boost/process.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -7,81 +7,7 @@
 namespace bp = boost::process;
 namespace pt = boost::property_tree;
 
-namespace OpenStackBuilder {
-    std::set<BuilderData>
-    get_builders(asio::io_context &io_context, asio::yield_context yield, std::error_code &error) {
-        std::set<BuilderData> builders;
-
-        std::string list_command("/usr/local/bin/GetBuilders");
-        bp::group group;
-        bp::async_pipe std_pipe(io_context);
-        asio::streambuf buffer;
-
-        // Asynchronously launch the list command
-        std::error_code list_error;
-        bp::child list_child(list_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group,
-                             list_error);
-        if (list_error) {
-            error = list_error;
-            return builders;
-        }
-
-        // Read the list command output until we reach EOF, which is returned as an error
-        boost::system::error_code read_error;
-        asio::async_read(std_pipe, buffer, yield[read_error]);
-        if (read_error != asio::error::eof) {
-            logger::write("OpenStack destroy error: " + error.message());
-            error = std::error_code(read_error.value(), std::generic_category());
-            return builders;
-        }
-
-        // Grab exit code from destroy command
-        list_child.wait();
-        int exit_code = list_child.exit_code();
-
-        if (exit_code != 0) {
-            logger::write("Failed to fetch server list");
-            error = std::error_code(exit_code, std::generic_category());
-            return builders;
-        }
-
-        // Read the json output into a property tree
-        /*
-           [
-             {
-               "Status": "ACTIVE",
-               "Name": "BuilderData",
-               "Image": "BuilderImage",
-               "ID": "adeda126-18d4-423f-a499-84651937cdc0",
-               "Flavor": "m1.medium",
-               "Networks": "or_provider_general_extnetwork1=128.219.185.100"
-              }
-            ]
-         */
-        std::istream is_buffer(&buffer);
-        pt::ptree builder_tree;
-        pt::read_json(is_buffer, builder_tree);
-
-        // Fill a set of builders from the property tree data
-        try {
-            for (const auto &builder_node : builder_tree) {
-                BuilderData builder;
-                auto network = builder_node.second.get<std::string>("Networks");
-                size_t eq_pos = network.find('=');
-                builder.host = network.substr(eq_pos + 1);
-
-                builder.id = builder_node.second.get<std::string>("ID");
-                builder.port = "8080";
-                builders.insert(builder);
-            }
-        } catch (const pt::ptree_error &e) {
-            logger::write(std::string() + "Error parsing builders: " + e.what());
-            error = std::error_code(EBADMSG, std::generic_category());
-            return builders;
-        }
-
-        return builders;
-    }
+namespace OpenStack {
 
     void request_create(asio::io_context &io_context, asio::yield_context yield, std::error_code &error) {
         std::string create_command("/usr/local/bin/RequestCreateBuilder");

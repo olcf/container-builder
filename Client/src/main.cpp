@@ -1,11 +1,10 @@
 #include <fstream>
 #include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/exception/all.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/crc.hpp>
 #include <boost/program_options.hpp>
@@ -18,6 +17,17 @@ namespace asio = boost::asio;
 using asio::ip::tcp;
 namespace beast = boost::beast;
 namespace websocket = beast::websocket;
+
+void write_client_data(websocket::stream<tcp::socket>& builder_stream, ClientData client_data) {
+    // Serialize client data to string
+    std::ostringstream archive_stream;
+    boost::archive::text_oarchive archive(archive_stream);
+    archive << client_data;
+    auto serialized_client_data = archive_stream.str();
+
+    // Write string to serialized client data
+    builder_stream.write(asio::buffer(serialized_client_data));
+}
 
 void read_file(websocket::stream<tcp::socket>& stream,
                const std::string& file_name) {
@@ -188,10 +198,13 @@ int main(int argc, char *argv[]) {
         builder_stream.handshake(builder_data.host + ":8080", "/");
         wait_builder.stop("Connected to remote builder: " + builder_data.host, logger::severity_level::success);
 
+        // Write client data to builder
+        write_client_data(builder_stream, client_data);
+
         // Write definition to builder
         write_file(builder_stream, client_data.definition_path);
 
-        // Stream builder output
+        // stream builder output
         stream_build(builder_stream);
 
         // Read container from builder

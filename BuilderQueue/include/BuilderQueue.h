@@ -25,7 +25,11 @@ public:
 
     // Add the specified handler to the queue
     // When a builder is ready the handler will be called and passed the builder
-    void checkout_builder(FetchHandler handler);
+    template<typename FetchHandler>
+    void checkout_builder(FetchHandler handler) {
+        pending_handlers.emplace_back(handler);
+        process_pending_handler();
+    }
 
     // Return the builder to the queue which will destroy it
     void return_builder(BuilderData builder);

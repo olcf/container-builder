@@ -2,13 +2,8 @@
 #include "BuilderQueue.h"
 #include "OpenStack.h"
 
-void BuilderQueue::checkout_builder(FetchHandler handler) {
-    pending_handlers.emplace_back(handler);
-    process_pending_handler();
-}
-
 void BuilderQueue::return_builder(BuilderData builder) {
-    OpenStack::destroy(builder, io_context, [this](std::error_code error) {
+    std::make_shared<OpenStack>(io_context)->destroy(builder, [this, builder](std::error_code error) {
         if (!error) {
             active_builders.remove(builder);
             create_reserve_builders();
@@ -27,7 +22,7 @@ void BuilderQueue::process_pending_handler() {
         pending_handlers.pop_front();
 
         // Invoke the handler to pass the builder to the connection
-        io_context.post(handler(builder));
+        io_context.post(std::bind(handler,builder));
 
         // Attempt to create a new reserve builder if required
         create_reserve_builders();
@@ -43,8 +38,8 @@ void BuilderQueue::create_reserve_builders() {
 
         outstanding_create_count += request_count;
 
-        for (i = 0; i < request_count; i++) {
-            OpenStack::request_create(io_context, [this](std::error_code error, BuilderData builder) {
+        for (std::size_t i = 0; i < request_count; i++) {
+            std::make_shared<OpenStack>(io_context)->request_create([this](std::error_code error, BuilderData builder) {
                 outstanding_create_count--;
                 if (!error) {
                     reserve_builders.push_back(builder);

@@ -3,92 +3,135 @@
 #include <boost/process.hpp>
 #include "boost/asio/io_context.hpp"
 #include "BuilderData.h"
-#include <set>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 namespace asio = boost::asio;
 namespace bp = boost::process;
+namespace pt = boost::property_tree;
 
-//using CreateHandler = std::function<void (std::error_code error, BuilderData builder)>;
-//using DestroyHandler = std::function<void (std::error_code error)>;
+class OpenStack : public std::enable_shared_from_this<OpenStack> {
+public:
+    OpenStack(asio::io_context &io_context) : io_context(io_context),
+                                              output_pipe(io_context) {}
 
-namespace OpenStack {
     // Request to create a new builder
     // The handler must have the form void(std::error_code error, BuilderData builder)
-    // If the builder wasn't created the handlers error_code will be set
+    // If the builder wasn't created the handlers error_code will be set and a default constructed builder will be returned
     template<typename CreateHandler>
-    void request_create(asio::io_context &io_context, CreateHandler handler) {
-        std::string create_command("/usr/local/bin/RequestCreateBuilder");
-        bp::group group;
-        bp::async_pipe std_pipe(io_context);
-        asio::streambuf buffer;
+    void request_create(CreateHandler handler) {
 
         // Asynchronously launch the create command
         std::error_code create_error;
-        bp::child build_child(create_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group,
-                              create_error);
+        process = bp::child("/usr/local/bin/CreateBuilder", bp::std_in.close(), (bp::std_out & bp::std_err) > output_pipe, group,
+                            create_error);
         if (create_error) {
-            logger::write("subprocess error: " + create_error.message());
-            error = create_error;
-            return;
+            auto error = std::error_code(create_error.value(), std::generic_category());
+            BuilderData no_builder;
+            io_context.post(std::bind(handler,error, no_builder));
         }
 
-        // Read the create_command output until we reach EOF, which is returned as an error
-        boost::system::error_code read_error;
-        boost::asio::async_read(std_pipe, buffer, yield[read_error]);
-        if (read_error != asio::error::eof) {
-            logger::write("OpenStack create error: " + read_error.message());
-            error = std::error_code(read_error.value(), std::generic_category());
-            return;
-        }
+        // Read the create command output until we reach EOF, which is returned as an error
+        auto self(shared_from_this());
+        asio::async_read(output_pipe, output_buffer, [this, self, handler](boost::system::error_code error, std::size_t) {
+            if (error != asio::error::eof) {
+                auto read_error = std::error_code(error.value(), std::generic_category());
+                BuilderData no_builder;
+                io_context.post(std::bind(handler, read_error, no_builder));
+            } else {
+                // Parse the JSON output to create BuilderData
+                /*
+                    {
+                      "Status": "ACTIVE",
+                      "Name": "BuilderData",
+                      "Image": "BuilderImage",
+                      "ID": "adeda126-18d4-423f-a499-84651937cdc0",
+                      "Flavor": "m1.medium",
+                      "Networks": "or_provider_general_extnetwork1=128.219.185.100"
+                    }
+                */
+                std::istream is_buffer(&output_buffer);
+                pt::ptree builder_tree;
+                pt::read_json(is_buffer, builder_tree);
 
-        // Grab exit code  from builder
-        build_child.wait();
-        int exit_code = build_child.exit_code();
+                // Parse builder
+                try {
+                    // Parse IP address
+                    BuilderData builder;
+                    auto network = builder_tree.get<std::string>("Networks");
+                    size_t eq_pos = network.find('=');
+                    builder.host = network.substr(eq_pos + 1);
 
-        if (exit_code != 0) {
-            logger::write("Error in making call to RequestBuilder");
-            error = std::error_code(EBADMSG, std::generic_category());
-            return;
-        }
+                    // Parse OpenStack ID
+                    builder.id = builder_tree.get<std::string>("ID");
+
+                    // Port for builder service
+                    builder.port = "8080";
+
+                    // Complete the handler
+                    io_context.post(std::bind(handler, std::error_code(), builder));
+
+                } catch (const pt::ptree_error &e) {
+                    auto parse_error = std::error_code(EBADMSG, std::generic_category());
+                    BuilderData no_builder;
+                    io_context.post(std::bind(handler, parse_error, no_builder));
+                }
+            }
+
+            // Verify that the application exited cleanly
+            // If the parsing above worked this shouldn't happen
+            std::error_code wait_error;
+            process.wait(wait_error);
+            if (wait_error) {
+                // Log
+            }
+            int exit_code = process.exit_code();
+            if (exit_code != 0) {
+                // Log
+            }
+        });
     }
 
     // Request to destroy the specified builder
     // If the builder couldn't be destroyed the handlers error_code will be set
     template<typename DestroyHandler>
-    void destroy(BuilderData builder, asio::io_context &io_context, DestroyHandler handler) {
-        std::string destroy_command("/usr/local/bin/DestroyBuilder " + builder.id);
-        bp::group group;
-        bp::async_pipe std_pipe(io_context);
-        asio::streambuf buffer;
-
+    void destroy(BuilderData builder, DestroyHandler handler) {
         // Asynchronously launch the destroy command
         std::error_code destroy_error;
-        bp::child destroy_child(destroy_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group,
-                                destroy_error);
+        process = bp::child("/usr/local/bin/DestroyBuilder " + builder.id, bp::std_in.close(),
+                            (bp::std_out & bp::std_err) > output_pipe, group, destroy_error);
         if (destroy_error) {
-            logger::write("subprocess error: " + error.message());
-            error = destroy_error;
-            return;
+            io_context.post(std::bind(handler, destroy_error));
         }
 
-        // Read the destroy_command output until we reach EOF, which is returned as an error
-        boost::system::error_code read_error;
-        boost::asio::async_read(std_pipe, buffer, yield[read_error]);
-        if (read_error != asio::error::eof) {
-            logger::write("OpenStack destroy error: " + read_error.message());
-            error = std::error_code(read_error.value(), std::generic_category());
-            return;
-        }
+        // Read the destroy command output until we reach EOF, which is returned as an error
+        auto self(shared_from_this());
+        asio::async_read(output_pipe, output_buffer, [this, self, handler](boost::system::error_code error, std::size_t) {
+            if (error != asio::error::eof) {
+                auto read_error = std::error_code(error.value(), std::generic_category());
+                io_context.post(std::bind(handler, read_error));
+            } else {
+                io_context.post(std::bind(handler,std::error_code()));
+            }
 
-        // Grab exit code from destroy command
-        destroy_child.wait();
-        int exit_code = destroy_child.exit_code();
-
-        if (exit_code != 0) {
-            logger::write("BuilderData with ID " + builder.id + " failed to be destroyed");
-            error = std::error_code(EDOM, std::generic_category());
-            return;
-        }
+            // Verify that the application exited cleanly
+            // If the parsing above worked this shouldn't happen
+            std::error_code wait_error;
+            process.wait(wait_error);
+            if (wait_error) {
+                // Log
+            }
+            int exit_code = process.exit_code();
+            if (exit_code != 0) {
+                // Log
+            }
+        });
     }
 
+private:
+    asio::io_context& io_context;
+    bp::child process;
+    bp::group group;
+    bp::async_pipe output_pipe;
+    asio::streambuf output_buffer;
 };

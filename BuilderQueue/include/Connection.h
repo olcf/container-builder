@@ -13,12 +13,12 @@ namespace websocket = beast::websocket;
 
 class Connection : public std::enable_shared_from_this<Connection> {
 public:
-    explicit Connection(tcp::socket socket, BuilderQueue queue) : stream(std::move(socket)),
+    explicit Connection(tcp::socket socket, BuilderQueue& queue) : stream(std::move(socket)),
                                                                   queue(queue)
     {};
 
     ~Connection() {
-        if(builder.get()) {
+        if(builder) {
             queue.return_builder(builder.get());
         }
     };
@@ -32,4 +32,6 @@ private:
     boost::optional<BuilderData> builder;
 
     void builder_ready(BuilderData builder);
+
+    void wait_for_close();
 };

@@ -20,7 +20,7 @@ private:
     BuilderQueue queue;
 
     void accept_connection() {
-        acceptor.async_accept([this, &queue](boost::system::error_code error, tcp::socket socket) {
+        acceptor.async_accept([this](boost::system::error_code error, tcp::socket socket) {
             if (!error) {
                 std::make_shared<Connection>(std::move(socket), queue)->start();
             }

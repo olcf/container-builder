@@ -18,8 +18,7 @@ set(SOURCE_FILES_QUEUE
         Common/include/Messenger.h
         BuilderQueue/include/OpenStack.h
         Common/src/BuilderData.cpp
-        Common/src/Messenger.cpp
-        Common/include/ClientData.h BuilderQueue/src/Server.cpp BuilderQueue/include/Server.h)
+        Common/include/ClientData.h BuilderQueue/include/Server.h)
 
 set(SOURCE_FILES_BUILDER
         Builder/src/main.cpp

@@ -1,5 +1,7 @@
 #include "Connection.h"
 
+using namespace std::placeholders;
+
 void Connection::wait_for_close() {
     // stream.async_read()
 }
@@ -20,13 +22,14 @@ void Connection::start() {
         auto self(shared_from_this());
 
         // Read the initial request string
-        stream.async_read(buffer, [this, self](boost::system::error_code error, std::size_t) {
+        stream.async_read(buffer, [this, self](beast::error_code error, std::size_t) {
             if(!error) {
-                beast::buffers_to_string(buffer);
-                if(beast::buffers_to_string(buffer) == "checkout_builder_request") {
+                auto request = beast::buffers_to_string(buffer.data());
+                buffer.consume(buffer.size());
+                if(request == "checkout_builder_request") {
                     // Pass the provide_builder callback to the queue, that copy will keep this connection alive
-                    // When a builder is available provide_builder() will be called
-                    queue.checkout_builder(builder_ready);
+                    // When a builder is available builder_read() will be called
+                    queue.checkout_builder(std::bind(&Connection::builder_ready, this, _1));
                 }
             }
         });

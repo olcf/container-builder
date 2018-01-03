@@ -9,5 +9,12 @@ int main(int argc, char *argv[]) {
     BuilderQueue queue(io_context);
     Server server(io_context, queue);
 
-    io_context.run();
+    // Keep running even in the event of an exception
+    for (;;) {
+        try {
+            io_context.run();
+        } catch (...) {
+            SEVERE_LOG("Unknown io_service exception during run");
+        }
+    }
 }

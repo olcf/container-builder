@@ -16,7 +16,6 @@ set(SOURCE_FILES_QUEUE
         Common/src/Logger.cpp
         Common/include/Logger.h
         Common/include/Messenger.h
-        BuilderQueue/src/OpenStack.cpp
         BuilderQueue/include/OpenStack.h
         Common/src/BuilderData.cpp
         Common/src/Messenger.cpp

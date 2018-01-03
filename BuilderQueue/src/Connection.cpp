@@ -26,7 +26,7 @@ void Connection::start() {
                 if(beast::buffers_to_string(buffer) == "checkout_builder_request") {
                     // Pass the provide_builder callback to the queue, that copy will keep this connection alive
                     // When a builder is available provide_builder() will be called
-                    queue.fetch_builder(builder_ready);
+                    queue.checkout_builder(builder_ready);
                 }
             }
         });

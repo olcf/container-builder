@@ -8,21 +8,24 @@
 #include <set>
 
 namespace asio = boost::asio;
+
 using FetchHandler = std::function<void (BuilderData builder)>;
 
+// Note that the handler, from Connection, contains 'self' which maintains the lifetime of the connection instance
+// If a client disconnects while the handler is pending it won't be cleaned up
+// This should be fixed somehow, perhaps by checking the connection somehow
 class BuilderQueue {
 public:
     explicit BuilderQueue(asio::io_context &io_context) : io_context(io_context),
                                                           max_builder_count(20),
                                                           max_reserve_builder_count(5),
-                                                          outstanding_create_count(0)
-    {
+                                                          outstanding_create_count(0) {
         create_reserve_builders();
     }
 
     // Add the specified handler to the queue
     // When a builder is ready the handler will be called and passed the builder
-    void fetch_builder(FetchHandler&& handler);
+    void checkout_builder(FetchHandler handler);
 
     // Return the builder to the queue which will destroy it
     void return_builder(BuilderData builder);

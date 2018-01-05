@@ -30,16 +30,16 @@ public:
         instance().print(message, LogPriority::error);
     }
     static void warning(const std::string& message) {
-        instance().print(message, LogPriority::error);
+        instance().print(message, LogPriority::warning);
     }
     static void success(const std::string& message) {
         instance().print(message, LogPriority::error);
     }
     static void info(const std::string& message) {
-        instance().print(message, LogPriority::error);
+        instance().print(message, LogPriority::info);
     }
     static void debug(const std::string& message) {
-        instance().print(message, LogPriority::error);
+        instance().print(message, LogPriority::debug);
     }
 
 private:

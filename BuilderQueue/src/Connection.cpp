@@ -1,6 +1,7 @@
 #include "Connection.h"
 #include <boost/beast/core/buffers_to_string.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/core/ignore_unused.hpp>
 
 using namespace std::placeholders;
 
@@ -10,6 +11,8 @@ void Connection::wait_for_close() {
 
     Logger::info("Waiting for connection to close");
     stream.async_read(buffer, [this, self] (beast::error_code error, std::size_t bytes) {
+        boost::ignore_unused(bytes);
+
         if(error == websocket::error::closed) {
             Logger::info("Cleaning closing connection");
         } else {
@@ -32,6 +35,7 @@ void Connection::builder_ready(BuilderData builder) {
 
     Logger::info("Writing builder: " + builder.id);
     stream.async_write(asio::buffer(request_string), [this, self, builder] (beast::error_code error, std::size_t bytes){
+        boost::ignore_unused(bytes);
         if(!error) {
             wait_for_close();
         } else {
@@ -46,6 +50,7 @@ void Connection::start() {
 
     Logger::info("Reading initial request");
     stream.async_read(buffer, [this, self] (beast::error_code error, std::size_t bytes) {
+            boost::ignore_unused(bytes);
             if(!error) {
                 auto request = beast::buffers_to_string(buffer.data());
                 buffer.consume(buffer.size());

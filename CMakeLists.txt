@@ -47,10 +47,9 @@ add_executable(builder_queue ${SOURCE_FILES_QUEUE})
 add_executable(builder_server ${SOURCE_FILES_BUILDER})
 add_executable(container_builder ${SOURCE_FILES_CLIENT})
 
-# boost log definition
-add_definitions(-DBOOST_LOG_DYN_LINK)
-set(Boost_NO_BOOST_CMAKE TRUE) # Ignore system boost and use module system boost
-set(Boost_USE_STATIC_LIBS OFF)
+# Ignore system boost and use module system boost
+set(Boost_NO_BOOST_CMAKE TRUE)
+#set(Boost_USE_STATIC_LIBS OFF)
 
 # ignore coroutines deprecation
 add_definitions(-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
@@ -66,9 +65,6 @@ set_target_properties(builder_server PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARD
 set_target_properties(container_builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(container_builder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 
-# Force logger to use stderr instead of file for client
-set_target_properties(container_builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -D LOG_TO_CONSOLE")
-
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(builder_queue ${CMAKE_THREAD_LIBS_INIT})
@@ -76,7 +72,7 @@ target_link_libraries(builder_server ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(container_builder ${CMAKE_THREAD_LIBS_INIT})
 
 
-find_package(Boost 1.66.0 COMPONENTS system coroutine filesystem serialization regex log log_setup thread program_options REQUIRED)
+find_package(Boost 1.66.0 COMPONENTS system coroutine filesystem serialization regex thread program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(builder_queue ${Boost_LIBRARIES})
 target_link_libraries(builder_server ${Boost_LIBRARIES})

@@ -1,6 +1,7 @@
 #include <boost/asio/spawn.hpp>
 #include "BuilderQueue.h"
 #include "OpenStack.h"
+#include "Logger.h"
 
 void BuilderQueue::return_builder(BuilderData builder) {
     std::make_shared<OpenStack>(io_context)->destroy(builder, [this, builder](std::error_code error) {
@@ -12,6 +13,8 @@ void BuilderQueue::return_builder(BuilderData builder) {
 }
 
 void BuilderQueue::process_pending_handler() {
+    Logger::info("Processing pending handlers");
+
     if (!pending_handlers.empty() && !reserve_builders.empty()) {
         // Get the next builder and handler in the queue
         auto builder = reserve_builders.front();
@@ -23,6 +26,8 @@ void BuilderQueue::process_pending_handler() {
 
         // Invoke the handler to pass the builder to the connection
         io_context.post(std::bind(handler,builder));
+
+        Logger::info("Providing builder to client: " + builder.id);
 
         // Attempt to create a new reserve builder if required
         create_reserve_builders();
@@ -38,12 +43,19 @@ void BuilderQueue::create_reserve_builders() {
 
         outstanding_create_count += request_count;
 
+        Logger::info(std::string() + "Attempting to create " + request_count + " builders");
+
         for (std::size_t i = 0; i < request_count; i++) {
-            std::make_shared<OpenStack>(io_context)->request_create([this](std::error_code error, BuilderData builder) {
+            Logger::info(std::string() + "Attempting to create builder " + i);
+
+            std::make_shared<OpenStack>(io_context)->request_create([this, i](std::error_code error, BuilderData builder) {
                 outstanding_create_count--;
                 if (!error) {
+                    Logger::info(std::string() + "Created builder " + i + ": " + builder.id);
                     reserve_builders.push_back(builder);
                     process_pending_handler();
+                } else {
+                    Logger::error(std::string() + "Error creating builder " + i);
                 }
             });
         }

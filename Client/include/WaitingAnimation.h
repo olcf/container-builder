@@ -34,18 +34,28 @@ public:
 
     ~WaitingAnimation() {
         if(active) {
-            stop("Failed", Logger::severity_level::error);
+            stop_error("Failed");
         }
     }
 
     // Stop and join the thread
-    void stop(const std::string &message, Logger::severity_level level) {
+    void stop_success(const std::string &message) {
         active = false;
         animation.join();
 
-        // Erase current line and set cursor at begining, overwriting current line
+        // Erase current line and set cursor at beginning, overwriting current line
         std::cout << "\33[2K\r" << std::flush;
-        logger::write(message, level);
+        logger::success(message);
+    }
+
+    // Stop and join the thread
+    void stop_error(const std::string &message) {
+        active = false;
+        animation.join();
+
+        // Erase current line and set cursor at beginning, overwriting current line
+        std::cout << "\33[2K\r" << std::flush;
+        logger::error(message);
     }
 
 private:

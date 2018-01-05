@@ -7,12 +7,12 @@ void Connection::wait_for_close() {
     // Persist this connection
     auto self(shared_from_this());
 
-    // Wait for the connection to close
+    Logger::info("Waiting for connection to close");
     stream.async_read(buffer, [this, self] (beast::error_code error, std::size_t bytes) {
         if(error == websocket::error::closed) {
-          // closed cleanly
+            Logger::info("Cleaning closing connection");
         } else {
-            // log error
+            Logger::error("Error closing connection: " + error.message());
         }
     });
 }
@@ -21,7 +21,7 @@ void Connection::builder_ready(BuilderData builder) {
     // Persist this connection
     auto self(shared_from_this());
 
-    // Serialize the builder
+    Logger::info("Serializing builder: " + builder.id);
     this->builder = builder;
     std::ostringstream archive_stream;
     boost::archive::text_oarchive archive(archive_stream);
@@ -29,10 +29,12 @@ void Connection::builder_ready(BuilderData builder) {
     auto serialized_builder = archive_stream.str();
     std::string request_string(serialized_builder);
 
-    // Write the builder to the client
+    Logger::info("Writing builder: " + builder.id);
     stream.async_write(asio::buffer(request_string), [this, self] (beast::error_code error, std::size_t bytes){
         if(!error) {
             wait_for_close();
+        } else {
+            Logger::error("Error writing builder: " + builder.id);
         }
     });
 }
@@ -41,12 +43,13 @@ void Connection::start() {
         // Persist this connection
         auto self(shared_from_this());
 
-        // Read the initial request string
-        stream.async_read(buffer, [this, self] (beast::error_code error, std::size_t bytes) {
+    Logger::info("Reading initial request");
+    stream.async_read(buffer, [this, self] (beast::error_code error, std::size_t bytes) {
             if(!error) {
                 auto request = beast::buffers_to_string(buffer.data());
                 buffer.consume(buffer.size());
                 if(request == "checkout_builder_request") {
+                    Logger::info("Request to checkout builder made");
                     // Pass the provide_builder callback to the queue, that copy will keep this connection alive
                     // When a builder is available builder_read() will be called
                     queue.checkout_builder(std::bind(&Connection::builder_ready, this, _1));

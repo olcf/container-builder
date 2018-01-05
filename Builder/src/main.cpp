@@ -68,7 +68,7 @@ void read_file(websocket::stream<tcp::socket>& client_stream,
     if (local_checksum != remote_checksum) {
         throw std::runtime_error(file_name + " checksums do not match");
     }
-    Logger::info(file_name + " succesfully read");
+    Logger::info(file_name + " successfully read file");
 }
 
 std::string build_command(const ClientData& client_data) {

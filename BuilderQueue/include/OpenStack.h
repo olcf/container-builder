@@ -5,6 +5,7 @@
 #include "BuilderData.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include "Logger.h"
 
 namespace asio = boost::asio;
 namespace bp = boost::process;
@@ -20,13 +21,16 @@ public:
     // If the builder wasn't created the handlers error_code will be set and a default constructed builder will be returned
     template<typename CreateHandler>
     void request_create(CreateHandler handler) {
+        std::string create_command("/usr/local/bin/CreateBuilder");
 
-        // Asynchronously launch the create command
+        Logger::info("Launching command: " + create_command);
+
         std::error_code create_error;
-        process = bp::child("/usr/local/bin/CreateBuilder", bp::std_in.close(), (bp::std_out & bp::std_err) > output_pipe, group,
+        process = bp::child(create_command, bp::std_in.close(), (bp::std_out & bp::std_err) > output_pipe, group,
                             create_error);
         if (create_error) {
             auto error = std::error_code(create_error.value(), std::generic_category());
+            Logger::error("Error requesting builder: " + create_error.message());
             BuilderData no_builder;
             io_context.post(std::bind(handler,error, no_builder));
         }
@@ -36,6 +40,7 @@ public:
         asio::async_read(output_pipe, output_buffer, [this, self, handler](boost::system::error_code error, std::size_t) {
             if (error != asio::error::eof) {
                 auto read_error = std::error_code(error.value(), std::generic_category());
+                Logger::error("Error reading builder request output: " + read_error.message());
                 BuilderData no_builder;
                 io_context.post(std::bind(handler, read_error, no_builder));
             } else {
@@ -54,7 +59,7 @@ public:
                 pt::ptree builder_tree;
                 pt::read_json(is_buffer, builder_tree);
 
-                // Parse builder
+                Logger::info("Parsing builder output");
                 try {
                     // Parse IP address
                     BuilderData builder;
@@ -71,8 +76,10 @@ public:
                     // Complete the handler
                     io_context.post(std::bind(handler, std::error_code(), builder));
 
+                    Logger::info("New builde createdr: " + builder.id);
                 } catch (const pt::ptree_error &e) {
                     auto parse_error = std::error_code(EBADMSG, std::generic_category());
+                    Logger::error("Error parsing JSON builder output: " + parse_error.message());
                     BuilderData no_builder;
                     io_context.post(std::bind(handler, parse_error, no_builder));
                 }
@@ -83,11 +90,11 @@ public:
             std::error_code wait_error;
             process.wait(wait_error);
             if (wait_error) {
-                // Log
+                Logger::error("Error waiting for builder request to finish: " + wait_error.message());
             }
             int exit_code = process.exit_code();
             if (exit_code != 0) {
-                // Log
+                Logger::error("builder request returned non zero: " + process.exit_code());
             }
         });
     }
@@ -96,11 +103,14 @@ public:
     // If the builder couldn't be destroyed the handlers error_code will be set
     template<typename DestroyHandler>
     void destroy(BuilderData builder, DestroyHandler handler) {
-        // Asynchronously launch the destroy command
+        const std::string destroy_command("/usr/local/bin/DestroyBuilder " + builder.id);
+
+        Logger::info("Launching command: " + destroy_command);
         std::error_code destroy_error;
-        process = bp::child("/usr/local/bin/DestroyBuilder " + builder.id, bp::std_in.close(),
+        process = bp::child(destroy_command, bp::std_in.close(),
                             (bp::std_out & bp::std_err) > output_pipe, group, destroy_error);
         if (destroy_error) {
+            Logger::error("Error launching destroy command: " + destroy_error.message());
             io_context.post(std::bind(handler, destroy_error));
         }
 
@@ -108,9 +118,11 @@ public:
         auto self(shared_from_this());
         asio::async_read(output_pipe, output_buffer, [this, self, handler](boost::system::error_code error, std::size_t) {
             if (error != asio::error::eof) {
+                Logger::error("Error reading builder destroy command: " + error.message());
                 auto read_error = std::error_code(error.value(), std::generic_category());
                 io_context.post(std::bind(handler, read_error));
             } else {
+                Logger::error("Builder destroyed");
                 io_context.post(std::bind(handler,std::error_code()));
             }
 
@@ -119,11 +131,11 @@ public:
             std::error_code wait_error;
             process.wait(wait_error);
             if (wait_error) {
-                // Log
+                Logger::error("Error waiting for builder delete to finish: " + wait_error.message());
             }
             int exit_code = process.exit_code();
             if (exit_code != 0) {
-                // Log
+                Logger::error("builder request returned non zero: " + process.exit_code());
             }
         });
     }

@@ -22,6 +22,7 @@ private:
     void accept_connection() {
         acceptor.async_accept([this](boost::system::error_code error, tcp::socket socket) {
             if (!error) {
+                Logger::info("New connection created");
                 std::make_shared<Connection>(std::move(socket), queue)->start();
             }
             accept_connection();

@@ -34,12 +34,12 @@ public:
 
     ~WaitingAnimation() {
         if(active) {
-            stop("Failed",logger::severity_level::error);
+            stop("Failed", Logger::severity_level::error);
         }
     }
 
     // Stop and join the thread
-    void stop(const std::string &message, logger::severity_level level) {
+    void stop(const std::string &message, Logger::severity_level level) {
         active = false;
         animation.join();
 

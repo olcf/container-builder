@@ -19,23 +19,26 @@ namespace bp = boost::process;
 using callback_type = std::function<void(const boost::system::error_code&, std::size_t size)>;
 
 ClientData read_client_data(websocket::stream<tcp::socket>& client_stream) {
-    // Read serialized client data
+    Logger::info("Reading client data");
+
+    Logger::info("Reading serialized client data");
     std::string client_data_string;
     auto client_data_buffer = asio::dynamic_buffer(client_data_string);
     client_stream.read(client_data_buffer);
 
-    // Deserialize client data string
+    Logger::info("Deserializing client data string");
     ClientData client_data;
     std::istringstream archive_stream(client_data_string);
     boost::archive::text_iarchive archive(archive_stream);
     archive >> client_data;
 
+    Logger::success("Read client data");
     return client_data;
 }
 
 void read_file(websocket::stream<tcp::socket>& client_stream,
                const std::string& file_name) {
-    // Open the file
+    Logger::info("Opening " + file_name + " for reading");
     std::ofstream file;
     file.exceptions ( std::ofstream::failbit | std::ofstream::badbit );
     file.open(file_name, std::fstream::out | std::fstream::binary | std::fstream::trunc);
@@ -44,6 +47,7 @@ void read_file(websocket::stream<tcp::socket>& client_stream,
     const std::size_t max_chunk_size = 4096;
     std::array<char, max_chunk_size> chunk_buffer;
     boost::crc_32_type file_csc;
+    Logger::info("Begin reading chunks");
     do {
         // Read chunk
         auto chunk_size = client_stream.read_some(asio::buffer(chunk_buffer));
@@ -54,7 +58,9 @@ void read_file(websocket::stream<tcp::socket>& client_stream,
     } while (!client_stream.is_message_done());
     file.close();
 
-    // Read remote checksum and verify with local checksum
+    Logger::info("Done reading chunks and closing " + file_name);
+
+    Logger::info("Read remote checksum and verify with local checksum");
     auto local_checksum = std::to_string(file_csc.checksum());
     std::string remote_checksum;
     auto remote_checksum_buffer = boost::asio::dynamic_buffer(remote_checksum);
@@ -62,6 +68,7 @@ void read_file(websocket::stream<tcp::socket>& client_stream,
     if (local_checksum != remote_checksum) {
         throw std::runtime_error(file_name + " checksums do not match");
     }
+    Logger::info(file_name + " succesfully read");
 }
 
 std::string build_command(const ClientData& client_data) {
@@ -83,13 +90,14 @@ std::string build_command(const ClientData& client_data) {
     }
     build_command += "/usr/local/bin/singularity build ./container.img ./container.def";
 
+    Logger::info("Build command prepared: " + build_command);
     return build_command;
 }
 
 void stream_build(websocket::stream<tcp::socket>& client_stream,
                             const std::string& build_command) {
 
-    // Start the subprocess and redirect output to pipe
+    Logger::info("Starting subprocess and redirecting output to pipe");
     auto& io_context = client_stream.get_executor().context();
     bp::async_pipe std_pipe{io_context};
     bp::group group;
@@ -111,6 +119,7 @@ void stream_build(websocket::stream<tcp::socket>& client_stream,
         }
     };
     std_pipe.async_read_some(asio::buffer(std_buffer), stream_output);
+    Logger::info("Running async pipe read of subprocess output");
     io_context.run();
 
     // Wait for the process to complete and return exit code
@@ -118,10 +127,13 @@ void stream_build(websocket::stream<tcp::socket>& client_stream,
     if(build_child.exit_code() != 0) {
         throw std::runtime_error("Container build failed");
     }
+    Logger::info("Done streaming subprocess output");
 }
 
 void write_file(websocket::stream<tcp::socket>& client_stream,
                 const std::string& file_name) {
+    Logger::info("Opening " + file_name + " for writing");
+
     std::ifstream container;
     container.exceptions ( std::ofstream::failbit | std::ofstream::badbit );
     container.open("container.img", std::fstream::in | std::fstream::binary);
@@ -133,6 +145,7 @@ void write_file(websocket::stream<tcp::socket>& client_stream,
     std::array<char, max_chunk_size> chunk_buffer;
     boost::crc_32_type container_csc;
     bool fin = false;
+    Logger::info("Begin writing chunks");
     do {
         auto chunk_size = std::min(bytes_remaining, max_chunk_size);
         container.read(chunk_buffer.data(), chunk_size);
@@ -143,10 +156,12 @@ void write_file(websocket::stream<tcp::socket>& client_stream,
         client_stream.write_some(fin, asio::buffer(chunk_buffer.data(), chunk_size));
     } while (!fin);
     container.close();
+    Logger::info("Done writing chunks and closing " + file_name);
 
     // Send the checksum to the client
     auto container_checksum = asio::buffer(std::to_string(container_csc.checksum()));
     client_stream.write(container_checksum);
+    Logger::info(file_name + " successfully written");
 }
 
 // A blocking I/O container building websocket server
@@ -156,36 +171,36 @@ int main(int argc, char *argv[]) {
     tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), 8080));
 
     try {
-        // Accept an in coming websocket connection
+        Logger::info("Accepting an in coming websocket connection");
         acceptor.accept(client_stream.next_layer());
         client_stream.accept();
 
-        // Set the websocket stream to handle binary data and have an unlimited(uint64_t) message size
+        Logger::info("Setting the websocket stream to handle binary data and have an unlimited(uint64_t) message size");
         client_stream.binary(true);
         client_stream.read_message_max(0);
 
-        // Read basic client data that can influence build
+        Logger::info("Reading basic client data that can influence build");
         auto client_data = read_client_data(client_stream);
 
-        // Read client definition file
+        Logger::info("Reading client definition file");
         read_file(client_stream, "container.def");
 
-        // Create build command based upon the client data
+        Logger::info("Creating build command based upon the client data");
         auto build_string = build_command(client_data);
 
-        // launch build process and stream the output to the client
+        Logger::info("Launch build process and stream the output to the client");
         stream_build(client_stream, build_string);
 
-        // Write the finished container to the client
+        Logger::info("Writing the finished container to the client");
         write_file(client_stream, "container.img");
 
     } catch (const boost::exception &ex) {
         auto diagnostics = diagnostic_information(ex);
-        logger::write(std::string() + "Builder exception encountered: " + diagnostics, logger::severity_level::fatal);
+        Logger::error(std::string() + "Builder exception encountered: " + diagnostics);
     } catch (const std::exception &ex) {
-        logger::write(std::string() + "Builder exception encountered: " + ex.what(), logger::severity_level::fatal);
+        Logger::error(std::string() + "Builder exception encountered: " + ex.what());
     } catch (...) {
-        logger::write("Unknown exception caught!", logger::severity_level::fatal);
+        Logger::error("Unknown exception caught!");
     }
 
     // Close connection

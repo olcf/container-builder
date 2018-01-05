@@ -1,7 +1,12 @@
 #pragma once
 
-#include <boost/process.hpp>
-#include "boost/asio/io_context.hpp"
+#include <boost/process/child.hpp>
+#include <boost/process/async_pipe.hpp>
+#include <boost/process/group.hpp>
+#include <boost/process/io.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/asio/streambuf.hpp>
 #include "BuilderData.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>

@@ -1,6 +1,5 @@
 #include "BuilderQueue.h"
 #include "Server.h"
-#include "Logger.h"
 
 namespace asio = boost::asio;
 

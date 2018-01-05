@@ -5,6 +5,7 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/serialization/string.hpp>
+#include <boost/core/ignore_unused.hpp>
 
 enum class Architecture {
     x86_64,
@@ -37,6 +38,7 @@ namespace boost {
 
         template<class Archive>
         void serialize(Archive &ar, ClientData &client_data, const unsigned int version) {
+            boost::ignore_unused(version);
             ar & client_data.user_id;
             ar & client_data.tty;
             ar & client_data.arch;

@@ -1,4 +1,5 @@
 #include "Connection.h"
+#include <boost/beast/core/buffers_to_string.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
 using namespace std::placeholders;

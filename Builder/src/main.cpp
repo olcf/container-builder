@@ -1,12 +1,15 @@
 #include <fstream>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
+#include <boost/beast/core/buffers_to_string.hpp>
 #include <boost/exception/all.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/crc.hpp>
-#include <boost/process.hpp>
+#include <boost/process/child.hpp>
+#include <boost/process/async_pipe.hpp>
+#include <boost/process/group.hpp>
+#include <boost/process/io.hpp>
 #include "ClientData.h"
 #include "Logger.h"
 
@@ -166,6 +169,8 @@ void write_file(websocket::stream<tcp::socket>& client_stream,
 
 // A blocking I/O container building websocket server
 int main(int argc, char *argv[]) {
+    boost::ignore_unused(argc, argv);
+
     asio::io_context io_context;
     websocket::stream<tcp::socket> client_stream(io_context);
     tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), 8080));

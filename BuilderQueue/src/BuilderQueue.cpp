@@ -1,7 +1,5 @@
-#include <boost/asio/spawn.hpp>
 #include "BuilderQueue.h"
 #include "OpenStack.h"
-#include "Logger.h"
 
 void BuilderQueue::return_builder(BuilderData builder) {
     std::make_shared<OpenStack>(io_context)->destroy(builder, [this, builder](std::error_code error) {

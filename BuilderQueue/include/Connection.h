@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/beast.hpp>
+#include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/websocket.hpp>
 #include "BuilderQueue.h"
 #include "Logger.h"

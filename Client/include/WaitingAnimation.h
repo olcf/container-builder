@@ -45,7 +45,7 @@ public:
 
         // Erase current line and set cursor at beginning, overwriting current line
         std::cout << "\33[2K\r" << std::flush;
-        logger::success(message);
+        Logger::success(message);
     }
 
     // Stop and join the thread
@@ -55,7 +55,7 @@ public:
 
         // Erase current line and set cursor at beginning, overwriting current line
         std::cout << "\33[2K\r" << std::flush;
-        logger::error(message);
+        Logger::error(message);
     }
 
 private:

@@ -1,5 +1,6 @@
 #include "BuilderQueue.h"
 #include "Server.h"
+#include "Logger.h"
 
 namespace asio = boost::asio;
 
@@ -14,7 +15,7 @@ int main(int argc, char *argv[]) {
         try {
             io_context.run();
         } catch (...) {
-            SEVERE_LOG("Unknown io_service exception during run");
+            Logger::error("Unknown io_service exception during run");
         }
     }
 }

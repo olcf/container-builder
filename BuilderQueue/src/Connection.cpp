@@ -30,7 +30,7 @@ void Connection::builder_ready(BuilderData builder) {
     std::string request_string(serialized_builder);
 
     Logger::info("Writing builder: " + builder.id);
-    stream.async_write(asio::buffer(request_string), [this, self] (beast::error_code error, std::size_t bytes){
+    stream.async_write(asio::buffer(request_string), [this, self, builder] (beast::error_code error, std::size_t bytes){
         if(!error) {
             wait_for_close();
         } else {

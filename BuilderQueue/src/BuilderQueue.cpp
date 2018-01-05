@@ -43,19 +43,19 @@ void BuilderQueue::create_reserve_builders() {
 
         outstanding_create_count += request_count;
 
-        Logger::info(std::string() + "Attempting to create " + request_count + " builders");
+        Logger::info("Attempting to create " + std::to_string(request_count) + " builders");
 
         for (std::size_t i = 0; i < request_count; i++) {
-            Logger::info(std::string() + "Attempting to create builder " + i);
+            Logger::info("Attempting to create builder " + std::to_string(i));
 
             std::make_shared<OpenStack>(io_context)->request_create([this, i](std::error_code error, BuilderData builder) {
                 outstanding_create_count--;
                 if (!error) {
-                    Logger::info(std::string() + "Created builder " + i + ": " + builder.id);
+                    Logger::info("Created builder " + std::to_string(i) + ": " + builder.id);
                     reserve_builders.push_back(builder);
                     process_pending_handler();
                 } else {
-                    Logger::error(std::string() + "Error creating builder " + i);
+                    Logger::error("Error creating builder " + std::to_string(i));
                 }
             });
         }

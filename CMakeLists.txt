@@ -17,7 +17,8 @@ set(SOURCE_FILES_QUEUE
         Common/include/Logger.h
         BuilderQueue/include/OpenStack.h
         Common/src/BuilderData.cpp
-        Common/include/ClientData.h BuilderQueue/include/Server.h)
+        Common/include/ClientData.h
+        BuilderQueue/include/Server.h)
 
 set(SOURCE_FILES_BUILDER
         Builder/src/main.cpp
@@ -37,8 +38,7 @@ set(SOURCE_FILES_CLIENT
 
 # Scripts required for runtime
 set(SCRIPTS
-        Scripts/RequestCreateBuilder
-        Scripts/GetBuilders
+        Scripts/CreateBuilder
         Scripts/DestroyBuilder)
 
 # Create executables

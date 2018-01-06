@@ -14,6 +14,7 @@
 #include "BuilderData.h"
 #include "WaitingAnimation.h"
 #include "pwd.h"
+#include "Logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
@@ -160,16 +161,16 @@ void parse_environment(ClientData &client_data) {
 }
 
 BuilderData get_builder(websocket::stream<tcp::socket>& queue_stream) {
-    Logger::info("Writing builder request string");
+//    Logger::info("Writing builder request string");
     std::string request_string("checkout_builder_request");
     queue_stream.write(asio::buffer(request_string));
 
-    Logger::info("Read serialized builder data");
+//    Logger::info("Read serialized builder data");
     std::string builder_data_string;
     auto builder_data_buffer = boost::asio::dynamic_buffer(builder_data_string);
     queue_stream.read(builder_data_buffer);
 
-    Logger::info("Deserialize builder data string");
+//    Logger::info("Deserialize builder data string");
     BuilderData builder_data;
     std::istringstream archive_stream(builder_data_string);
     boost::archive::text_iarchive archive(archive_stream);
@@ -191,6 +192,9 @@ void stream_build(websocket::stream<tcp::socket>& builder_stream) {
 }
 
 int main(int argc, char *argv[]) {
+    // Remove buffering from cout
+    std::cout.setf(std::ios::unitbuf);
+
     asio::io_context io_context;
     websocket::stream<tcp::socket> queue_stream(io_context);
     websocket::stream<tcp::socket> builder_stream(io_context);
@@ -227,7 +231,6 @@ int main(int argc, char *argv[]) {
 
         // Read container from builder
         read_file(builder_stream, client_data.container_path);
-
 
     } catch (const boost::exception &ex) {
         auto diagnostics = diagnostic_information(ex);

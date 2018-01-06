@@ -4,7 +4,6 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
-#include "Logger.h"
 
 using namespace std::chrono_literals;
 
@@ -12,6 +11,10 @@ using namespace std::chrono_literals;
 class WaitingAnimation {
 public:
     WaitingAnimation(const std::string &message) : active(true) {
+        // If an error occurs before the thread is created still print a message
+        std::cout << message;
+
+        // Start a thread to run the animation
         animation = std::thread([this, message]() {
             for (;;) {
                 if (!active)
@@ -34,28 +37,32 @@ public:
 
     ~WaitingAnimation() {
         if(active) {
-            stop_error("Failed");
+            stop_error("Error encountered");
         }
     }
 
-    // Stop and join the thread
+    // Stop the animation after success
     void stop_success(const std::string &message) {
+        // Stop animation and join thread
         active = false;
         animation.join();
 
-        // Erase current line and set cursor at beginning, overwriting current line
-        std::cout << "\33[2K\r" << std::flush;
-        Logger::success(message);
+        // Move cursor to start of initial animation message
+        std::cout<<"\b\b\b";
+
+        std::cout<<message<<std::endl;
     }
 
-    // Stop and join the thread
+    // Stop the animation after failure
     void stop_error(const std::string &message) {
+        // Stop animation and join animation thread
         active = false;
         animation.join();
 
-        // Erase current line and set cursor at beginning, overwriting current line
-        std::cout << "\33[2K\r" << std::flush;
-        Logger::error(message);
+        // Move cursor to start of initial animation message
+        std::cout<<"\b\b\b";
+
+        std::cout<<message<<std::endl;
     }
 
 private:

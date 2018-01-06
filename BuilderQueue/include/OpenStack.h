@@ -85,9 +85,9 @@ public:
                                      io_context.post(std::bind(handler, std::error_code(), builder));
 
                                      Logger::info("New builder created: " + builder.id);
-                                 } catch (const boost::exception &ex) {
+                                 } catch (const std::exception &ex) {
+                                     Logger::error(std::string("Error parsing JSON builder output: ") + ex.what());
                                      auto parse_error = std::error_code(EBADMSG, std::generic_category());
-                                     Logger::error("Error parsing JSON builder output: " + parse_error.message());
                                      BuilderData no_builder;
                                      io_context.post(std::bind(handler, parse_error, no_builder));
                                  }

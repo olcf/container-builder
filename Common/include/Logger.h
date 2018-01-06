@@ -33,7 +33,7 @@ public:
         instance().print(message, LogPriority::warning);
     }
     static void success(const std::string& message) {
-        instance().print(message, LogPriority::error);
+        instance().print(message, LogPriority::success);
     }
     static void info(const std::string& message) {
         instance().print(message, LogPriority::info);

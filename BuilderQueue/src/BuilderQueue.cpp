@@ -1,84 +1,61 @@
-#include <boost/asio/spawn.hpp>
 #include "BuilderQueue.h"
-#include "OpenStackBuilder.h"
+#include "OpenStack.h"
 
-Reservation &BuilderQueue::enter() {
-    reservations.emplace_back(io_context);
-    return reservations.back();
+void BuilderQueue::return_builder(BuilderData builder) {
+    std::make_shared<OpenStack>(io_context)->destroy(builder, [this, builder](std::error_code error) {
+        if (!error) {
+            active_builders.remove(builder);
+            create_reserve_builders();
+        }
+    });
 }
 
-void BuilderQueue::tick(asio::yield_context yield) {
-    std::error_code get_error;
+void BuilderQueue::process_pending_handler() {
+    Logger::info("Processing pending handlers");
 
-    // Update list of "Active" OpenStack builders
-    auto all_builders = OpenStackBuilder::get_builders(io_context, yield, get_error);
-    if (get_error) {
-        logger::write("Error calling get_builders: " + get_error.message());
-        return;
+    if (!pending_handlers.empty() && !reserve_builders.empty()) {
+        // Get the next builder and handler in the queue
+        auto builder = reserve_builders.front();
+        auto handler = pending_handlers.front();
+
+        // Remove them from the queue
+        reserve_builders.pop_front();
+        pending_handlers.pop_front();
+
+        // Invoke the handler to pass the builder to the connection
+        io_context.post(std::bind(handler,builder));
+
+        Logger::info("Providing builder to client: " + builder.id);
+
+        // Attempt to create a new reserve builder if required
+        create_reserve_builders();
     }
+}
 
-    std::set<BuilderData> unavailable_builders;
+void BuilderQueue::create_reserve_builders() {
+    // Attempt to create the required number of reserve builders while staying below the total allowed builder count
+    auto potential_reserve_count = reserve_builders.size() + outstanding_create_count;
 
-    // Delete reservations that are completed
-    reservations.remove_if([](const auto &reservation) {
-        return reservation.finalized();
-    });
+    if (potential_reserve_count < max_reserve_builder_count) {
+        auto request_count = std::min(max_reserve_builder_count - potential_reserve_count, max_builder_count);
 
-    // Process existing reservations
-    for (auto &reservation : reservations) {
-        // Set unavailable builders, that is builders which are attached to a reservation
-        if (reservation.builder) {
-            unavailable_builders.insert(reservation.builder.get());
+        outstanding_create_count += request_count;
 
-            // If the reservation has completed delete the builder
-            if (reservation.request_complete()) {
-                reservation.set_enter_cleanup();
-                asio::spawn(io_context,
-                            [this, &reservation](asio::yield_context destroy_yield) {
-                                std::error_code cleanup_error;
-                                OpenStackBuilder::destroy(reservation.builder.get(), io_context, destroy_yield,
-                                                          cleanup_error);
-                                if (cleanup_error) {
-                                    logger::write("Error destryoing builder: " + cleanup_error.message());
-                                } else {
-                                    reservation.set_finalize();
-                                }
-                            });
-            }
+        Logger::info("Attempting to create " + std::to_string(request_count) + " builders");
+
+        for (std::size_t i = 0; i < request_count; i++) {
+            Logger::info("Attempting to create builder " + std::to_string(i));
+
+            std::make_shared<OpenStack>(io_context)->request_create([this, i](std::error_code error, BuilderData builder) {
+                outstanding_create_count--;
+                if (!error) {
+                    Logger::info("Created builder " + std::to_string(i) + ": " + builder.id);
+                    reserve_builders.push_back(builder);
+                    process_pending_handler();
+                } else {
+                    Logger::error("Error creating builder " + std::to_string(i));
+                }
+            });
         }
-    }
-
-    // Available_builders = all_builders - unavailable_builders
-    std::set<BuilderData> available_builders;
-    std::set_difference(all_builders.begin(), all_builders.end(),
-                        unavailable_builders.begin(), unavailable_builders.end(),
-                        std::inserter(available_builders, available_builders.begin()));
-
-    // Assign any available builders to any pending reservations
-    for (auto &reservation : reservations) {
-        if (reservation.pending() && !available_builders.empty()) {
-            reservation.ready(*available_builders.begin());
-            available_builders.erase(available_builders.begin());
-        }
-    }
-
-    // Request new builders if slots are open
-    // Care must be taken as all_builders may include a builder from a pending request that hasn't completely returned yet
-    // that is to say open_slots, open_available_slots may be negative
-    int open_slots = max_builders - all_builders.size() - pending_requests;
-    int open_available_slots = max_available_builders - available_builders.size() - pending_requests;
-    int request_count = std::min(open_slots, open_available_slots);
-    for (int i = 0; i < request_count; i++) {
-        pending_requests++;
-        asio::spawn(io_context,
-                    [this](asio::yield_context request_yield) {
-                        std::error_code create_error;
-                        OpenStackBuilder::request_create(io_context, request_yield, create_error);
-                        if (create_error) {
-                            logger::write("Error requesting builder create: " + create_error.message());
-                        } else {
-                            pending_requests--;
-                        }
-                    });
     }
 }

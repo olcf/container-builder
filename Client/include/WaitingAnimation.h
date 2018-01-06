@@ -32,13 +32,30 @@ public:
         });
     }
 
+    ~WaitingAnimation() {
+        if(active) {
+            stop_error("Failed");
+        }
+    }
+
     // Stop and join the thread
-    void stop(const std::string &message, logger::severity_level level) {
+    void stop_success(const std::string &message) {
         active = false;
         animation.join();
 
-        std::cout << "\r" << std::flush;
-        logger::write(message, level);
+        // Erase current line and set cursor at beginning, overwriting current line
+        std::cout << "\33[2K\r" << std::flush;
+        Logger::success(message);
+    }
+
+    // Stop and join the thread
+    void stop_error(const std::string &message) {
+        active = false;
+        animation.join();
+
+        // Erase current line and set cursor at beginning, overwriting current line
+        std::cout << "\33[2K\r" << std::flush;
+        Logger::error(message);
     }
 
 private:

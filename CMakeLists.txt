@@ -9,32 +9,22 @@ include_directories(BuilderQueue/include Builder/include Client/include Common/i
 set(SOURCE_FILES_QUEUE
         BuilderQueue/src/main.cpp
         BuilderQueue/src/Connection.cpp
-        BuilderQueue/src/Reservation.cpp
-        BuilderQueue/src/ReservationRequest.cpp
         BuilderQueue/src/BuilderQueue.cpp
         BuilderQueue/include/Connection.h
-        BuilderQueue/include/Reservation.h
-        BuilderQueue/include/ReservationRequest.h
         BuilderQueue/include/BuilderQueue.h
         Common/include/BuilderData.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/include/Messenger.h
-        BuilderQueue/src/OpenStackBuilder.cpp
-        BuilderQueue/include/OpenStackBuilder.h
+        BuilderQueue/include/OpenStack.h
         Common/src/BuilderData.cpp
-        Common/src/Messenger.cpp
-        Common/include/ClientData.h)
+        Common/include/ClientData.h BuilderQueue/include/Server.h)
 
 set(SOURCE_FILES_BUILDER
         Builder/src/main.cpp
         Common/include/BuilderData.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/include/Messenger.h
-        Common/src/Messenger.cpp
-        Builder/src/Builder.cpp
-        Builder/include/Builder.h)
+        )
 
 # Files related to the API
 set(SOURCE_FILES_CLIENT
@@ -42,11 +32,8 @@ set(SOURCE_FILES_CLIENT
         Common/include/BuilderData.h
         Common/src/Logger.cpp
         Common/include/Logger.h
-        Common/include/Messenger.h
         Common/src/BuilderData.cpp
-        Common/src/Messenger.cpp
-        Common/include/ClientData.h
-        Client/include/WaitingAnimation.h Client/src/Client.cpp Client/include/Client.h)
+        Common/include/ClientData.h)
 
 # Scripts required for runtime
 set(SCRIPTS
@@ -59,17 +46,15 @@ add_executable(builder_queue ${SOURCE_FILES_QUEUE})
 add_executable(builder_server ${SOURCE_FILES_BUILDER})
 add_executable(container_builder ${SOURCE_FILES_CLIENT})
 
-# boost log definition
-add_definitions(-DBOOST_LOG_DYN_LINK)
-set(Boost_NO_BOOST_CMAKE TRUE) # Ignore system boost and use module system boost
-set(Boost_USE_STATIC_LIBS OFF)
+# Ignore system boost and use module system boost
+set(Boost_NO_BOOST_CMAKE TRUE)
+#set(Boost_USE_STATIC_LIBS OFF)
 
 # ignore coroutines deprecation
 add_definitions(-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
 
-set(HARDENING_FLAGS "-Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIE -fpie -fno-omit-frame-pointer")
-# https://github.com/boostorg/coroutine/issues/30
-# -fsanitize=address,undefined -fno-sanitize=vptr -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen
+set(HARDENING_FLAGS "-Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIE -fpie -fno-omit-frame-pointer \
+    -fsanitize=address,undefined -fno-sanitize=vptr -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen")
 
 set_target_properties(builder_queue PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(builder_queue PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
@@ -78,9 +63,6 @@ set_target_properties(builder_server PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARD
 set_target_properties(container_builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(container_builder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 
-# Force logger to use stderr instead of file for client
-set_target_properties(container_builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -D LOG_TO_CONSOLE")
-
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(builder_queue ${CMAKE_THREAD_LIBS_INIT})
@@ -88,7 +70,7 @@ target_link_libraries(builder_server ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(container_builder ${CMAKE_THREAD_LIBS_INIT})
 
 
-find_package(Boost 1.66.0 COMPONENTS system coroutine filesystem serialization regex log log_setup thread program_options REQUIRED)
+find_package(Boost 1.66.0 COMPONENTS system coroutine filesystem serialization regex thread program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(builder_queue ${Boost_LIBRARIES})
 target_link_libraries(builder_server ${Boost_LIBRARIES})

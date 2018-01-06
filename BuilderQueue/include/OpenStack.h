@@ -71,12 +71,12 @@ public:
 
                                      // Parse IP address
                                      BuilderData builder;
-                                     auto network = builder_tree.get<std::string>("Networks");
+                                     auto network = builder_tree.get<std::string>("addresses");
                                      size_t eq_pos = network.find('=');
                                      builder.host = network.substr(eq_pos + 1);
 
                                      // Parse OpenStack ID
-                                     builder.id = builder_tree.get<std::string>("ID");
+                                     builder.id = builder_tree.get<std::string>("id");
 
                                      // Port for builder service
                                      builder.port = "8080";

@@ -195,6 +195,9 @@ int main(int argc, char *argv[]) {
     // Remove buffering from cout
     std::cout.setf(std::ios::unitbuf);
 
+    // Hide the the cursor
+    std::cout<<"\e[?25l";
+
     asio::io_context io_context;
     websocket::stream<tcp::socket> queue_stream(io_context);
     websocket::stream<tcp::socket> builder_stream(io_context);
@@ -244,6 +247,9 @@ int main(int argc, char *argv[]) {
     // Disconnect from builder and queue
     builder_stream.close(websocket::close_code::normal);
     queue_stream.close(websocket::close_code::normal);
+
+    // Show the cursor
+    std::cout<<"\e[?25h";
 
     return 0;
 }

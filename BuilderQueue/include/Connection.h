@@ -34,6 +34,8 @@ private:
 
     void read_request_string();
 
+    void request_builder();
+
     void builder_ready(BuilderData builder);
 
     void wait_for_close();

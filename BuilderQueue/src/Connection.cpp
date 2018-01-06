@@ -44,6 +44,18 @@ void Connection::builder_ready(BuilderData builder) {
     });
 }
 
+void Connection::request_builder() {
+    // Persist this connection
+    auto self(shared_from_this());
+
+    Logger::info("Request to checkout builder made");
+    // Pass the provide_builder callback to the queue
+    // 'self' is passed to keep the connection alive as long as it's waiting for a builder in the queue
+    queue.checkout_builder([this, self] (BuilderData builder) {
+        builder_ready(builder);
+    });
+}
+
 void Connection::read_request_string() {
     // Persist this connection
     auto self(shared_from_this());
@@ -55,12 +67,7 @@ void Connection::read_request_string() {
             auto request = beast::buffers_to_string(buffer.data());
             buffer.consume(buffer.size());
             if(request == "checkout_builder_request") {
-                Logger::info("Request to checkout builder made");
-                // Pass the provide_builder callback to the queue
-                // 'self' is passed to keep the connection alive as long as it's waiting for a builder in the queue
-                queue.checkout_builder([this, self] (BuilderData builder) {
-                   builder_ready(builder);
-                });
+                request_builder();
             } else {
                 Logger::error("Bad initial request string: " + request);
             }

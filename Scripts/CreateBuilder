@@ -19,7 +19,6 @@ openstack server create               \
     --nic net-id="${NIC}"             \
     --key-name "${KEY}"               \
     --security-group container_builder\
-    -c id                             \
     -f json                           \
     --wait                            \
     "Builder"

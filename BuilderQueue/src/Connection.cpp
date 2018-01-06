@@ -56,9 +56,11 @@ void Connection::read_request_string() {
             buffer.consume(buffer.size());
             if(request == "checkout_builder_request") {
                 Logger::info("Request to checkout builder made");
-                // Pass the provide_builder callback to the queue, that copy will keep this connection alive
-                // When a builder is available builder_read() will be called
-                queue.checkout_builder(std::bind(&Connection::builder_ready, this, _1));
+                // Pass the provide_builder callback to the queue
+                // 'self' is passed to keep the connection alive as long as it's waiting for a builder in the queue
+                queue.checkout_builder([this, self] (BuilderData builder) {
+                   builder_ready(builder);
+                });
             } else {
                 Logger::error("Bad initial request string: " + request);
             }

@@ -74,7 +74,7 @@ void write_file(websocket::stream<tcp::socket>& stream,
 
     std::ifstream container;
     container.exceptions ( std::ofstream::failbit | std::ofstream::badbit );
-    container.open("container.img", std::fstream::in | std::fstream::binary);
+    container.open(file_name, std::fstream::in | std::fstream::binary);
     const auto file_size = boost::filesystem::file_size(file_name);
 
     // Write the file in chunks to the client
@@ -217,6 +217,7 @@ int main(int argc, char *argv[]) {
         // Request a build host from the queue
         WaitingAnimation wait_builder("Requesting remote builder: ");
         auto builder_data = get_builder(queue_stream);
+
         // Open a WebSocket stream to the builder
         tcp::resolver builder_resolver(io_context);
         asio::connect(builder_stream.next_layer(), builder_resolver.resolve({builder_data.host, "8080"}));

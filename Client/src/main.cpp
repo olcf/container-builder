@@ -224,6 +224,10 @@ int main(int argc, char *argv[]) {
         builder_stream.handshake(builder_data.host + ":8080", "/");
         wait_builder.stop_success("Connected to remote builder: " + builder_data.host);
 
+        Logger::info("Setting the builder websocket stream to handle binary data and have an unlimited(uint64_t) message size");
+        builder_stream.binary(true);
+        builder_stream.read_message_max(0);
+
         // Write client data to builder
         write_client_data(builder_stream, client_data);
 

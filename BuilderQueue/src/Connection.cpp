@@ -85,6 +85,8 @@ void Connection::start() {
     Logger::info("waiting for client WebSocket handshake");
     stream.async_accept([this, self](beast::error_code error){
         if(!error) {
+            Logger::info("Setting stream to binary mode");
+            builder_stream.binary(true);
             read_request_string();
         } else {
             Logger::error("WebSocket handshake error: " + error.message());

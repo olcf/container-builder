@@ -41,7 +41,7 @@ ClientData read_client_data(websocket::stream<tcp::socket>& client_stream) {
 
 void read_file(websocket::stream<tcp::socket>& client_stream,
                const std::string& file_name) {
-    Logger::info("Opening " + file_name + " for reading");
+    Logger::info("Opening " + file_name + " for writing");
     std::ofstream file;
     file.exceptions ( std::ofstream::failbit | std::ofstream::badbit );
     file.open(file_name, std::fstream::out | std::fstream::binary | std::fstream::trunc);
@@ -50,7 +50,7 @@ void read_file(websocket::stream<tcp::socket>& client_stream,
     const std::size_t max_chunk_size = 4096;
     std::array<char, max_chunk_size> chunk_buffer;
     boost::crc_32_type file_csc;
-    Logger::info("Begin reading chunks");
+    Logger::info("Begin reading chunks from stream");
     do {
         // Read chunk
         auto chunk_size = client_stream.read_some(asio::buffer(chunk_buffer));
@@ -135,12 +135,12 @@ void stream_build(websocket::stream<tcp::socket>& client_stream,
 
 void write_file(websocket::stream<tcp::socket>& client_stream,
                 const std::string& file_name) {
-    Logger::info("Opening " + file_name + " for writing");
+    Logger::info("Opening " + file_name + " for reading");
 
     std::ifstream container;
     container.exceptions ( std::ofstream::failbit | std::ofstream::badbit );
-    container.open("container.img", std::fstream::in | std::fstream::binary);
-    const auto file_size = boost::filesystem::file_size("container.img");
+    container.open(file_name, std::fstream::in | std::fstream::binary);
+    const auto file_size = boost::filesystem::file_size(file_name);
 
     // Write the file in chunks to the client
     auto bytes_remaining = file_size;
@@ -148,7 +148,7 @@ void write_file(websocket::stream<tcp::socket>& client_stream,
     std::array<char, max_chunk_size> chunk_buffer;
     boost::crc_32_type container_csc;
     bool fin = false;
-    Logger::info("Begin writing chunks");
+    Logger::info("Begin writing chunks to stream");
     do {
         auto chunk_size = std::min(bytes_remaining, max_chunk_size);
         container.read(chunk_buffer.data(), chunk_size);

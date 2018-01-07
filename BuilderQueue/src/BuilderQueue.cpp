@@ -32,7 +32,7 @@ void BuilderQueue::process_pending_handler() {
 
         Logger::info("Providing builder to client: " + builder.id);
 
-        // Invoke the handler to pass the builder to the connection
+        // Post the handler to pass the builder to the connection
         asio::post(io_context, std::bind(handler,builder));
 
         // Attempt to create a new reserve builder if required

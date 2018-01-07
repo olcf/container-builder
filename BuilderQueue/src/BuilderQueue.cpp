@@ -14,7 +14,7 @@ void BuilderQueue::return_builder(BuilderData builder) {
 
 void BuilderQueue::process_pending_handler() {
     Logger::info("Processing " + std::to_string(pending_handlers.size()) +
-                         " handlers with " + std::to_string(reserve_builders.size()) + "reserve builders");
+                         " handlers with " + std::to_string(reserve_builders.size()) + " reserve builders");
 
     if (!pending_handlers.empty() && !reserve_builders.empty()) {
         Logger::info("Processing pending handler");

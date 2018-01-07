@@ -17,7 +17,7 @@ public:
     };
 private:
     tcp::acceptor acceptor;
-    BuilderQueue queue;
+    BuilderQueue &queue;
 
     void accept_connection() {
         acceptor.async_accept([this](boost::system::error_code error, tcp::socket socket) {

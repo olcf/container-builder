@@ -23,17 +23,17 @@ void BuilderQueue::process_pending_handler() {
         auto builder = reserve_builders.front();
         auto handler = pending_handlers.front();
 
+        // Add builder to active builder list
+        active_builders.emplace_back(builder);
+
         // Remove the builder and handler from the queue
         reserve_builders.pop_front();
         pending_handlers.pop_front();
 
-        // Add builder to active builder list
-        active_builders.emplace_back(builder);
-
         Logger::info("Providing builder to client: " + builder.id);
 
         // Invoke the handler to pass the builder to the connection
-        io_context.post(std::bind(handler,builder));
+        asio::post(io_context, std::bind(handler,builder));
 
         // Attempt to create a new reserve builder if required
         create_reserve_builders();
@@ -41,6 +41,8 @@ void BuilderQueue::process_pending_handler() {
 }
 
 void BuilderQueue::create_reserve_builders() {
+    Logger::info("Checking reserve builder count with " + std::to_string(reserve_builders.size()) + " reserve builders");
+
     // Attempt to create the required number of reserve builders while staying below the total allowed builder count
     auto potential_reserve_count = reserve_builders.size() + outstanding_create_count;
     auto potential_total_count = potential_reserve_count + active_builders.size();

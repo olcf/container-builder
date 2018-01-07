@@ -53,8 +53,12 @@ set(Boost_NO_BOOST_CMAKE TRUE)
 # ignore coroutines deprecation
 add_definitions(-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
 
+# Add compile time hardening
 set(HARDENING_FLAGS "-Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIE -fpie -fno-omit-frame-pointer \
-    -fsanitize=address,undefined -fno-sanitize=vptr -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen")
+    -fsanitize=address,undefined -fno-sanitize=vptr")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set(HARDENING_FLAGS "${HADENING_FLAGS} -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen")
+endif()
 
 set_target_properties(builder_queue PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(builder_queue PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")

@@ -23,6 +23,13 @@ public:
         create_reserve_builders();
     }
 
+    // Don't allow the queue to be copied or moved
+    BuilderQueue(const BuilderQueue&)            =delete;
+    BuilderQueue& operator=(const BuilderQueue&) =delete;
+    BuilderQueue(BuilderQueue&&) noexcept        =delete;
+    BuilderQueue& operator=(BuilderQueue&&)      =delete;
+
+
     // Add the specified handler to the queue
     // When a builder is ready the handler will be called and passed the builder
     template<typename FetchHandler>

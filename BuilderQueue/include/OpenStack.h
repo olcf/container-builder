@@ -102,7 +102,7 @@ public:
                              }
                              int exit_code = process.exit_code();
                              if (exit_code != 0) {
-                                 Logger::error("builder request returned non zero: " + process.exit_code());
+                                 Logger::error("builder request returned non zero: " + std::to_string(exit_code));
                              }
                          });
     }
@@ -144,7 +144,7 @@ public:
                              }
                              int exit_code = process.exit_code();
                              if (exit_code != 0) {
-                                 Logger::error("builder request returned non zero: " + process.exit_code());
+                                 Logger::error("builder request returned non zero: " + std::to_string(exit_code));
                              }
                          });
     }

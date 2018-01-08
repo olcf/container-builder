@@ -125,11 +125,18 @@ void stream_build(websocket::stream<tcp::socket>& client_stream,
     Logger::info("Running async pipe read of subprocess output");
     io_context.run();
 
-    // Wait for the process to complete and return exit code
+    // Wait for the process to complete and grab exit code
     build_child.wait();
-    if(build_child.exit_code() != 0) {
+
+    // Send exit code to client, if non zero end the connection
+    int exit_code = build_child.exit_code();
+    auto exit_code_string = std::to_string(exit_code);
+    client_stream.write(asio::buffer(exit_code_string));
+
+    if(exit_code != 0) {
         throw std::runtime_error("Container build failed");
     }
+
     Logger::info("Done streaming subprocess output");
 }
 

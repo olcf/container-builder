@@ -189,6 +189,15 @@ void stream_build(websocket::stream<tcp::socket>& builder_stream) {
         std::cout.write(buffer.data(), bytes_read);
     } while (!builder_stream.is_message_done());
     Logger::info("Finished streaming build");
+
+    Logger::info("Checking exit status of build");
+    std::string exit_code_string;
+    auto exit_code_buffer = boost::asio::dynamic_buffer(exit_code_string);
+    builder_stream.read(exit_code_buffer);
+    Logger::info("Build exit code: " + exit_code_string);
+    if(exit_code_string != "0") {
+        throw std::runtime_error("Build failed with exit code " + exit_code_string);
+    }
 }
 
 int main(int argc, char *argv[]) {

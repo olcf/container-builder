@@ -39,7 +39,7 @@ while [ $? -ne 0 ]; do
 done
 
 echo "Fixing ORNL TCP timeout issue for current session"
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < 'echo 0 > /proc/sys/net/ipv4/tcp_timestamps'
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/DisableTcpTimestamps
 
 echo "Provisioning the queue"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/ProvisionQueue

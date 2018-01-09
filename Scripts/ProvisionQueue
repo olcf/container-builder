@@ -3,20 +3,20 @@
 set -e
 set -o xtrace
 
-sudo echo 0 > /proc/sys/net/ipv4/tcp_timestamps # this session
-sudo cat << EOF > /etc/sysctl.d/51-net.conf     # permanent
+echo 0 > /proc/sys/net/ipv4/tcp_timestamps # this session
+cat << EOF > /etc/sysctl.d/51-net.conf     # permanent
 net.ipv4.tcp_timestamps = 0
 EOF
 
 # Create non root queue user
-sudo useradd --create-home --home-dir /home/queue --shell /bin/bash queue
+useradd --create-home --home-dir /home/queue --shell /bin/bash queue
 
 # Update cmake version
 cd /
 wget https://cmake.org/files/v3.9/cmake-3.9.5-Linux-x86_64.sh
 chmod +x ./cmake-3.9.5-Linux-x86_64.sh
 ./cmake-3.9.5-Linux-x86_64.sh --skip-license
-sudo ln -s /cmake-3.9.5-Linux-x86_64/bin/* /usr/local/bin
+ln -s /cmake-3.9.5-Linux-x86_64/bin/* /usr/local/bin
 cd /
 rm -rf /cmake-3.9.5-Linux-x86_64
 
@@ -25,7 +25,7 @@ wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
 tar xf boost_1_66_0.tar.gz
 cd boost_1_66_0
 ./bootstrap.sh --with-libraries=filesystem,regex,system,serialization,thread,program_options
-sudo ./b2 install || :
+./b2 install || :
 cd /
 rm -rf /boost_1_66_0
 
@@ -36,7 +36,7 @@ cd ContainerBuilder
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTAL_PREFIX="/usr/local" ..
 make
-sudo make install
+make install
 cd /
 rm -rf /ContainerBuilder
 
@@ -44,7 +44,7 @@ rm -rf /ContainerBuilder
 pip install python-openstackclient
 
 # Create systemd script and launch the BuilderQueue daemon
-sudo cat << EOF > /etc/systemd/system/builder_queue.service
+cat << EOF > /etc/systemd/system/builder_queue.service
 [Unit]
 Description=builder_queue daemon
 After=network.target
@@ -63,4 +63,4 @@ EOF
 
 # There appears to be some weird issues with starting systemd services inside of a cloud-init script
 # The easiest thing to do is just reboot after enabling the service
-sudo systemctl enable builder_queue
+systemctl enable builder_queue

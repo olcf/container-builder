@@ -55,11 +55,11 @@ while [ $? -ne 0 ]; do
 done
 
 echo "Provisioning the builder"
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'bash -s' < ${SCRIPT_DIR}/ProvisionQueue
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/ProvisionQueue
 
 if [ $? -ne 0 ]; then
     echo "Provision failed!"
-    exit
+    exit 1
 fi
 
 ####

@@ -39,11 +39,11 @@ while [ $? -ne 0 ]; do
 done
 
 echo "Provisioning the queue"
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'bash -s' < ${SCRIPT_DIR}/ProvisionQueue
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/ProvisionQueue
 
 if [ $? -ne 0 ]; then
     echo "Provision failed!"
-    exit
+    exit 1
 fi
 
 # Copy OpenStack credentials to VM and then move to correct directory

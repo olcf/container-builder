@@ -33,21 +33,7 @@ cd build
 make
 make install
 
-# Add ppc64le repos to apt sources
-#cat << EOF > /etc/apt/sources.list
-#deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ xenial main restricted multiverse
-#deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ xenial-updates multiverse
-#deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ xenial-backports main restricted universe multiverse
-#deb [arch=ppc64el] http://ports.ubuntu.com/ubuntu-ports/ xenial main restricted universe
-#deb [arch=ppc64el] http://ports.ubuntu.com/ubuntu-ports/ xenial-updates main restricted universe
-#EOF
-
-# Install ppc64le glibc
-#dpkg --add-architecture ppc64el
-#apt-get update || true # Ignore complaints about missing cades ppc64le repos
-#apt-get -y install libc6:ppc64el libc6-dev:ppc64el
-
-# A dirty hack to copy the custom qemu static binaries over top of the distro provided dynamically linked binaries
+# A dirty hack to copy the custom qemu static binary(ies) over top of the distro provided dynamically linked binaries
 cp -r /usr/local/bin/qemu-* /usr/bin
 
 #####################################

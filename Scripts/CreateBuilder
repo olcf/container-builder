@@ -6,7 +6,7 @@ source /home/queue/openrc.sh
 # General VM settings
 BOOTIMG="BuilderImage"
 ZONE="nova"
-FLAVOR="m1.medium"
+FLAVOR="m1.large"
 KEY="ContainerBuilderKey"
 
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)

@@ -73,7 +73,8 @@ VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s
 
 echo "Copy over proprietary software that will be available in Base containers"
 echo "Copying IBM Spectrum RPMs to build host"
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mkdir /IBM'
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mkdir -p /IBM'
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo chmod 750 /IBM'
 scp -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} /sw/summitdev/spectrum_mpi/10.1.0.4-20170915/rpms/* /IBM
 
 echo "Build Titan and Summit base containers inside of builder image"

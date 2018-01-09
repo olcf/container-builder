@@ -30,6 +30,7 @@ set(SOURCE_FILES_BUILDER
 # Files related to the API
 set(SOURCE_FILES_CLIENT
         Client/src/main.cpp
+        Client/include/WaitingAnimation.h
         Common/include/BuilderData.h
         Common/src/Logger.cpp
         Common/include/Logger.h

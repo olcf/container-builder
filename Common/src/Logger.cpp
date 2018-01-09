@@ -2,7 +2,7 @@
 #include "Logger.h"
 
 // Set terminal color if we're outputing to a tty
-void Logger::set_color(LogPriority priority) {
+void Logger::set_color(LogPriority priority) const {
     if(has_tty) {
         switch (priority) {
             case LogPriority::error:
@@ -27,7 +27,7 @@ void Logger::set_color(LogPriority priority) {
 }
 
 // Print a prefix based upon the priority level
-void Logger::print_prefix(LogPriority priority) {
+void Logger::print_prefix(LogPriority priority) const {
     switch (priority) {
         case LogPriority::error:
             std::clog << "[ERROR] ";
@@ -50,16 +50,16 @@ void Logger::print_prefix(LogPriority priority) {
 }
 
 // Print a suffix
-void Logger::print_suffix() {
+void Logger::print_suffix() const {
     std::clog << std::endl;
 }
 
-void Logger::unset_color() {
+void Logger::unset_color() const {
     std::clog << "\033[0m";
 }
 
 // Print a log message
-void Logger::print(const std::string& message, LogPriority priority) {
+void Logger::print(const std::string& message, LogPriority priority) const {
     set_color(priority);
 
     print_prefix(priority);

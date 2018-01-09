@@ -4,6 +4,7 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include "Logger.h"
 
 using namespace std::chrono_literals;
 
@@ -13,6 +14,11 @@ public:
     WaitingAnimation(const std::string &message) : active(true) {
         // If an error occurs before the thread is created still print a message
         std::cout << message;
+
+        // If debug logging is enabled don't do any animation as it might interfere with debug printing
+        if(Logger::get_max_priority() >= LogPriority::info) {
+            return;
+        }
 
         // Start a thread to run the animation
         animation = std::thread([this, message]() {
@@ -45,7 +51,8 @@ public:
     void stop_success(const std::string &message) {
         // Stop animation and join thread
         active = false;
-        animation.join();
+        if(animation.joinable())
+            animation.join();
 
         // Move cursor to start of initial animation message
         std::cout<<"\b\b\b";
@@ -57,7 +64,8 @@ public:
     void stop_error(const std::string &message) {
         // Stop animation and join animation thread
         active = false;
-        animation.join();
+        if(animation.joinable())
+            animation.join();
 
         // Move cursor to start of initial animation message
         std::cout<<"\b\b\b";

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Create base containers for use - hopefully this is replaced by a registry soon!
+cd /
+git clone https://github.com/olcf/SingularityTools.git
+mkdir /BaseContainers
+sudo singularity build /BaseContainers/titan_ubuntu17.04.img /SingularityTools/Titan/UbuntuBase/Ubuntu_17.04.def
+sudo singularity build /BaseContainers/titan_centos7.img /SingularityTools/Titan/CentosBase/Centos7.def
+sudo singularity build /BaseContainers/summit_centos7.img /Singularity/Summit/CentosBase/Centos7.def
+cd /
+rm -rf SingularityTools

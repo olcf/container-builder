@@ -89,7 +89,7 @@ cd /
 wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
 tar xf boost_1_66_0.tar.gz
 cd boost_1_66_0
-./bootstrap.sh --with-libraries=filesystem,regex,system,coroutine,serialization,log,thread,program_options
+./bootstrap.sh --with-libraries=filesystem,regex,system,serialization,thread,program_options
 ./b2 install || :
 rm -rf /boost_1_66_0
 
@@ -122,9 +122,3 @@ Restart=no
 WantedBy=multi-user.target
 EOF
 systemctl enable builder_server
-
-reboot
-
-# To check that the Builder service is running
-# sudo netstat -plnt | grep builder_server
-# systemctl status

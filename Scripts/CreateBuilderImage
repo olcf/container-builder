@@ -66,6 +66,23 @@ until openstack console log show ${VM_UUID} | grep "running 'modules:final'" > /
 done
 echo -ne "\b"
 
+####
+# Handle building base containers as we don't have a registry setup yet
+####
+VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
+
+echo "Copy over proprietary software that will be available in Base containers"
+echo "Copying IBM Spectrum RPMs to build host"
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'mkdir /IBM'
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} /sw/summitdev/spectrum_mpi/10.1.0.4-20170915/rpms/* /IBM
+
+echo "Build Titan and Summit base containers inside of builder image"
+echo "Building base containers"
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} '/ContainerBuilder/Scripts/CreateBaseContainers'
+
+echo "Reboot the server to ensure it's in a clean state before creating the snapshot"
+openstack server reboot --wait ${VM_UUID}
+
 echo "Shutting down server"
 openstack server stop ${VM_UUID}
 until openstack server list --status SHUTOFF | grep ${VM_UUID} > /dev/null 2>&1; do

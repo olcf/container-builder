@@ -51,9 +51,6 @@ add_executable(container_builder ${SOURCE_FILES_CLIENT})
 set(Boost_NO_BOOST_CMAKE TRUE)
 #set(Boost_USE_STATIC_LIBS OFF)
 
-# ignore coroutines deprecation
-add_definitions(-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
-
 # Add compile time hardening
 set(HARDENING_FLAGS "-Wall -Wextra -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fPIE -fpie -fno-omit-frame-pointer \
     -fsanitize=address,undefined -fno-sanitize=vptr")
@@ -75,7 +72,7 @@ target_link_libraries(builder_server ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(container_builder ${CMAKE_THREAD_LIBS_INIT})
 
 
-find_package(Boost 1.66.0 COMPONENTS system coroutine filesystem serialization regex thread program_options REQUIRED)
+find_package(Boost 1.66.0 COMPONENTS system filesystem serialization regex thread program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(builder_queue ${Boost_LIBRARIES})
 target_link_libraries(builder_server ${Boost_LIBRARIES})

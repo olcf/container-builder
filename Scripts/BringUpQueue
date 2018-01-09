@@ -44,6 +44,11 @@ function spin_me_right_round() {
 
 VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
 
+echo "Waiting for SSH to come up"
+while [ $? -ne 0 ]; do
+    ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} || (sleep 1;false)
+done
+
 echo "Provisioning the queue"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'bash -s' < ${SCRIPT_DIR}/ProvisionQueue
 

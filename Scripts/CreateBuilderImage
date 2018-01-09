@@ -51,7 +51,7 @@ VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s
 echo "Waiting for SSH to come up"
 false
 while [ $? -ne 0 ]; do
-    ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} exit || (sleep 1;false)
+    ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} exit &> /dev/null || (sleep 1;false)
 done
 
 echo "Provisioning the builder"

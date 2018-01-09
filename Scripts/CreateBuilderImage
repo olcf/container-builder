@@ -57,10 +57,10 @@ done
 echo "Provisioning the builder"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'bash -s' < ${SCRIPT_DIR}/ProvisionQueue
 
-if [ $? -ne 0]; then
+if [ $? -ne 0 ]; then
     echo "Provision failed!"
     exit
-done
+fi
 
 ####
 # Handle building base containers as we don't have a registry setup yet

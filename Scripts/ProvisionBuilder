@@ -4,22 +4,22 @@ set -e
 set -o xtrace
 
 # Disable TCP time stamps - ORNL seems to be jacking them up and causing the connection to drop at the 5 minute mark
-echo 0 > /proc/sys/net/ipv4/tcp_timestamps # this session
-cat << EOF > /etc/sysctl.d/51-net.conf     # permanent
+sudo echo 0 > /proc/sys/net/ipv4/tcp_timestamps # this session
+sduo cat << EOF > /etc/sysctl.d/51-net.conf     # permanent
 net.ipv4.tcp_timestamps = 0
 EOF
 
 # Create non root builder user
-useradd --create-home --home-dir /home/builder --shell /bin/bash builder
+sudo useradd --create-home --home-dir /home/builder --shell /bin/bash builder
 
 # Allow builder to run singularity as root
-echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/singularity' > /etc/sudoers.d/builder
-echo 'builder ALL=(ALL) NOPASSWD: /usr/bin/unbuffer' >> /etc/sudoers.d/builder
-chmod 0440 /etc/sudoers.d/builder
+sudo echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/singularity' > /etc/sudoers.d/builder
+sudo echo 'builder ALL=(ALL) NOPASSWD: /usr/bin/unbuffer' >> /etc/sudoers.d/builder
+sudo chmod 0440 /etc/sudoers.d/builder
 
-apt-get -y update
-apt-get -y install expect
-apt-get -y install yum rpm
+sudo apt-get -y update
+sudo apt-get -y install expect
+sudo apt-get -y install yum rpm
 
 #####################################
 # begin ppc64le QUEMU stuff
@@ -40,7 +40,7 @@ make
 sudo make install
 
 # Add ppc64le repos to apt sources
-cat << EOF > /etc/apt/sources.list
+sudo cat << EOF > /etc/apt/sources.list
 deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ xenial main restricted multiverse
 deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ xenial-updates multiverse
 deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ xenial-backports main restricted universe multiverse
@@ -73,14 +73,14 @@ tar xvf singularity-${VERSION}.tar.gz
 cd singularity-${VERSION}
 ./configure --prefix=/usr/local
 make
-make install
+sudo make install
 
 # Update cmake version
 cd /
 wget https://cmake.org/files/v3.9/cmake-3.9.5-Linux-x86_64.sh
 chmod +x ./cmake-3.9.5-Linux-x86_64.sh
 ./cmake-3.9.5-Linux-x86_64.sh --skip-license
-ln -s /cmake-3.9.5-Linux-x86_64/bin/* /usr/local/bin
+sudo ln -s /cmake-3.9.5-Linux-x86_64/bin/* /usr/local/bin
 cd /
 rm -rf /cmake-3.9.5-Linux-x86_64
 
@@ -90,7 +90,7 @@ wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
 tar xf boost_1_66_0.tar.gz
 cd boost_1_66_0
 ./bootstrap.sh --with-libraries=filesystem,regex,system,serialization,thread,program_options
-./b2 install || :
+sudo ./b2 install || :
 rm -rf /boost_1_66_0
 
 # Install builder_server
@@ -100,12 +100,12 @@ cd ContainerBuilder
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr/local" ..
 make
-make install
+sudo make install
 
 cd /
 
 # Create systemd script and launch the Builder daemon
-cat << EOF > /etc/systemd/system/builder_server.service
+sudo cat << EOF > /etc/systemd/system/builder_server.service
 [Unit]
 Description=builder_server daemon
 After=network.target
@@ -121,4 +121,5 @@ Restart=no
 [Install]
 WantedBy=multi-user.target
 EOF
-systemctl enable builder_server
+
+sudo systemctl enable builder_server

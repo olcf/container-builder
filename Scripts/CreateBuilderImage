@@ -32,7 +32,7 @@ ZONE="nova"
 FLAVOR="m1.large"
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)
 KEY="ContainerBuilderKey"
-echo "This make take some time."
+echo "Bringing up VM"
 
 # Startup new VM
 VM_UUID=$(openstack server create                        \
@@ -46,18 +46,6 @@ VM_UUID=$(openstack server create                        \
     -f value                                             \
     "BuilderMaster");
 
-# Spinner...
-function spin_me_right_round() {
-  declare -a spin=("-" "\\" "|" "/"
-                   "-" "\\" "|" "/"
-                   "-" "\\" "|" "/")
-  for i in "${spin[@]}"
-  do
-        echo -ne "\b$i"
-        sleep 0.5
-  done
-}
-
 VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
 
 echo "Waiting for SSH to come up"
@@ -68,6 +56,11 @@ done
 
 echo "Provisioning the builder"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'bash -s' < ${SCRIPT_DIR}/ProvisionQueue
+
+if [ $? -ne 0]; then
+    echo "Provision failed!"
+    exit
+done
 
 ####
 # Handle building base containers as we don't have a registry setup yet
@@ -88,7 +81,7 @@ openstack server reboot --wait ${VM_UUID}
 echo "Shutting down server"
 openstack server stop ${VM_UUID}
 until openstack server list --status SHUTOFF | grep ${VM_UUID} > /dev/null 2>&1; do
-  spin_me_right_round
+  sleep 1
 done
 echo -ne "\b"
 

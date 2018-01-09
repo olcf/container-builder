@@ -24,7 +24,6 @@ VM_UUID=$(openstack server create                                       \
     --availability-zone "${ZONE}"                                       \
     --nic net-id="${NIC}"                                               \
     --key-name "${KEY}"                                                 \
-    --user-data ${SCRIPT_DIR}/ProvisionQueue                            \
     --wait                                                              \
     -c id                                                               \
     --security-group container_builder                                  \
@@ -43,15 +42,10 @@ function spin_me_right_round() {
   done
 }
 
-# Even though the server is created we need to wait for the cloud-init scripts to finish running before creating a snapshot
-# Wait for SSH to be usable.
-until openstack console log show ${VM_UUID} | grep "running 'modules:final'" > /dev/null 2>&1; do
-  spin_me_right_round
-done
-echo -ne "\b"
-sleep 60
-
 VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
+
+echo "Provisioning the queue"
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'bash -s' < ${SCRIPT_DIR}/ProvisionQueue
 
 # Copy OpenStack credentials to VM and then move to correct directory
 unset OS_CACERT

@@ -41,7 +41,6 @@ VM_UUID=$(openstack server create                        \
     --availability-zone "${ZONE}"                        \
     --nic net-id="${NIC}"                                \
     --key-name "${KEY}"                                  \
-    --user-data ProvisionBuilder                         \
     --wait                                               \
     -c id                                                \
     -f value                                             \
@@ -59,17 +58,14 @@ function spin_me_right_round() {
   done
 }
 
-# Even though the server is created we need to wait for the cloud-init scripts to finish running before creating a snapshot
-# Wait for SSH to be usable.
-until openstack console log show ${VM_UUID} | grep "running 'modules:final'" > /dev/null 2>&1; do
-  spin_me_right_round
-done
-echo -ne "\b"
+VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
+
+echo "Provisioning the builder"
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'bash -s' < ${SCRIPT_DIR}/ProvisionQueue
 
 ####
 # Handle building base containers as we don't have a registry setup yet
 ####
-VM_IP=$(openstack server show -c addresses --format value ${VM_UUID} | sed -e "s/^or_provider_general_extnetwork1=//")
 
 echo "Copy over proprietary software that will be available in Base containers"
 echo "Copying IBM Spectrum RPMs to build host"

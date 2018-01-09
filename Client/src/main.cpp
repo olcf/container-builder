@@ -108,7 +108,7 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
     namespace po = boost::program_options;
 
     // Supported arguments
-    po::options_description desc("Usage: container_builder container.img container.def");
+    po::options_description desc("Usage: container_builder [options] container.img container.def");
     desc.add_options()
             ("help", "produce help message")
             ("debug", po::value<bool>()->default_value(false), "enable debug information")

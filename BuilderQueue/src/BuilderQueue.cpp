@@ -69,8 +69,8 @@ void BuilderQueue::create_reserve_builders() {
             Logger::info("Attempting to create builder " + std::to_string(i));
 
             std::make_shared<OpenStack>(io_context)->request_create([this, i](std::error_code error, BuilderData builder) {
-                outstanding_create_count--;
                 if (!error) {
+                    outstanding_create_count--;
                     Logger::info("Created builder " + std::to_string(i) + ": " + builder.id);
                     reserve_builders.push_back(builder);
                     process_pending_handler();

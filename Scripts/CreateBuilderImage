@@ -75,7 +75,7 @@ scp -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} /sw/summitdev/spec
 echo "Build Titan and Summit base containers inside of builder image"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo /ContainerBuilder/Scripts/CreateBaseContainers'
 
-echo "Reboot the server to ensure it's in a clean state before creating the snapshot"
+echo "Reboot the server to ensure its in a clean state before creating the snapshot"
 openstack server reboot --wait ${VM_UUID}
 
 echo "Shutting down server"

@@ -31,7 +31,7 @@ fi
 if [ $(openstack keypair list | grep ContainerBuilderKey | wc -l) != 0 ]; then
     echo "Deleting ContainerBuilderKey"
     openstack keypair delete ContainerBuilderKey
-    rm ${SCRIPT_DIR}/ContainerBuilderKey
+    rm -f ${SCRIPT_DIR}/ContainerBuilderKey
 fi
 
 # Delete the security group

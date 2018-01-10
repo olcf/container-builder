@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -e
 set -o xtrace
 
 export OS_CACERT=`pwd`/OpenStack.cer

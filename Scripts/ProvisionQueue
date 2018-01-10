@@ -8,7 +8,7 @@ useradd --create-home --home-dir /home/queue --shell /bin/bash queue
 
 # Update cmake version
 cd /
-wget https://cmake.org/files/v3.9/cmake-3.9.5-Linux-x86_64.sh
+wget -q https://cmake.org/files/v3.9/cmake-3.9.5-Linux-x86_64.sh
 chmod +x ./cmake-3.9.5-Linux-x86_64.sh
 ./cmake-3.9.5-Linux-x86_64.sh --skip-license
 ln -s /cmake-3.9.5-Linux-x86_64/bin/* /usr/local/bin
@@ -16,7 +16,7 @@ cd /
 rm -rf /cmake-3.9.5-Linux-x86_64
 
 # Install a new version of boost
-wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
+wget -q https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
 tar xf boost_1_66_0.tar.gz
 cd boost_1_66_0
 ./bootstrap.sh --with-libraries=filesystem,regex,system,serialization,thread,program_options

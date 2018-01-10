@@ -1,4 +1,8 @@
-#!/bin/bash -e
+#!/bin/bash
+
+set -e
+set -o xtrace
+
 VERSION=$1
 
 export HOME=$(pwd)

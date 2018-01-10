@@ -1,4 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/bash
+
+set -e
+set -o xtrace
 
 # Create base containers for use - hopefully this is replaced by a registry soon!
 cd /

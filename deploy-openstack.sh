@@ -1,4 +1,7 @@
-#!/usr/bin/env bash -e
+#!/bin/bash
+
+set -e
+set -o xtrace
 
 module load python/3.5.1
 pyvenv .venv

@@ -223,7 +223,7 @@ int main(int argc, char *argv[]) {
         parse_environment(client_data);
         parse_arguments(client_data, argc, argv);
 
-        WaitingAnimation wait_queue("Connecting to BuilderQueue: ");
+        WaitingAnimation wait_queue("Connecting to BuilderQueue");
         // Open a WebSocket stream to the queue
         tcp::resolver queue_resolver(io_context);
         asio::connect(queue_stream.next_layer(), queue_resolver.resolve({client_data.queue_host, "8080"}));
@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
         wait_queue.stop_success("Connected to queue: " + client_data.queue_host);
 
         // Request a build host from the queue
-        WaitingAnimation wait_builder("Requesting remote builder: ");
+        WaitingAnimation wait_builder("Requesting remote builder");
         auto builder_data = get_builder(queue_stream);
 
         // Open a WebSocket stream to the builder

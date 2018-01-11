@@ -265,9 +265,13 @@ int main(int argc, char *argv[]) {
         Logger::error("Unknown exception caught!");
     }
 
-    // Disconnect from builder and queue
-    builder_stream.close(websocket::close_code::normal);
-    queue_stream.close(websocket::close_code::normal);
+    // Attempt to disconnect from builder and queue
+    try {
+        builder_stream.close(websocket::close_code::normal);
+        queue_stream.close(websocket::close_code::normal);
+    } catch(...) {
+        Logger::debug("Failed to cleanly close the WebSockets");
+    }
 
     // Show the cursor
     std::cout<<"\e[?25h";

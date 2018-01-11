@@ -215,8 +215,11 @@ int main(int argc, char *argv[]) {
         Logger::error("Unknown exception caught!");
     }
 
-    // Close connection
-    client_stream.close(websocket::close_code::normal);
-
+    // Attempt to close connection
+    try {
+        client_stream.close(websocket::close_code::normal);
+    } catch(...) {
+        Logger::error("Failed to cleanly close the WebSocket");
+    }
     return 0;
 }

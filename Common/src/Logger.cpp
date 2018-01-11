@@ -18,7 +18,7 @@ void Logger::set_color(LogPriority priority) const {
                 std::clog << "\033[22m";
                 break;
             case LogPriority::debug:
-                std::clog << "\033[31m";
+                std::clog << "\033[22m";
                 break;
             default:
                 break;

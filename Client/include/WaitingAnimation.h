@@ -15,7 +15,7 @@ public:
         const auto prefix = message + ": ";
 
         // If an error occurs before the thread is created still print a message
-        std::cout << prefix;
+        std::cout << prefix << ".  ";
 
         // If debug logging is enabled don't do any animation as it might interfere with debug printing
         if(Logger::get_max_priority() >= LogPriority::info) {
@@ -70,7 +70,7 @@ public:
             animation.join();
 
         // Move cursor to start of initial animation message
-//        std::cout<<"\b\b\b";
+        std::cout<<"\b\b\b";
 
         std::cout<<message<<std::endl;
     }

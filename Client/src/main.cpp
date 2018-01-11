@@ -111,7 +111,7 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
     po::options_description desc("Usage: container_builder [options] container.img container.def");
     desc.add_options()
             ("help", "produce help message")
-            ("debug", po::value<bool>()->default_value(false), "enable debug information")
+            ("debug", po::bool_switch(), "enable debug information")
             ("arch", po::value<std::string>()->default_value("x86_64"),
              "select architecture, valid options are x86_64 and ppc64le")
             ("tty", po::value<bool>()->default_value(isatty(fileno(stdout))),
@@ -143,6 +143,7 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
     // Enable debug information
     if(vm["debug"].as<bool>()) {
         Logger::set_max_priority(LogPriority::debug);
+        Logger::debug("Debug logging enabled");
     }
 
     // Make sure variables are set as required

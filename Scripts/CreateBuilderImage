@@ -65,16 +65,6 @@ ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < $
 echo "Provisioning the builder"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/ProvisionBuilder
 
-####
-# Handle building base containers as we don't have a registry setup yet
-####
-
-echo "Copy over proprietary software that will be available in Base containers"
-echo "Copying IBM Spectrum RPMs to build host"
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mkdir -p /IBM'
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo chmod 777 /IBM'
-scp -o StrictHostKeyChecking=no -i ${KEY_FILE} /sw/summitdev/spectrum_mpi/10.1.0.4-20170915/rpms/*.rpm cades@${VM_IP}:/IBM
-
 # Copy Gitlab docker registry access token to VM and then move to correct directory
 # This credentials are available as environment variables to the runners
 echo ${GL_TOKEN} > ${SCRIPT_DIR}/container-registry-token

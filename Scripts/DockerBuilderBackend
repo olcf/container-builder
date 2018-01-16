@@ -10,7 +10,7 @@ docker login code.ornl.gov:4567 -u atj -p $(cat /home/builder/container-registry
 docker run -d -p 5000:5000 --restart=always --name registry registry:2
 
 # Build the Dockerfile docker image in the current directory
-docker build -t localhost:5000/docker_image .
+docker build -t localhost:5000/docker_image -f ./container.def
 
 # Push to the local registry
 docker push localhost:5000/docker_image

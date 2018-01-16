@@ -16,10 +16,9 @@ echo "using OS_CACERT="${OS_CACERT}
 SCRIPT_DIR=$(dirname $0)
 
 # Create ContainerBuilder security group allowing tcp access to port 5000, 8080 and 22
-openstack security group create container_builder --description "Allow ContainerBuilder communication"           &> /dev/null
-openstack security group rule create container_builder --protocol tcp --dst-port 5000:5000 --remote-ip 0.0.0.0/0 &> /dev/null
-openstack security group rule create container_builder --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0     &> /dev/null
-openstack security group rule create container_builder --protocol tcp --dst-port 8080:8080 --remote-ip 0.0.0.0/0 &> /dev/null
+openstack security group create container_builder --description "Allow ContainerBuilder communication"
+openstack security group rule create container_builder --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0
+openstack security group rule create container_builder --protocol tcp --dst-port 8080:8080 --remote-ip 0.0.0.0/0
 
 # Create Keys for cades user
 KEY="ContainerBuilderKey"

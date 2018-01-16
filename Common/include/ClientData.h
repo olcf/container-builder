@@ -7,19 +7,35 @@
 #include <boost/serialization/string.hpp>
 #include <boost/core/ignore_unused.hpp>
 
-enum class Architecture {
+enum class ArchType {
     x86_64,
     ppc64le
 };
 
-namespace Arch {
-    static Architecture to_arch(const std::string& arch_string) {
-        if (arch_string == "x86_64")
-            return Architecture::x86_64;
-        else if (arch_string == "ppc64le")
-            return Architecture::ppc64le;
+enum class BackendType {
+    singularity,
+    docker
+};
+
+namespace Backend {
+    static BackendType to_backend(const std::string& backend_string) {
+        if (backend_string == "singularity")
+            return BackendType::singularity;
+        else if (backend_string == "docker")
+            return BackendType::docker;
         else
-            throw std::runtime_error("Incorrect architecture supported");
+            throw std::runtime_error("Incorrect BackendType provided");
+    }
+}
+
+namespace Arch {
+    static ArchType to_arch(const std::string& arch_string) {
+        if (arch_string == "x86_64")
+            return ArchType::x86_64;
+        else if (arch_string == "ppc64le")
+            return ArchType::ppc64le;
+        else
+            throw std::runtime_error("Incorrect ArchType provided");
     }
 };
 
@@ -27,7 +43,8 @@ class ClientData {
 public:
     std::string user_id;
     bool tty;
-    Architecture arch;
+    ArchType arch;
+    BackendType backend;
     std::string container_path;
     std::string definition_path;
     std::string queue_host;
@@ -42,6 +59,7 @@ namespace boost {
             ar & client_data.user_id;
             ar & client_data.tty;
             ar & client_data.arch;
+            ar & client_data.backend;
             ar & client_data.container_path;
             ar & client_data.definition_path;
             ar & client_data.queue_host;

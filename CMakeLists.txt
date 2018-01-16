@@ -40,7 +40,9 @@ set(SOURCE_FILES_CLIENT
 # Scripts required for runtime
 set(SCRIPTS
         Scripts/CreateBuilder
-        Scripts/DestroyBuilder)
+        Scripts/DestroyBuilder
+        Scripts/SingularityBuilderBackend
+        Scripts/DockerBuilderBackend)
 
 # Create executables
 add_executable(builder_queue ${SOURCE_FILES_QUEUE})

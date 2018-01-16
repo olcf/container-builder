@@ -113,9 +113,11 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
             ("help", "produce help message")
             ("debug", po::bool_switch(), "enable debug information")
             ("arch", po::value<std::string>()->default_value("x86_64"),
-             "select architecture, valid options are x86_64 and ppc64le")
+                 "select architecture, valid options are x86_64 and ppc64le")
+            ("backend", po::value<std::string>()->default_value("singularity"),
+                "select the builder backend to use, valid options are singularity and docker")
             ("tty", po::value<bool>()->default_value(isatty(fileno(stdout))),
-             "true if the data should be presented as if a tty is present")
+                 "true if the data should be presented as if a tty is present")
             ("container", po::value<std::string>()->required(), "(required) the container name")
             ("definition", po::value<std::string>()->required(), "(required) the definition file");
 
@@ -139,6 +141,7 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
     client_data.container_path = vm["container"].as<std::string>();
     client_data.tty = vm["tty"].as<bool>();
     client_data.arch = Arch::to_arch(vm["arch"].as<std::string>());
+    client_data.backend = Backend::to_backend(vm["backend"].as<std::string>());
 
     // Enable debug information
     if(vm["debug"].as<bool>()) {

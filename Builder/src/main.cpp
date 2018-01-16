@@ -75,7 +75,7 @@ void read_file(websocket::stream<tcp::socket>& client_stream,
 }
 
 std::string build_command(const ClientData& client_data) {
-    if (client_data.arch == Architecture::ppc64le) {
+    if (client_data.arch == ArchType::ppc64le && client_data.backend == BackendType::singularity) {
         // A dirty hack but the ppc64le qemu executable must be in the place the kernel expects it
         // Modify the definition to copy this executable in during %setup
         // NOTE: singularity currently doesn't have a way to inject this file in before bootstrap
@@ -85,15 +85,16 @@ std::string build_command(const ClientData& client_data) {
                 "\n%setup\ncp /usr/bin/qemu-ppc64le  ${SINGULARITY_ROOTFS}/usr/bin/qemu-ppc64le");
         def << copy_qemu;
     }
-    std::string build_command("/usr/bin/sudo ");
-    // If the client is called from a TTY we use "unbuffer" to fake the build into thinking it has a real TTY
-    // This allows utilities like wget and color ls to work nicely
-    if (client_data.tty) {
-        build_command += "/usr/bin/unbuffer ";
+
+    std::string build_command;
+    if (client_data.backend == BackendType::singularity) {
+        std::string build_command = "/usr/bin/sudo SingularityBuilderBackend";
+    } else if(client_data.backend == BackendType::docker) {
+        std::string build_command = "/usr/bin/sudo DockerBuilderBackend";
     }
-    build_command += "/usr/local/bin/singularity build ./container.img ./container.def";
 
     Logger::info("Build command prepared: " + build_command);
+
     return build_command;
 }
 
@@ -204,7 +205,7 @@ int main(int argc, char *argv[]) {
         stream_build(client_stream, build_string);
 
         Logger::info("Writing the finished container to the client");
-        write_file(client_stream, "container.img");
+        write_file(client_stream, "container.simg");
 
     } catch (const boost::exception &ex) {
         auto diagnostics = diagnostic_information(ex);

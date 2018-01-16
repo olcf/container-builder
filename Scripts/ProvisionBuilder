@@ -7,13 +7,19 @@ set -o xtrace
 useradd --create-home --home-dir /home/builder --shell /bin/bash builder
 
 # Allow builder to run singularity as root
-echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/singularity' > /etc/sudoers.d/builder
-echo 'builder ALL=(ALL) NOPASSWD: /usr/bin/unbuffer' >> /etc/sudoers.d/builder
+echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/SingularityBuilderBackend' > /etc/sudoers.d/builder
+echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/DockerBuilderBackend' >> /etc/sudoers.d/builder
 chmod 0440 /etc/sudoers.d/builder
 
 apt-get -y update
 apt-get -y install expect
 apt-get -y install yum rpm
+
+# Install docker
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+apt-get update
+apt-get install -y docker-ce
 
 #####################################
 # begin ppc64le QUEMU stuff

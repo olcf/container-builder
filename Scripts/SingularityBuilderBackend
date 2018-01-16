@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+
+# Provide readonly access to the private gitlab docker repository
+docker login code.ornl.gov:4567 -u atj -p $(cat /home/builder/container-registry-token)
+
+/usr/bin/unbuffer /usr/local/bin/singularity build ./container.simg ./container.def

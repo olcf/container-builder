@@ -87,6 +87,6 @@ echo "Creating builder snapshot image"
 openstack server image create --wait --name BuilderImage ${VM_UUID}
 
 echo "Deleting builder master instance"
-openstack server delete --wait BuilderMaster
+openstack server delete --wait ${VM_UUID}
 
 echo "Finished creating BuilderImage"

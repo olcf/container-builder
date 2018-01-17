@@ -10,17 +10,20 @@ using asio::ip::tcp;
 
 class Server {
 public:
-    Server(asio::io_context &io_context, BuilderQueue& queue) :
+    Server(asio::io_context &io_context, BuilderQueue &queue) :
             acceptor(io_context, tcp::endpoint(tcp::v4(), 8080)),
             queue(queue) {
         accept_connection();
     };
 
     // Don't allow the connection server to be copied or moved
-    Server(const Server&)            =delete;
-    Server& operator=(const Server&) =delete;
-    Server(Server&&) noexcept        =delete;
-    Server& operator=(Server&&)      =delete;
+    Server(const Server &) = delete;
+
+    Server &operator=(const Server &) = delete;
+
+    Server(Server &&) noexcept = delete;
+
+    Server &operator=(Server &&)      = delete;
 
 private:
     tcp::acceptor acceptor;

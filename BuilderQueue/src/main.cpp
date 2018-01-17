@@ -17,9 +17,9 @@ int main(int argc, char *argv[]) {
         } catch (const boost::exception &ex) {
             auto diagnostics = diagnostic_information(ex);
             Logger::error(std::string() + "io_service exception encountered: " + diagnostics);
-        } catch (const std::exception& ex) {
+        } catch (const std::exception &ex) {
             Logger::error(std::string() + "io_service exception encountered: " + ex.what());
-        } catch(...) {
+        } catch (...) {
             Logger::error("Unknown io_service exception encountered");
         }
     }

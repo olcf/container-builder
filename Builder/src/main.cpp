@@ -19,9 +19,9 @@ namespace beast = boost::beast;
 namespace websocket = beast::websocket;
 namespace bp = boost::process;
 
-using callback_type = std::function<void(const boost::system::error_code&, std::size_t size)>;
+using callback_type = std::function<void(const boost::system::error_code &, std::size_t size)>;
 
-ClientData read_client_data(websocket::stream<tcp::socket>& client_stream) {
+ClientData read_client_data(websocket::stream<tcp::socket> &client_stream) {
     Logger::info("Reading client data");
 
     Logger::info("Reading serialized client data");
@@ -39,11 +39,11 @@ ClientData read_client_data(websocket::stream<tcp::socket>& client_stream) {
     return client_data;
 }
 
-void read_file(websocket::stream<tcp::socket>& client_stream,
-               const std::string& file_name) {
+void read_file(websocket::stream<tcp::socket> &client_stream,
+               const std::string &file_name) {
     Logger::info("Opening " + file_name + " for writing");
     std::ofstream file;
-    file.exceptions ( std::ofstream::failbit | std::ofstream::badbit );
+    file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
     file.open(file_name, std::fstream::out | std::fstream::binary | std::fstream::trunc);
 
     // Read in file from websocket in chunks
@@ -74,14 +74,22 @@ void read_file(websocket::stream<tcp::socket>& client_stream,
     Logger::info(file_name + " successfully read file");
 }
 
-std::string build_command(const ClientData& client_data) {
+std::string build_command(const ClientData &client_data) {
 
     std::string build_command;
 
+    // Basic build command
     if (client_data.backend == BackendType::singularity) {
         build_command = "/usr/bin/sudo /usr/local/bin/SingularityBuilderBackend";
-    } else if(client_data.backend == BackendType::docker) {
+    } else if (client_data.backend == BackendType::docker) {
         build_command = "/usr/bin/sudo /usr/local/bin/DockerBuilderBackend";
+    } else {
+        throw std::runtime_error("Invalid builder backend");
+    }
+
+    // Enable debug output if requested
+    if (client_data.log_priority >= LogPriority::debug) {
+        build_command += " --debug";
     }
 
     Logger::info("Build command prepared: " + build_command);
@@ -89,11 +97,11 @@ std::string build_command(const ClientData& client_data) {
     return build_command;
 }
 
-void stream_build(websocket::stream<tcp::socket>& client_stream,
-                            const std::string& build_command) {
+void stream_build(websocket::stream<tcp::socket> &client_stream,
+                  const std::string &build_command) {
 
     Logger::info("Starting subprocess and redirecting output to pipe");
-    auto& io_context = client_stream.get_executor().context();
+    auto &io_context = client_stream.get_executor().context();
     bp::async_pipe std_pipe{io_context};
     bp::group group;
     bp::child build_child(build_command, bp::std_in.close(), (bp::std_out & bp::std_err) > std_pipe, group);
@@ -103,9 +111,9 @@ void stream_build(websocket::stream<tcp::socket>& client_stream,
     const auto max_read_bytes = 4096;
     std::array<char, max_read_bytes> std_buffer;
 
-    callback_type stream_output = [&] (const boost::system::error_code& error,
-                                       std::size_t bytes_read) {
-        if(error == asio::error::eof) {
+    callback_type stream_output = [&](const boost::system::error_code &error,
+                                      std::size_t bytes_read) {
+        if (error == asio::error::eof) {
             client_stream.write_some(true, asio::buffer(std_buffer.data(), bytes_read));
             return;
         } else {
@@ -125,19 +133,19 @@ void stream_build(websocket::stream<tcp::socket>& client_stream,
     auto exit_code_string = std::to_string(exit_code);
     client_stream.write(asio::buffer(exit_code_string));
 
-    if(exit_code != 0) {
+    if (exit_code != 0) {
         throw std::runtime_error("Container build failed");
     }
 
     Logger::info("Done streaming subprocess output");
 }
 
-void write_file(websocket::stream<tcp::socket>& client_stream,
-                const std::string& file_name) {
+void write_file(websocket::stream<tcp::socket> &client_stream,
+                const std::string &file_name) {
     Logger::info("Opening " + file_name + " for reading");
 
     std::ifstream container;
-    container.exceptions ( std::ofstream::failbit | std::ofstream::badbit );
+    container.exceptions(std::ofstream::failbit | std::ofstream::badbit);
     container.open(file_name, std::fstream::in | std::fstream::binary);
     const auto file_size = boost::filesystem::file_size(file_name);
 
@@ -153,7 +161,7 @@ void write_file(websocket::stream<tcp::socket>& client_stream,
         container.read(chunk_buffer.data(), chunk_size);
         container_csc.process_bytes(chunk_buffer.data(), chunk_size);
         bytes_remaining -= chunk_size;
-        if(bytes_remaining == 0)
+        if (bytes_remaining == 0)
             fin = true;
         client_stream.write_some(fin, asio::buffer(chunk_buffer.data(), chunk_size));
     } while (!fin);
@@ -210,7 +218,7 @@ int main(int argc, char *argv[]) {
     // Attempt to close connection
     try {
         client_stream.close(websocket::close_code::normal);
-    } catch(...) {
+    } catch (...) {
         Logger::error("Failed to cleanly close the WebSocket");
     }
     return 0;

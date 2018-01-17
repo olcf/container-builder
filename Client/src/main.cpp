@@ -14,14 +14,13 @@
 #include "BuilderData.h"
 #include "WaitingAnimation.h"
 #include "pwd.h"
-#include "Logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
 namespace beast = boost::beast;
 namespace websocket = beast::websocket;
 
-void write_client_data(websocket::stream<tcp::socket>& builder_stream, ClientData client_data) {
+void write_client_data(websocket::stream<tcp::socket> &builder_stream, ClientData client_data) {
     Logger::debug("Writing client data");
 
     Logger::debug("Serializing client data string");
@@ -34,10 +33,10 @@ void write_client_data(websocket::stream<tcp::socket>& builder_stream, ClientDat
     builder_stream.write(asio::buffer(serialized_client_data));
 }
 
-void read_file(websocket::stream<tcp::socket>& stream, const std::string& file_name) {
+void read_file(websocket::stream<tcp::socket> &stream, const std::string &file_name) {
     Logger::debug("Opening " + file_name + " for writing");
     std::ofstream file;
-    file.exceptions ( std::ofstream::failbit | std::ofstream::badbit );
+    file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
     file.open(file_name, std::fstream::out | std::fstream::binary | std::fstream::trunc);
 
     // Read in file from websocket in chunks
@@ -68,12 +67,12 @@ void read_file(websocket::stream<tcp::socket>& stream, const std::string& file_n
     Logger::debug(file_name + " successfully read");
 }
 
-void write_file(websocket::stream<tcp::socket>& stream,
-                const std::string& file_name) {
+void write_file(websocket::stream<tcp::socket> &stream,
+                const std::string &file_name) {
     Logger::debug("Opening " + file_name + " for reading");
 
     std::ifstream container;
-    container.exceptions ( std::ofstream::failbit | std::ofstream::badbit );
+    container.exceptions(std::ofstream::failbit | std::ofstream::badbit);
     container.open(file_name, std::fstream::in | std::fstream::binary);
     const auto file_size = boost::filesystem::file_size(file_name);
 
@@ -89,7 +88,7 @@ void write_file(websocket::stream<tcp::socket>& stream,
         container.read(chunk_buffer.data(), chunk_size);
         container_csc.process_bytes(chunk_buffer.data(), chunk_size);
         bytes_remaining -= chunk_size;
-        if(bytes_remaining == 0)
+        if (bytes_remaining == 0)
             fin = true;
         stream.write_some(fin, asio::buffer(chunk_buffer.data(), chunk_size));
     } while (!fin);
@@ -113,11 +112,11 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
             ("help", "produce help message")
             ("debug", po::bool_switch(), "enable debug information")
             ("arch", po::value<std::string>()->default_value("x86_64"),
-                 "select architecture, valid options are x86_64 and ppc64le")
+             "select architecture, valid options are x86_64 and ppc64le")
             ("backend", po::value<std::string>()->default_value("singularity"),
-                "select the builder backend to use, valid options are singularity and docker")
+             "select the builder backend to use, valid options are singularity and docker")
             ("tty", po::value<bool>()->default_value(isatty(fileno(stdout))),
-                 "true if the data should be presented as if a tty is present")
+             "true if the data should be presented as if a tty is present")
             ("container", po::value<std::string>()->required(), "(required) the container name")
             ("definition", po::value<std::string>()->required(), "(required) the definition file");
 
@@ -136,18 +135,19 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    // Set class variables based upon program arguments
+    // Enable debug information
+    if (vm["debug"].as<bool>()) {
+        Logger::set_priority(LogPriority::debug);
+        Logger::debug("Debug logging enabled");
+    }
+
+    // Set client data based upon program arguments
     client_data.definition_path = vm["definition"].as<std::string>();
     client_data.container_path = vm["container"].as<std::string>();
     client_data.tty = vm["tty"].as<bool>();
     client_data.arch = Arch::to_arch(vm["arch"].as<std::string>());
     client_data.backend = Backend::to_backend(vm["backend"].as<std::string>());
-
-    // Enable debug information
-    if(vm["debug"].as<bool>()) {
-        Logger::set_max_priority(LogPriority::debug);
-        Logger::debug("Debug logging enabled");
-    }
+    client_data.log_priority = Logger::get_priority();
 
     // Make sure variables are set as required
     po::notify(vm);
@@ -170,7 +170,7 @@ void parse_environment(ClientData &client_data) {
     client_data.queue_host = std::string(host);
 }
 
-BuilderData get_builder(websocket::stream<tcp::socket>& queue_stream) {
+BuilderData get_builder(websocket::stream<tcp::socket> &queue_stream) {
     Logger::debug("Writing builder request string");
     std::string request_string("checkout_builder_request");
     queue_stream.write(asio::buffer(request_string));
@@ -189,7 +189,7 @@ BuilderData get_builder(websocket::stream<tcp::socket>& queue_stream) {
     return builder_data;
 }
 
-void stream_build(websocket::stream<tcp::socket>& builder_stream) {
+void stream_build(websocket::stream<tcp::socket> &builder_stream) {
     Logger::info("Beginning to stream build");
     const auto max_read_bytes = 4096;
     std::array<char, max_read_bytes> buffer;
@@ -205,7 +205,7 @@ void stream_build(websocket::stream<tcp::socket>& builder_stream) {
     auto exit_code_buffer = boost::asio::dynamic_buffer(exit_code_string);
     builder_stream.read(exit_code_buffer);
     Logger::debug("Build exit code: " + exit_code_string);
-    if(exit_code_string != "0") {
+    if (exit_code_string != "0") {
         throw std::runtime_error("Build failed with exit code " + exit_code_string);
     }
 }
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
     std::cout.setf(std::ios::unitbuf);
 
     // Hide the the cursor
-    std::cout<<"\e[?25l";
+    std::cout << "\e[?25l";
 
     asio::io_context io_context;
     websocket::stream<tcp::socket> queue_stream(io_context);
@@ -243,7 +243,8 @@ int main(int argc, char *argv[]) {
         builder_stream.handshake(builder_data.host + ":8080", "/");
         wait_builder.stop_success("Connected to remote builder: " + builder_data.host);
 
-        Logger::debug("Setting the builder websocket stream to handle binary data and have an unlimited(uint64_t) message size");
+        Logger::debug(
+                "Setting the builder websocket stream to handle binary data and have an unlimited(uint64_t) message size");
         builder_stream.binary(true);
         builder_stream.read_message_max(0);
 
@@ -272,12 +273,12 @@ int main(int argc, char *argv[]) {
     try {
         builder_stream.close(websocket::close_code::normal);
         queue_stream.close(websocket::close_code::normal);
-    } catch(...) {
+    } catch (...) {
         Logger::debug("Failed to cleanly close the WebSockets");
     }
 
     // Show the cursor
-    std::cout<<"\e[?25h";
+    std::cout << "\e[?25h";
 
     return 0;
 }

@@ -9,7 +9,7 @@
 
 namespace asio = boost::asio;
 
-using FetchHandler = std::function<void (BuilderData builder)>;
+using FetchHandler = std::function<void(BuilderData builder)>;
 
 // Note that the handler, from Connection, contains 'self' which maintains the lifetime of the connection instance
 // If a client disconnects while the handler is pending it won't be cleaned up
@@ -24,10 +24,13 @@ public:
     }
 
     // Don't allow the queue to be copied or moved
-    BuilderQueue(const BuilderQueue&)            =delete;
-    BuilderQueue& operator=(const BuilderQueue&) =delete;
-    BuilderQueue(BuilderQueue&&) noexcept        =delete;
-    BuilderQueue& operator=(BuilderQueue&&)      =delete;
+    BuilderQueue(const BuilderQueue &) = delete;
+
+    BuilderQueue &operator=(const BuilderQueue &) = delete;
+
+    BuilderQueue(BuilderQueue &&) noexcept = delete;
+
+    BuilderQueue &operator=(BuilderQueue &&)      = delete;
 
 
     // Add the specified handler to the queue
@@ -46,6 +49,7 @@ public:
 
     // Create reserve builders as needed
     void create_reserve_builders();
+
 private:
     asio::io_context &io_context;
 

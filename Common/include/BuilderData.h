@@ -14,9 +14,9 @@ public:
     std::string id;
 };
 
-bool operator <(const BuilderData &lhs, const BuilderData &rhs);
+bool operator<(const BuilderData &lhs, const BuilderData &rhs);
 
-bool operator ==(const BuilderData &lhs, const BuilderData &rhs);
+bool operator==(const BuilderData &lhs, const BuilderData &rhs);
 
 namespace boost {
     namespace serialization {

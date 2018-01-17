@@ -20,7 +20,7 @@ void BuilderQueue::return_builder(BuilderData builder) {
 
 void BuilderQueue::process_pending_handler() {
     Logger::info("Processing " + std::to_string(pending_handlers.size()) +
-                         " handlers with " + std::to_string(reserve_builders.size()) + " reserve builders");
+                 " handlers with " + std::to_string(reserve_builders.size()) + " reserve builders");
 
     if (!pending_handlers.empty() && !reserve_builders.empty()) {
         Logger::info("Processing pending handler");
@@ -39,7 +39,7 @@ void BuilderQueue::process_pending_handler() {
         Logger::info("Providing builder to client: " + builder.id);
 
         // Post the handler to pass the builder to the connection
-        asio::post(io_context, std::bind(handler,builder));
+        asio::post(io_context, std::bind(handler, builder));
 
         // Attempt to create a new reserve builder if required
         create_reserve_builders();
@@ -47,7 +47,8 @@ void BuilderQueue::process_pending_handler() {
 }
 
 void BuilderQueue::create_reserve_builders() {
-    Logger::info("Checking reserve builder count with " + std::to_string(reserve_builders.size()) + " reserve builders");
+    Logger::info(
+            "Checking reserve builder count with " + std::to_string(reserve_builders.size()) + " reserve builders");
 
     // Attempt to create the required number of reserve builders while staying below the total allowed builder count
     auto potential_reserve_count = reserve_builders.size() + outstanding_create_count;
@@ -68,18 +69,19 @@ void BuilderQueue::create_reserve_builders() {
         for (std::size_t i = 0; i < request_count; i++) {
             Logger::info("Attempting to create builder " + std::to_string(i));
 
-            std::make_shared<OpenStack>(io_context)->request_create([this, i](std::error_code error, BuilderData builder) {
-                if (!error) {
-                    outstanding_create_count--;
-                    Logger::info("Created builder " + std::to_string(i) + ": " + builder.id);
-                    reserve_builders.push_back(builder);
-                    process_pending_handler();
-                } else {
-                    Logger::error("Error creating builder, retrying in five seconds: " + std::to_string(i));
-                    asio::deadline_timer timer(io_context, boost::posix_time::seconds(5));
-                    timer.async_wait(std::bind(&BuilderQueue::create_reserve_builders, this));
-                }
-            });
+            std::make_shared<OpenStack>(io_context)->request_create(
+                    [this, i](std::error_code error, BuilderData builder) {
+                        if (!error) {
+                            outstanding_create_count--;
+                            Logger::info("Created builder " + std::to_string(i) + ": " + builder.id);
+                            reserve_builders.push_back(builder);
+                            process_pending_handler();
+                        } else {
+                            Logger::error("Error creating builder, retrying in five seconds: " + std::to_string(i));
+                            asio::deadline_timer timer(io_context, boost::posix_time::seconds(5));
+                            timer.async_wait(std::bind(&BuilderQueue::create_reserve_builders, this));
+                        }
+                    });
         }
     }
 }

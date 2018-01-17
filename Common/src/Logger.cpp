@@ -3,7 +3,7 @@
 
 // Set terminal color if we're outputing to a tty
 void Logger::set_color(LogPriority priority) const {
-    if(has_tty) {
+    if (has_tty) {
         switch (priority) {
             case LogPriority::error:
                 std::clog << "\033[31m";
@@ -59,7 +59,7 @@ void Logger::unset_color() const {
 }
 
 // Print a log message
-void Logger::print(const std::string& message, LogPriority priority) const {
+void Logger::print(const std::string &message, LogPriority priority) const {
     set_color(priority);
 
     print_prefix(priority);

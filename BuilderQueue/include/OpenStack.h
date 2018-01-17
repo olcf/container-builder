@@ -18,8 +18,8 @@ namespace pt = boost::property_tree;
 
 class OpenStack : public std::enable_shared_from_this<OpenStack> {
 public:
-    OpenStack(asio::io_context &io_context) : io_context(io_context),
-                                              output_pipe(io_context) {}
+    explicit OpenStack(asio::io_context &io_context) : io_context(io_context),
+                                                       output_pipe(io_context) {}
 
     // Request to create a new builder
     // The handler must have the form void(std::error_code error, BuilderData builder)

@@ -77,10 +77,11 @@ void read_file(websocket::stream<tcp::socket>& client_stream,
 std::string build_command(const ClientData& client_data) {
 
     std::string build_command;
+
     if (client_data.backend == BackendType::singularity) {
-        std::string build_command = "/usr/bin/sudo SingularityBuilderBackend";
+        build_command = "/usr/bin/sudo /usr/local/bin/SingularityBuilderBackend";
     } else if(client_data.backend == BackendType::docker) {
-        std::string build_command = "/usr/bin/sudo DockerBuilderBackend";
+        build_command = "/usr/bin/sudo /usr/local/bin/DockerBuilderBackend";
     }
 
     Logger::info("Build command prepared: " + build_command);

@@ -81,7 +81,7 @@ done
 echo -ne "\n"
 
 echo "Sleeping for a bit to make sure builder is completely shut down"
-sleep 20
+sleep 60
 
 echo "Creating builder snapshot image"
 openstack server image create --wait --name BuilderImage ${VM_UUID}

@@ -26,7 +26,7 @@ public:
     // If the builder wasn't created the handlers error_code will be set and a default constructed builder will be returned
     template<typename CreateHandler>
     void request_create(CreateHandler handler) {
-        std::string create_command("/usr/local/bin/CreateBuilder");
+        std::string create_command("/usr/local/bin/create-builder.sh");
 
         Logger::info("Launching command: " + create_command);
 
@@ -111,7 +111,7 @@ public:
     // If the builder couldn't be destroyed the handlers error_code will be set
     template<typename DestroyHandler>
     void destroy(BuilderData builder, DestroyHandler handler) {
-        const std::string destroy_command("/usr/local/bin/DestroyBuilder " + builder.id);
+        const std::string destroy_command("/usr/local/bin/destroy-builder.sh " + builder.id);
 
         Logger::info("Launching command: " + destroy_command);
         std::error_code destroy_error;

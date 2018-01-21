@@ -9,8 +9,8 @@ echo "using OS_CACERT="${OS_CACERT}
 # OpenStack credentials will be sourced by the gitlab runners
 
 # Destroy any existing builder if one exists
-tear-down-queue.sh --no_source
-destroy-builder-image.sh --no_source
+./tear-down-queue.sh --no_source
+./destroy-builder-image.sh --no_source
 
 # Get script directory
 SCRIPT_DIR=$(dirname $0)

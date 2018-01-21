@@ -45,9 +45,9 @@ set(SCRIPTS
         Scripts/DockerBuilderBackend)
 
 # Create executables
-add_executable(builder_queue ${SOURCE_FILES_QUEUE})
-add_executable(builder_server ${SOURCE_FILES_BUILDER})
-add_executable(container_builder ${SOURCE_FILES_CLIENT})
+add_executable(builder-queue ${SOURCE_FILES_QUEUE})
+add_executable(builder-server ${SOURCE_FILES_BUILDER})
+add_executable(container-builder ${SOURCE_FILES_CLIENT})
 
 # Ignore system boost and use module system boost
 set(Boost_NO_BOOST_CMAKE TRUE)
@@ -60,27 +60,27 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(HARDENING_FLAGS "${HADENING_FLAGS} -Wl,-z,noexecstack,-z,now,-z,relro,-z,nodlopen")
 endif()
 
-set_target_properties(builder_queue PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(builder_queue PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(builder_server PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(builder_server PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(container_builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
-set_target_properties(container_builder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(builder-queue PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(builder-queue PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(builder-server PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(builder-server PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(container-builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(container-builder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-target_link_libraries(builder_queue ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(builder_server ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(container_builder ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(builder-queue ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(builder-server ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(container-builder ${CMAKE_THREAD_LIBS_INIT})
 
 
 find_package(Boost 1.66.0 COMPONENTS system filesystem serialization regex thread program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(builder_queue ${Boost_LIBRARIES})
-target_link_libraries(builder_server ${Boost_LIBRARIES})
-target_link_libraries(container_builder ${Boost_LIBRARIES})
+target_link_libraries(builder-queue ${Boost_LIBRARIES})
+target_link_libraries(builder-server ${Boost_LIBRARIES})
+target_link_libraries(container-builder ${Boost_LIBRARIES})
 
-install(TARGETS builder_queue builder_server container_builder RUNTIME DESTINATION bin)
+install(TARGETS builder-queue builder-server container-builder RUNTIME DESTINATION bin)
 
 # Install scripts
 install(FILES ${SCRIPTS}

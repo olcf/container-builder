@@ -11,5 +11,5 @@ pip install python-openstackclient
 mkdir artifacts
 
 cd Scripts
-./CreateBuilderImage
-./BringUpQueue
+./create-builder-image.sh
+./bring-up-queue.sh

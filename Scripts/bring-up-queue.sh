@@ -44,10 +44,10 @@ while ! ssh_is_up; do
 done
 
 echo "Fixing ORNL TCP timeout issue for current session"
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/DisableTcpTimestamps
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/disable-TCP-timestamps.sh
 
 echo "Provisioning the queue"
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/ProvisionQueue
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/provision-queue.sh
 
 # Copy OpenStack credentials to VM and then move to correct directory
 # These credentials are available as environment variables to the runners
@@ -63,6 +63,6 @@ openstack server reboot --wait ${VM_UUID}
 
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"
 
-cat << EOF > ${SCRIPT_DIR}/../artifacts/queue_host.sh
+cat << EOF > ${SCRIPT_DIR}/../artifacts/queue-host.sh
 QUEUE_HOST=${VM_IP}
 EOF

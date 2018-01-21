@@ -27,7 +27,7 @@ if [ ! -d ${SPACKROOT} ]; then
 fi
 cp spack-etc-summitdev/*.yaml ${SPACKROOT}/etc/spack
 
-${SPACKROOT}/bin/spack repo add spack-repo/containerbuilder
+${SPACKROOT}/bin/spack repo add spack-repo/container-builder
 ${SPACKROOT}/bin/spack spec -NIl "container-builder%gcc@7.1.0"
 ${SPACKROOT}/bin/spack install "container-builder%gcc@7.1.0"
 
@@ -40,7 +40,7 @@ real_mf_path="$SPACKROOT/$root/$arch/$mfname"
 MF_ROOT=/sw/summitdev/modulefiles/core/container-builder
 mkdir -p ${MF_ROOT}
 
-source artifacts/queue_host.sh
+source artifacts/queue-host.sh
 
 cat << EOF > ${MF_ROOT}/${VERSION}
 #%Module

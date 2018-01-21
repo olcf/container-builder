@@ -7,8 +7,8 @@ set -o xtrace
 useradd --create-home --home-dir /home/builder --shell /bin/bash builder
 
 # Allow builder to run singularity as root
-echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/SingularityBuilderBackend' > /etc/sudoers.d/builder
-echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/DockerBuilderBackend' >> /etc/sudoers.d/builder
+echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/singularity-builder-backend.sh' > /etc/sudoers.d/builder
+echo 'builder ALL=(ALL) NOPASSWD: /usr/local/bin/docker-builder-backend.sh' >> /etc/sudoers.d/builder
 chmod 0440 /etc/sudoers.d/builder
 
 apt-get -y update
@@ -82,8 +82,8 @@ rm -rf /boost_1_66_0
 
 # Install builder_server
 cd /
-git clone https://code.ornl.gov/olcf/ContainerBuilder.git
-cd ContainerBuilder
+git clone https://code.ornl.gov/olcf/container-builder.git
+cd container-builder
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr/local" ..
 make
@@ -92,9 +92,9 @@ make install
 cd /
 
 # Create systemd script and launch the Builder daemon
-cat << EOF > /etc/systemd/system/builder_server.service
+cat << EOF > /etc/systemd/system/builder-server.service
 [Unit]
-Description=builder_server daemon
+Description=builder-server daemon
 After=network.target
 
 [Service]
@@ -102,11 +102,11 @@ Type=simple
 User=builder
 WorkingDirectory=/home/builder
 Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
-ExecStart=/usr/local/bin/builder_server
+ExecStart=/usr/local/bin/builder-server
 Restart=no
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-systemctl enable builder_server
+systemctl enable builder-server

@@ -26,22 +26,22 @@ rm -rf /boost_1_66_0
 
 # Install ContainerBuilder
 cd /
-git clone https://code.ornl.gov/olcf/ContainerBuilder.git
-cd ContainerBuilder
+git clone https://code.ornl.gov/olcf/container-builder.git
+cd container-builder
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTAL_PREFIX="/usr/local" ..
 make
 make install
 cd /
-rm -rf /ContainerBuilder
+rm -rf /container-builder
 
 # Install OpenStack command line client
 pip install python-openstackclient
 
 # Create systemd script and launch the BuilderQueue daemon
-cat << EOF > /etc/systemd/system/builder_queue.service
+cat << EOF > /etc/systemd/system/builder-queue.service
 [Unit]
-Description=builder_queue daemon
+Description=builder-queue daemon
 After=network.target
 
 [Service]
@@ -49,7 +49,7 @@ Type=simple
 User=queue
 Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
 WorkingDirectory=/home/queue
-ExecStart=/usr/local/bin/builder_queue
+ExecStart=/usr/local/bin/builder-queue
 Restart=no
 
 [Install]
@@ -58,4 +58,4 @@ EOF
 
 # There appears to be some weird issues with starting systemd services inside of a cloud-init script
 # The easiest thing to do is just reboot after enabling the service
-systemctl enable builder_queue
+systemctl enable builder-queue

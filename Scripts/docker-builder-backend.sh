@@ -9,7 +9,7 @@ case ${i} in
     shift # past argument with no value
     ;;
     *)
-      echo "unknown argument to SingularityBuilderBackend"
+      echo "unknown argument to singularity-builder-backend.sh"
       exit 1
     ;;
 esac

@@ -9,8 +9,8 @@ echo "using OS_CACERT="${OS_CACERT}
 # OpenStack credentials will be sourced by the gitlab runners
 
 # Destroy any existing builder if one exists
-./TearDownQueue --no_source
-./DestroyBuilderImage --no_source
+tear-down-queue.sh --no_source
+destroy-builder-image.sh --no_source
 
 # Get script directory
 SCRIPT_DIR=$(dirname $0)
@@ -59,10 +59,10 @@ while ! ssh_is_up; do
 done
 
 echo "Fixing ORNL TCP timeout issue for current session"
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/DisableTcpTimestamps
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/disable-TCP-timestamps.sh
 
 echo "Provisioning the builder"
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/ProvisionBuilder
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/provision-builder.sh
 
 # Copy Gitlab docker registry access token to VM and then move to correct directory
 # This credentials are available as environment variables to the runners

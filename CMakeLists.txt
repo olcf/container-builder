@@ -39,7 +39,7 @@ set(SOURCE_FILES_CLIENT
 
 # Scripts required for runtime
 set(SCRIPTS
-        Scripts/dreate-builder.sh
+        Scripts/create-builder.sh
         Scripts/destroy-builder.sh
         Scripts/singularity-builder-backend.sh
         Scripts/docker-builder-backend.sh)

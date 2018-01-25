@@ -27,7 +27,8 @@ fi
 docker ${DEBUG_FLAG} run -d -p 5000:5000 --restart=always --name registry registry:2
 
 # Build the Dockerfile docker image in the current directory
-docker ${DEBUG_FLAG} build -t localhost:5000/docker_image -f ./container.def
+mv ./container.def Dockerfile
+docker ${DEBUG_FLAG} build -t localhost:5000/docker_image .
 
 # Push to the local registry
 docker ${DEBUG_FLAG} push localhost:5000/docker_image

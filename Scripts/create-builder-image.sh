@@ -64,11 +64,18 @@ ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < $
 echo "Provisioning the builder"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/provision-builder.sh
 
-# Copy Gitlab docker registry access token to VM and then move to correct directory
-# This credentials are available as environment variables to the runners
-echo ${GL_TOKEN} > ${SCRIPT_DIR}/container-registry-token
-scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ${SCRIPT_DIR}/container-registry-token cades@${VM_IP}:/home/cades/container-registry-token
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/container-registry-token /home/builder/container-registry-token'
+# Copy Gitlab docker registry read only access token to VM and then move to correct directory
+# Copy Dockerhub registry read only token to VM and then move to correct directory
+# This credentials are available as files on the container-recipes created "kitchen" host
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} /gitlab-username cades@${VM_IP}:/home/cades/gitlab-username
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} /gitlab-readonly-token cades@${VM_IP}:/home/cades/gitlab-readonly-token
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} /dockerhub-readonly-username cades@${VM_IP}:/home/cades/dockerhub-readonly-username
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} /gitlab-readonly-token cades@${VM_IP}:/home/cades/gitlab-readonly-token
+
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/gitlab-username /home/builder'
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/gitlab-readonly-token /home/builder'
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/dockerhub-readonly-username /home/builder'
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/gitlab-readonly-token /home/builder'
 
 echo "Reboot the server to ensure its in a clean state before creating the snapshot"
 openstack server reboot --wait ${VM_UUID}

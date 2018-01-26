@@ -1,5 +1,0 @@
-#requires CLI utility httpie and jq to be installed
-
-CREDENTIAL=$(echo -n atj:knx21nws | base64)
-TOKEN=$(http 'https://code.ornl.gov/jwt/auth?service=container_registry&expires_in=9000&scope=repository:olcf/container-recipes/test:pull' Authorization:"Basic $CREDENTIAL" | jq -r '.token')
-http https://code.ornl.gov:4567/v2/olcf/container-recipes/test/manifests/latest Authorization:"Bearer $TOKEN"

@@ -41,7 +41,7 @@ real_mf_path="$SPACKROOT/$root/$arch/$mfname"
 MF_ROOT=/sw/xk6/modulefiles/container-builder
 mkdir -p ${MF_ROOT}
 
-source artifacts/queue-host.sh
+QUEUE_HOST=$(cat queue-host)
 
 cat << EOF > ${MF_ROOT}/${VERSION}
 #%Module

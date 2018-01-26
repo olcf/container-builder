@@ -63,6 +63,17 @@ openstack server reboot --wait ${VM_UUID}
 
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"
 
-cat << EOF > ${SCRIPT_DIR}/../artifacts/queue-host.sh
-QUEUE_HOST=${VM_IP}
+# Provide git user information required for commit
+git config --global user.email "${GITLAB_USERNAME}@ornl.gov"
+git config --global user.name ${GITLAB_USERNAME}
+
+# Create queue-host file containing IP to the queue
+cat << EOF > ${SCRIPT_DIR}/../queue-host
+${VM_IP}
 EOF
+
+# Push changes upstream
+git checkout -B master origin/master
+git add ${SCRIPT_DIR}/../queue-host
+git commit -m "Updating queue host IP"
+git push https://$(cat /gitlab-username):$(cat /gitlab-admin-token)@code.ornl.gov/olcf/container-builder master

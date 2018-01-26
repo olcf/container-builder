@@ -29,7 +29,7 @@ openstack keypair create ${KEY} > ${KEY_FILE}
 chmod 600 ${KEY_FILE}
 
 # General VM settings
-BOOTIMG="CADES_Ubuntu16.04_v20170804_1"
+BOOTIMG="CADES_Ubuntu16.04_v20180124_1"
 ZONE="nova"
 FLAVOR="m1.large"
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)

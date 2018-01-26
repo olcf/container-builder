@@ -10,7 +10,7 @@ echo "using OS_CACERT="${OS_CACERT}
 SCRIPT_DIR=$(pwd)
 
 # General VM settings
-BOOTIMG="CADES_Ubuntu16.04_v20170804_1"
+BOOTIMG="CADES_Ubuntu16.04_v20180124_1"
 ZONE="nova"
 FLAVOR="m1.large"
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)

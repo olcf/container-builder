@@ -15,21 +15,9 @@ case ${i} in
 esac
 done
 
-# Provide read only access to the private gitlab docker repository if using the container-recipes docker registry
-grep 'code.ornl.gov:4567' ./container.def
-GREP_RC=$?
-if [[ $GREP_RC -eq 0 ]] ; then
-    echo "Using container recipes docker registry login credentials"
-    docker ${DEBUG_FLAG} login code.ornl.gov:4567 -u $(cat /home/builder/gitlab-username) -p $(cat /home/builder/gitlab-readonly-token)
-fi
-
-# provide read only access to the private olcf dockerhub repository
-grep 'FROM olcf/' ./container.def
-GREP_RC=$?
-if [[ $GREP_RC -eq 0 ]] ; then
-    echo "Using OLCF Dockerhub registry login credentials"
-    docker ${DEBUG_FLAG} login code.ornl.gov:4567 -u $(cat /home/builder/dockerhub-readonly-username) -p $(cat /home/builder/dockerhub-readonly-password)
-fi
+# Provide read-only access to gitlab registry and dockerhub
+docker ${DEBUG_FLAG} login code.ornl.gov:4567 -u $(cat /home/builder/gitlab-username) -p $(cat /home/builder/gitlab-readonly-token)
+docker ${DEBUG_FLAG} login code.ornl.gov:4567 -u $(cat /home/builder/dockerhub-readonly-username) -p $(cat /home/builder/dockerhub-readonly-password)
 
 # Spin up local registry
 docker ${DEBUG_FLAG} run -d -p 5000:5000 --restart=always --name registry registry:2

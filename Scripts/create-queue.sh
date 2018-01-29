@@ -3,9 +3,6 @@
 set -e
 set -o xtrace
 
-export OS_CACERT=`pwd`/OpenStack.cer
-echo "using OS_CACERT="${OS_CACERT}
-
 # Get script directory
 SCRIPT_DIR=$(pwd)
 
@@ -52,10 +49,10 @@ ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < $
 # Copy OpenStack credentials to VM and then move to correct directory
 # These credentials are available as environment variables to the runners
 unset OS_CACERT
-printenv | grep ^OS_ > ${SCRIPT_DIR}/openrc.sh # "Reconstruct" openrc.sh
-awk '{print "export "$0}' ${SCRIPT_DIR}/openrc.sh > tmp_awk && mv tmp_awk ${SCRIPT_DIR}/openrc.sh
-scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ${SCRIPT_DIR}/openrc.sh cades@${VM_IP}:/home/cades/openrc.sh
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/openrc.sh /home/queue/openrc.sh'
+printenv | grep ^OS_ > ./queue_profile # "Reconstruct" openrc.sh
+awk '{print "export "$0}' ./queue_profile > tmp_awk && mv tmp_awk ./queue_profile
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./queue_profile cades@${VM_IP}:/home/cades/queue_profile
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/queue_profile /home/queue/.profile'
 
 # Reboot to ensure Queue service, added in provisioning, is started
 export OS_CACERT=`pwd`/OpenStack.cer

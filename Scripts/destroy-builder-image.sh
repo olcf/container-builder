@@ -6,11 +6,6 @@ set -o xtrace
 # Get script directory
 SCRIPT_DIR=$(dirname $0)
 
-# OpenStack credentials
-if [ "$1" != "--no_source" ]; then
-  source ${SCRIPT_DIR}/openrc.sh
-fi
-
 # Delete any builders up and running
 openstack server list -f value --name Builder -c ID | while read ID; do
   echo "Deleting server ${ID}"

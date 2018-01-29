@@ -7,5 +7,7 @@ set -o xtrace
 mkdir artifacts
 
 cd Scripts
+./destroy-queue.sh
+./destroy-builder-image.sh
 ./create-builder-image.sh
-./bring-up-queue.sh
+./create-queue.sh

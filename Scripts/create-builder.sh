@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# OpenStack credentials
-source /home/queue/openrc.sh
-
 # General VM settings
 BOOTIMG="BuilderImage"
 ZONE="nova"

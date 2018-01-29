@@ -5,10 +5,6 @@ set -x
 
 # OpenStack credentials will be sourced by the gitlab runners
 
-# Destroy any existing builder if one exists
-./tear-down-queue.sh --no_source
-./destroy-builder-image.sh --no_source
-
 # Get script directory
 SCRIPT_DIR=$(dirname $0)
 
@@ -72,18 +68,13 @@ ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < $
 echo "Provisioning the builder"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/provision-builder.sh
 
-# Copy Gitlab docker registry read only access token to VM and then move to correct directory
-# Copy Dockerhub registry read only token to VM and then move to correct directory
-# This credentials are available as files on the container-recipes created "kitchen" host
-scp -o StrictHostKeyChecking=no -i ${KEY_FILE} /gitlab-username cades@${VM_IP}:/home/cades/gitlab-username
-scp -o StrictHostKeyChecking=no -i ${KEY_FILE} /gitlab-readonly-token cades@${VM_IP}:/home/cades/gitlab-readonly-token
-scp -o StrictHostKeyChecking=no -i ${KEY_FILE} /dockerhub-readonly-username cades@${VM_IP}:/home/cades/dockerhub-readonly-username
-scp -o StrictHostKeyChecking=no -i ${KEY_FILE} /gitlab-readonly-token cades@${VM_IP}:/home/cades/gitlab-readonly-token
-
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/gitlab-username /home/builder'
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/gitlab-readonly-token /home/builder'
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/dockerhub-readonly-username /home/builder'
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/gitlab-readonly-token /home/builder'
+# Copy readonly credentials to the builder, these variables must be set in the gitlab runner that's running this script
+echo ${GITLAB_USERNAME} > ./builder_profile
+echo ${GITLAB_READONLY_TOKEN} >> ./builder_profile
+echo ${DOCKERHUB_READONLY_USERNAME} >> ./builder_profile
+echo ${DOCKERHUB_READONLY_TOKEN} >> ./builder_profile
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./builder_profile cades@${VM_IP}:/home/cades/builder_profile
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/builder_profile /home/builder/.profile'
 
 echo "Reboot the server to ensure its in a clean state before creating the snapshot"
 openstack server reboot --wait ${VM_UUID}

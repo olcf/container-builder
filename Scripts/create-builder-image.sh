@@ -1,10 +1,7 @@
 #!/bin/bash
 
 set -e
-set -o xtrace
-
-export OS_CACERT=`pwd`/OpenStack.cer
-echo "using OS_CACERT="${OS_CACERT}
+set -x
 
 # OpenStack credentials will be sourced by the gitlab runners
 

@@ -69,7 +69,7 @@ echo "Provisioning the builder"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/provision-builder.sh
 
 # Copy readonly credentials to the builder, these variables must be set in the gitlab runner that's running this script
-echo ${GITLAB_USERNAME} > ./builder_profile
+echo ${GITLAB_READONLY_USERNAME} > ./builder_profile
 echo ${GITLAB_READONLY_TOKEN} >> ./builder_profile
 echo ${DOCKERHUB_READONLY_USERNAME} >> ./builder_profile
 echo ${DOCKERHUB_READONLY_TOKEN} >> ./builder_profile

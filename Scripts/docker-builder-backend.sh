@@ -16,8 +16,8 @@ esac
 done
 
 # Provide read-only access to gitlab registry and dockerhub
-docker ${DEBUG_FLAG} login code.ornl.gov:4567 -u $(cat /home/builder/gitlab-username) -p $(cat /home/builder/gitlab-readonly-token)
-docker ${DEBUG_FLAG} login code.ornl.gov:4567 -u $(cat /home/builder/dockerhub-readonly-username) -p $(cat /home/builder/dockerhub-readonly-password)
+docker ${DEBUG_FLAG} login code.ornl.gov:4567 -u ${GITLAB_READONLY_USERNAME} -p ${GITLAB_READONLY_TOKEN}
+docker ${DEBUG_FLAG} login code.ornl.gov:4567 -u ${DOCKERHUB_READONLY_USERNAME} -p ${DOCKERHUB_READONLY_TOKEN}
 
 # Spin up local registry
 docker ${DEBUG_FLAG} run -d -p 5000:5000 --restart=always --name registry registry:2

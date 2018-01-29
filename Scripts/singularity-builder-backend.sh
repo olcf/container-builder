@@ -20,8 +20,8 @@ grep 'code.ornl.gov:4567' ./container.def
 GREP_RC=$?
 if [[ ${GREP_RC} -eq 0 ]] ; then
     echo "Using container recipes docker registry login credentials"
-    export SINGULARITY_DOCKER_USERNAME=$(cat /home/builder-gitlab-username)
-    export SINGULARITY_DOCKER_PASSWORD=$(cat /home/builder/gitlab-readonly-token)
+    export SINGULARITY_DOCKER_USERNAME=${GITLAB_READONLY_USERNAME}
+    export SINGULARITY_DOCKER_PASSWORD=${GITLAB_READONLY_TOKEN}
 fi
 
 # provide read only access to the private olcf dockerhub repository
@@ -29,8 +29,8 @@ grep 'FROM olcf/' ./container.def
 GREP_RC=$?
 if [[ $GREP_RC -eq 0 ]] ; then
     echo "Using OLCF Dockerhub registry login credentials"
-    export SINGULARITY_DOCKER_USERNAME=$(cat /home/builder/dockerhub-readonly-username)
-    export SINGULARITY_DOCKER_PASSWORD=$(cat /home/builder/dockerhub-readonly-token)
+    export SINGULARITY_DOCKER_USERNAME=${DOCKERHUB_READONLY_USERNAME}
+    export SINGULARITY_DOCKER_PASSWORD=${DOCKERHUB_READONLY_TOKEN}
 fi
 
 /usr/bin/unbuffer /usr/local/bin/singularity ${DEBUG_FLAG} build ./container.simg ./container.def

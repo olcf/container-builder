@@ -56,7 +56,8 @@ while ! ssh_is_up; do
 done
 
 # Reboot to fix a strange issue with apt-get update: Could not get lock /var/lib/apt/lists/lock - open (11: Resource temporarily unavailable)
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo reboot'
+echo "Reboot the server to work around /var/lib/apt/lists/lock issue when using apt"
+openstack server reboot --wait ${VM_UUID}
 sleep 10
 function ssh_is_up() {
     ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} exit &> /dev/null

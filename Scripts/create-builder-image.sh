@@ -55,6 +55,16 @@ while ! ssh_is_up; do
     sleep 1
 done
 
+# Reboot to fix a strange issue with apt-get update: Could not get lock /var/lib/apt/lists/lock - open (11: Resource temporarily unavailable)
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo reboot'
+sleep 10
+function ssh_is_up() {
+    ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} exit &> /dev/null
+}
+while ! ssh_is_up; do
+    sleep 1
+done
+
 echo "Fixing ORNL TCP timeout issue for current session"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/disable-TCP-timestamps.sh
 

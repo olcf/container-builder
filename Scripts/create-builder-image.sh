@@ -75,6 +75,7 @@ echo "DOCKERHUB_READONLY_USERNAME=${DOCKERHUB_READONLY_USERNAME}" >> ./registry-
 echo "DOCKERHUB_READONLY_TOKEN=${DOCKERHUB_READONLY_TOKEN}" >> ./registry-credentials
 scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./registry-credentials cades@${VM_IP}:/home/cades/registry-credentials
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/registry-credentials /home/builder/registry-credentials'
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo chown builder /home/builder/registry-credentials'
 
 echo "Reboot the server to ensure its in a clean state before creating the snapshot"
 openstack server reboot --wait ${VM_UUID}

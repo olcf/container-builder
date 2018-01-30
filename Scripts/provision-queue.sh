@@ -47,7 +47,7 @@ After=network.target
 [Service]
 Type=simple
 User=queue
-EnvironmentFile="/home/queue/openrc.sh"
+EnvironmentFile=/home/queue/openrc.sh
 Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
 WorkingDirectory=/home/queue
 ExecStart=/usr/local/bin/builder-queue

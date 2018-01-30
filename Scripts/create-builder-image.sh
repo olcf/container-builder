@@ -69,12 +69,12 @@ echo "Provisioning the builder"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/provision-builder.sh
 
 # Copy readonly credentials to the builder, these variables must be set in the gitlab runner that's running this script
-echo ${GITLAB_READONLY_USERNAME} > ./builder_profile
-echo ${GITLAB_READONLY_TOKEN} >> ./builder_profile
-echo ${DOCKERHUB_READONLY_USERNAME} >> ./builder_profile
-echo ${DOCKERHUB_READONLY_TOKEN} >> ./builder_profile
-scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./builder_profile cades@${VM_IP}:/home/cades/builder_profile
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/builder_profile /home/builder/.profile'
+echo "GITLAB_READONLY_USERNAME=${GITLAB_READONLY_USERNAME}" > ./registry-credentials
+echo "GITLAB_READONLY_TOKEN=${GITLAB_READONLY_TOKEN}" >> ./registry-credentials
+echo "DOCKERHUB_READONLY_USERNAME=${DOCKERHUB_READONLY_USERNAME}" >> ./registry-credentials
+echo "DOCKERHUB_READONLY_TOKEN=${DOCKERHUB_READONLY_TOKEN}" >> ./registry-credentials
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./registry-credentials cades@${VM_IP}:/home/cades/registry-credentials
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/registry-credentials /home/builder/registry-credentials'
 
 echo "Reboot the server to ensure its in a clean state before creating the snapshot"
 openstack server reboot --wait ${VM_UUID}

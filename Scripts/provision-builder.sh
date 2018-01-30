@@ -101,6 +101,7 @@ After=network.target
 Type=simple
 User=builder
 WorkingDirectory=/home/builder
+EnvironmentFile=/home/builder/registry-credentials
 Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
 ExecStart=/usr/local/bin/builder-server
 Restart=no

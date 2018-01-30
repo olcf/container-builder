@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This script is run as root and so builder user environment variables aren't passed through
+source /home/builder/registry-credentials
+
 # Test for any arguments, such as --debug
 for i in "$@"
 do
@@ -19,7 +22,7 @@ done
 grep 'From: code.ornl.gov:4567' ./container.def
 GREP_RC=$?
 if [[ ${GREP_RC} -eq 0 ]] ; then
-    echo "Using container recipes docker registry login credentials"
+    echo "Using OLCF Gitlab registry login credentials"
     export SINGULARITY_DOCKER_USERNAME=${GITLAB_READONLY_USERNAME}
     export SINGULARITY_DOCKER_PASSWORD=${GITLAB_READONLY_TOKEN}
 fi
@@ -27,7 +30,7 @@ fi
 # provide read only access to the private olcf dockerhub repository
 grep 'From: olcf/' ./container.def
 GREP_RC=$?
-if [[ $GREP_RC -eq 0 ]] ; then
+if [[ ${GREP_RC} -eq 0 ]] ; then
     echo "Using OLCF Dockerhub registry login credentials"
     export SINGULARITY_DOCKER_USERNAME=${DOCKERHUB_READONLY_USERNAME}
     export SINGULARITY_DOCKER_PASSWORD=${DOCKERHUB_READONLY_TOKEN}

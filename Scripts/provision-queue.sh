@@ -47,6 +47,7 @@ After=network.target
 [Service]
 Type=simple
 User=queue
+EnvironmentFile="/home/queue/openrc.sh"
 Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
 WorkingDirectory=/home/queue
 ExecStart=/usr/local/bin/builder-queue
@@ -56,6 +57,4 @@ Restart=no
 WantedBy=multi-user.target
 EOF
 
-# There appears to be some weird issues with starting systemd services inside of a cloud-init script
-# The easiest thing to do is just reboot after enabling the service
 systemctl enable builder-queue

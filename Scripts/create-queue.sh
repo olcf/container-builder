@@ -48,12 +48,11 @@ ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < $
 
 # Copy OpenStack credentials to VM and then move to correct directory
 # These credentials are available as environment variables to the runners
-printenv | grep ^OS_ > ./queue_profile # "Reconstruct" openrc.sh
-awk '{print "export "$0}' ./queue_profile > tmp_awk && mv tmp_awk ./queue_profile
-scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./queue_profile cades@${VM_IP}:/home/cades/queue_profile
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/queue_profile /home/queue/.profile'
+printenv | grep ^OS_ > ./openrc.sh # "Reconstruct" openrc.sh
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./openrc.sh cades@${VM_IP}:/home/cades/openrc.sh
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/openrc.sh /home/queue/openrc.sh'
 
-# Reboot to ensure Queue service, added in provisioning, is started
+# Reboot to start queue service added in provisioning
 openstack server reboot --wait ${VM_UUID}
 
 echo "Started ${VM_UUID} with external IP ${VM_IP} using ${KEY_FILE}"

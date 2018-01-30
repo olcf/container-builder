@@ -42,8 +42,7 @@ MF_ROOT=/sw/xk6/modulefiles/container-builder
 mkdir -p ${MF_ROOT}
 
 # Grab latest queue host
-wget https://code.ornl.gov/olcf/container-builder/raw/master/queue-host
-QUEUE_HOST=$(cat queue-host)
+QUEUE_HOST=$(curl https://code.ornl.gov/olcf/container-builder/raw/master/queue-host)
 
 cat << EOF > ${MF_ROOT}/${VERSION}
 #%Module

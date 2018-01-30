@@ -18,7 +18,7 @@ public:
         std::cout << prefix << ".  ";
 
         // If debug logging is enabled don't do any animation as it might interfere with debug printing
-        if (Logger::get_priority() >= LogPriority::info) {
+        if (Logger::get_priority() > LogPriority::info) {
             return;
         }
 

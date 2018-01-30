@@ -15,7 +15,8 @@ enum class ArchType {
 
 enum class BackendType {
     singularity,
-    docker
+    docker,
+    unspecified
 };
 
 namespace Backend {
@@ -25,7 +26,7 @@ namespace Backend {
         else if (backend_string == "docker")
             return BackendType::docker;
         else
-            throw std::runtime_error("Incorrect BackendType provided");
+            return BackendType::unspecified;
     }
 }
 
@@ -63,8 +64,8 @@ namespace boost {
             ar & client_data.log_priority;
             ar & client_data.arch;
             ar & client_data.backend;
-            ar & client_data.container_path;
-            ar & client_data.definition_path;
+            ar & client_data.container_path;   // Client side container image path
+            ar & client_data.definition_path;  // Client side definition path
             ar & client_data.queue_host;
         }
     } // namespace serialization

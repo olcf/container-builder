@@ -10,6 +10,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/crc.hpp>
 #include <boost/program_options.hpp>
+#include <regex>
 #include "ClientData.h"
 #include "BuilderData.h"
 #include "WaitingAnimation.h"
@@ -112,9 +113,9 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
             ("help", "produce help message")
             ("debug", po::bool_switch(), "enable debug information")
             ("arch", po::value<std::string>()->default_value("x86_64"),
-             "select architecture, valid options are x86_64 and ppc64le")
-            ("backend", po::value<std::string>()->default_value("singularity"),
-             "select the builder backend to use, valid options are singularity and docker")
+             "select architecture, valid options are x86_64 and ppc64le(Currently this does nothing)")
+            ("backend", po::value<std::string>()->default_value("unspecified"),
+             "Override the auto-selected builder backend to use, valid options are singularity and docker")
             ("tty", po::value<bool>()->default_value(isatty(fileno(stdout))),
              "true if the data should be presented as if a tty is present")
             ("container", po::value<std::string>()->required(), "(required) the container name")
@@ -210,6 +211,59 @@ void stream_build(websocket::stream<tcp::socket> &builder_stream) {
     }
 }
 
+bool is_docker_recipe(std::string file_path) {
+    // Read file into string buffer
+    std::ifstream t(file_path);
+    std::stringstream file_buffer;
+    file_buffer << t.rdbuf();
+
+    // Search string buffer for line beginning with "FROM "
+    std::regex docker_regex("^(FROM )");
+
+    // Check for a match
+    return std::regex_search(file_buffer.str(), docker_regex);
+}
+
+bool is_singularity_recipe(std::string file_path) {
+    // Read file into string buffer
+    std::ifstream t(file_path);
+    std::stringstream file_buffer;
+    file_buffer << t.rdbuf();
+
+    // Search string buffer for line beginning with "FROM "
+    std::regex docker_regex("(From: )");
+
+    // Check for a match
+    return std::regex_search(file_buffer.str(), docker_regex);
+}
+
+// Simple checks image and definition files provided on the command line
+void check_input_files(ClientData &client_data) {
+
+    // Detect the backend to use if not specified
+    if(client_data.backend == BackendType::unspecified) {
+
+        if(is_docker_recipe(client_data.definition_path)) {
+            client_data.backend = BackendType::docker;
+            Logger::success("Detected dockerfile");
+        }
+        else if(is_singularity_recipe(client_data.definition_path)) {
+            client_data.backend = BackendType::singularity;
+            Logger::success("Detected singularity file");
+        }
+        else {
+            throw std::runtime_error("Unable to detect type of " + client_data.definition_path);
+        }
+
+    }
+
+    // Check if image already exists
+    if( boost::filesystem::exists(client_data.container_path) ) {
+        throw std::runtime_error(client_data.container_path + " : file already exists!");
+    }
+
+}
+
 int main(int argc, char *argv[]) {
     // Remove buffering from cout
     std::cout.setf(std::ios::unitbuf);
@@ -225,6 +279,7 @@ int main(int argc, char *argv[]) {
         ClientData client_data;
         parse_environment(client_data);
         parse_arguments(client_data, argc, argv);
+        check_input_files(client_data);
 
         WaitingAnimation wait_queue("Connecting to BuilderQueue");
         // Open a WebSocket stream to the queue

@@ -16,7 +16,7 @@ esac
 done
 
 # Provide read only access to the private gitlab docker repository if using the container-recipes docker registry
-grep 'code.ornl.gov:4567' ./container.def
+grep 'From: code.ornl.gov:4567' ./container.def
 GREP_RC=$?
 if [[ ${GREP_RC} -eq 0 ]] ; then
     echo "Using container recipes docker registry login credentials"
@@ -25,7 +25,7 @@ if [[ ${GREP_RC} -eq 0 ]] ; then
 fi
 
 # provide read only access to the private olcf dockerhub repository
-grep 'FROM olcf/' ./container.def
+grep 'From: olcf/' ./container.def
 GREP_RC=$?
 if [[ $GREP_RC -eq 0 ]] ; then
     echo "Using OLCF Dockerhub registry login credentials"

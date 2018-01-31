@@ -5,58 +5,53 @@ set -o xtrace
 
 VERSION=$1
 
-export HOME=$(pwd)
+export TOP_LEVEL=$(pwd)
 
 source ${MODULESHOME}/init/bash
 export PATH=$PATH:${MODULESHOME}/bin
 
-module unload DefApps
+module unload xalt
+module load gcc
+module load cmake/3.9.2
 
 set -x
 
 SW_ROOT=/sw/summitdev/container-builder/${VERSION}
 mkdir -p ${SW_ROOT}
 
-# Build with spack; install spack if it's not already present.
-SPACKROOT=${SW_ROOT}/.spack
-if [ ! -d ${SPACKROOT} ]; then
-	git clone https://github.com/spack/spack.git ${SPACKROOT}
-	cd ${SPACKROOT}
-	git checkout d3519af7de84fa72dee0618c7754f7ebeaa23142
-	cd ${HOME}
-fi
+mkdir boost_install && cd boost_install
 
-# Update the spack configuration files to the latest.
-cp spack-etc-summitdev/*.yaml ${SPACKROOT}/etc/spack
+# Install boost
+cd ${TOP_LEVEL}
+rm -rf boost_build && mkdir boost_build && cd boost_build
+curl -L https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz -O
+tar xf boost_1_66_0.tar.gz
+cd ${TOP_LEVEL}/boost_1_66_0
+./bootstrap.sh --with-libraries=filesystem,regex,system,serialization,thread,program_options --prefix=${SW_ROOT}
+./b2 install || :
+rm -rf /boost_1_66_0
 
-# Ensure spack is aware of our third-party package repo.
-${SPACKROOT}/bin/spack repo add spack-repo/container-builder
+# Install container-builder
+cd ${TOP_LEVEL}
+rm -rf build && mkdir build && cd build
+CC=gcc CXX=g++ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${SW_ROOT} ..
+make
+make install
 
-# Remove any remnants of past failed builds.
-${SPACKROOT}/bin/spack clean --stage --misc-cache
-
-# Record how spack will build the app in the log.
-${SPACKROOT}/bin/spack spec -NIl "container-builder%gcc@7.1.0"
-
-# Have spack build the app.
-${SPACKROOT}/bin/spack install "container-builder%gcc@7.1.0"
-
-# Find where spack generated the modulefile.
-root=$(${SPACKROOT}/bin/spack config get config | grep "\btcl:" | awk '{print $2}' | sed 's/^$spack/./')
-arch=$(${SPACKROOT}/bin/spack arch)
-mfname=$(${SPACKROOT}/bin/spack module find "container-builder%gcc@7.1.0")
-real_mf_path="$SPACKROOT/$root/$arch/$mfname"
-
-# Generate a public modulefile the loads the spack-generated one.
-MF_ROOT=/sw/summitdev/modulefiles/core/container-builder
+# Generate a public modulefile
+MF_ROOT=/sw/summitdev/modulefiles/container-builder
 mkdir -p ${MF_ROOT}
 
-source artifacts/queue-host.sh
+# Grab latest queue host
+QUEUE_HOST=$(curl https://code.ornl.gov/olcf/container-builder/raw/master/queue-host)
 
 cat << EOF > ${MF_ROOT}/${VERSION}
 #%Module
 
 setenv QUEUE_HOST ${QUEUE_HOST}
 setenv QUEUE_PORT 8080
-module --ignore-cache load ${real_mf_path}
+
+module load gcc
+prepend-path LD_LIBRARY_PATH ${SW_ROOT}/lib
+prepend-path PATH ${SW_ROOT}/bin
 EOF

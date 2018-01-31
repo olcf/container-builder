@@ -27,6 +27,8 @@ apt-get install -y docker-ce
 
 # Add support of ppc64le arch
 apt-get install -y qemu-user-static binfmt-support zlib1g-dev libglib2.0-dev libpixman-1-dev libfdt-dev libpython2.7-stdlib
+apt-get clean
+rm -rf /var/lib/apt/lists/*
 
 # Install a newer qemu from source to support ppc64le
 # This makes a very long time so perhaps just build the ppc64le component?

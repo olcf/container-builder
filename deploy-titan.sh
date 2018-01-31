@@ -5,12 +5,14 @@ set -o xtrace
 
 VERSION=$1
 
-export HOME=$(pwd)
+export TOP_LEVEL=$(pwd)
 
 source ${MODULESHOME}/init/bash
 export PATH=$PATH:${MODULESHOME}/bin
 
-module unload xalt PrgEnv-pgi PrgEnv-gnu PrgEnv-intel PrgEnv-cray
+module unload xalt
+module unload PrgEnv-pgi
+module load gcc
 
 set -x
 
@@ -18,37 +20,23 @@ unset CRAYPE_VERSION
 SW_ROOT=/sw/xk6/container-builder/${VERSION}
 mkdir -p ${SW_ROOT}
 
-# Build with spack; install spack if it's not already present.
-SPACKROOT=${SW_ROOT}/.spack
-if [ ! -d ${SPACKROOT} ]; then
-	git clone https://github.com/spack/spack.git ${SPACKROOT}
-	cd ${SPACKROOT}
-	git checkout d3519af7de84fa72dee0618c7754f7ebeaa23142
-	cd ${HOME}
-fi
+mkdir boost_install && cd boost_install
 
-# Update the spack configuration files to the latest.
-cp spack-etc-titan/*.yaml ${SPACKROOT}/etc/spack
+# Install boost
+cd ${TOP_LEVEL}
+mkdir build && cd build
+curl -L https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz -O
+tar xf boost_1_66_0.tar.gz
+cd ${TOP_LEVEL}/boost_1_66_0
+./bootstrap.sh --with-libraries=filesystem,regex,system,serialization,thread,program_options --prefix=${SW_ROOT}
+./b2 install || :
+rm -rf /boost_1_66_0
 
-# Ensure spack is aware of our third-party package repo.
-${SPACKROOT}/bin/spack repo add spack-repo/container-builder
+# Install container-builder
+cd ${TOP_LEVEL}
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${SW_ROOT} ..
 
-# Remove any remnants of past failed builds.
-${SPACKROOT}/bin/spack clean --stage --misc-cache
-
-# Record how spack will build the app in the log.
-${SPACKROOT}/bin/spack spec -NIl "container-builder%gcc@5.3.0"
-
-# Have spack build the app.
-${SPACKROOT}/bin/spack install "container-builder%gcc@5.3.0"
-
-# Find where spack generated the modulefile.
-root=$(${SPACKROOT}/bin/spack config get config | grep "\btcl:" | awk '{print $2}' | sed 's/^$spack/./')
-arch=$(${SPACKROOT}/bin/spack arch)
-mfname=$(${SPACKROOT}/bin/spack module find "container-builder%gcc@5.3.0")
-real_mf_path="$SPACKROOT/$root/$arch/$mfname"
-
-# Generate a public modulefile the loads the spack-generated one.
+# Generate a public modulefile
 MF_ROOT=/sw/xk6/modulefiles/container-builder
 mkdir -p ${MF_ROOT}
 
@@ -60,5 +48,8 @@ cat << EOF > ${MF_ROOT}/${VERSION}
 
 setenv QUEUE_HOST ${QUEUE_HOST}
 setenv QUEUE_PORT 8080
-module load ${real_mf_path}
+
+module load load gcc
+prepend-path LD_LIBRARY_PATH ${SW_ROOT}/lib
+prepend-path PATH ${SW_ROOT}/bin
 EOF

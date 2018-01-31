@@ -37,4 +37,5 @@ if [[ ${GREP_RC} -eq 0 ]] ; then
     export SINGULARITY_DOCKER_PASSWORD=${DOCKERHUB_READONLY_TOKEN}
 fi
 
+export SINGULARITY_DISABLE_CACHE=1
 /usr/bin/unbuffer /usr/local/bin/singularity ${DEBUG_FLAG} build ./container.simg ./container.def

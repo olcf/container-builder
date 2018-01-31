@@ -38,11 +38,11 @@ set(SOURCE_FILES_CLIENT
         Common/include/ClientData.h)
 
 # Scripts required for runtime
-set(SCRIPTS
-        Scripts/create-builder.sh
-        Scripts/destroy-builder.sh
-        Scripts/singularity-builder-backend.sh
-        Scripts/docker-builder-backend.sh)
+set(Provisioning
+        Builder/scripts/create-builder.sh
+        Builder/scripts/destroy-builder.sh
+        Builder/scripts/singularity-builder-backend.sh
+        Builder/scripts/docker-builder-backend.sh)
 
 # Create executables
 add_executable(builder-queue ${SOURCE_FILES_QUEUE})

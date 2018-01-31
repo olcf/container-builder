@@ -34,4 +34,5 @@ docker ${DEBUG_FLAG} build -t localhost:5000/docker_image .
 docker ${DEBUG_FLAG} push localhost:5000/docker_image
 
 # Build the singularity container from the docker image
+export SINGULARITY_DISABLE_CACHE=1
 singularity ${DEBUG_FLAG} pull --name container.simg docker://localhost:5000/docker_image

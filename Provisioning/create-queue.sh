@@ -12,7 +12,7 @@ FLAVOR="m1.large"
 NIC=$(openstack network show -c id --format value or_provider_general_extnetwork1)
 
 KEY="ContainerBuilderKey"
-KEY_FILE="${SCRIPT_DIR}/../artifacts/${KEY}"
+KEY_FILE="${SCRIPT_DIR}/artifacts/${KEY}"
 
 echo "Bringing up VM"
 

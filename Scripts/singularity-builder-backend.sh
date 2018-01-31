@@ -2,6 +2,7 @@
 
 # This script is run as root and so builder user environment variables aren't passed through
 source /home/builder/registry-credentials
+rm /home/builder/registry-credentials
 
 # Test for any arguments, such as --debug
 for i in "$@"

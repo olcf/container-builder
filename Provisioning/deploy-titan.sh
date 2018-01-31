@@ -5,7 +5,7 @@ set -o xtrace
 
 VERSION=$1
 
-export TOP_LEVEL=$(pwd)
+export TOP_LEVEL=$(pwd)/..
 
 source ${MODULESHOME}/init/bash
 export PATH=$PATH:${MODULESHOME}/bin

@@ -38,7 +38,7 @@ set(SOURCE_FILES_CLIENT
         Common/include/ClientData.h)
 
 # Scripts required for runtime
-set(Provisioning
+set(SCRIPTS
         Builder/scripts/create-builder.sh
         Builder/scripts/destroy-builder.sh
         Builder/scripts/singularity-builder-backend.sh

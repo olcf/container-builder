@@ -4,7 +4,7 @@ stages:
 
 deploy-titan:
   script:
-  - ./deploy-titan.sh $CI_COMMIT_TAG
+  - ./Provisioning/deploy-titan.sh $CI_COMMIT_TAG
   tags:
   - Titan
   stage: deploy-client
@@ -13,7 +13,7 @@ deploy-titan:
 
 deploy-summitdev:
   script:
-  - ./deploy-summitdev.sh $CI_COMMIT_TAG
+  - ./Provisioning/deploy-summitdev.sh $CI_COMMIT_TAG
   tags:
   - SummitDev
   stage: deploy-client
@@ -22,7 +22,7 @@ deploy-summitdev:
 
 deploy-openstack:
   script:
-  - ./deploy-openstack.sh $CI_COMMIT_TAG
+  - ./Provisioning/deploy-openstack.sh $CI_COMMIT_TAG
   tags:
   - OpenStack
   stage: deploy-queue

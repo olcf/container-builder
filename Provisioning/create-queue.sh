@@ -3,7 +3,6 @@
 set -e
 set -o xtrace
 
-# Get script directory
 SCRIPT_DIR=$(pwd)
 
 # General VM settings

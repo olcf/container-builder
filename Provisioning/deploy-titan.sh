@@ -13,10 +13,10 @@ export PATH=$PATH:${MODULESHOME}/bin
 module unload xalt
 module unload PrgEnv-pgi
 module load gcc
+module load cmake3/3.9.0
 
 set -x
 
-unset CRAYPE_VERSION
 SW_ROOT=/sw/xk6/container-builder/${VERSION}
 mkdir -p ${SW_ROOT}
 
@@ -24,7 +24,7 @@ mkdir boost_install && cd boost_install
 
 # Install boost
 cd ${TOP_LEVEL}
-mkdir build && cd build
+rm -rf boost_build && mkdir boost_build && cd boost_build
 curl -L https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz -O
 tar xf boost_1_66_0.tar.gz
 cd ${TOP_LEVEL}/boost_1_66_0
@@ -34,7 +34,10 @@ rm -rf /boost_1_66_0
 
 # Install container-builder
 cd ${TOP_LEVEL}
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${SW_ROOT} ..
+rm -rf build && mkdir build && cd build
+CC=gcc CXX=g++ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${SW_ROOT} ..
+make
+make install
 
 # Generate a public modulefile
 MF_ROOT=/sw/xk6/modulefiles/container-builder
@@ -49,7 +52,7 @@ cat << EOF > ${MF_ROOT}/${VERSION}
 setenv QUEUE_HOST ${QUEUE_HOST}
 setenv QUEUE_PORT 8080
 
-module load load gcc
+module load gcc
 prepend-path LD_LIBRARY_PATH ${SW_ROOT}/lib
 prepend-path PATH ${SW_ROOT}/bin
 EOF

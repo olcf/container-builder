@@ -11,7 +11,6 @@ source ${MODULESHOME}/init/bash
 export PATH=$PATH:${MODULESHOME}/bin
 
 module unload xalt
-module load gcc
 module load cmake/3.9.2
 
 set -x
@@ -39,7 +38,7 @@ make
 make install
 
 # Generate a public modulefile
-MF_ROOT=/sw/summitdev/modulefiles/container-builder
+MF_ROOT=/sw/summitdev/modulefiles/core/container-builder
 mkdir -p ${MF_ROOT}
 
 # Grab latest queue host
@@ -51,7 +50,6 @@ cat << EOF > ${MF_ROOT}/${VERSION}
 setenv QUEUE_HOST ${QUEUE_HOST}
 setenv QUEUE_PORT 8080
 
-module load gcc
 prepend-path LD_LIBRARY_PATH ${SW_ROOT}/lib
 prepend-path PATH ${SW_ROOT}/bin
 EOF

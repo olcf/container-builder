@@ -48,4 +48,5 @@ docker ${DEBUG_FLAG} push localhost:5000/docker_image:latest
 # Build the singularity container from the docker image
 export SINGULARITY_CACHEDIR=/home/builder/.singularity
 export SINGULARITY_NOHTTPS=true
+export SINGULARITY_PULLFOLDER=/home/builder
 singularity ${DEBUG_FLAG} pull --name container.simg docker://localhost:5000/docker_image:latest

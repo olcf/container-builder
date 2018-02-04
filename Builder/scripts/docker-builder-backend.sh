@@ -24,7 +24,7 @@ grep 'FROM code.ornl.gov:4567' ./container.def
 GREP_RC=$?
 if [[ ${GREP_RC} -eq 0 ]] ; then
     echo "Using OLCF Gitlab registry login credentials"
-    docker ${DEBUG_FLAG} login code.ornl.gov:4567 -u ${GITLAB_READONLY_USERNAME} -p ${GITLAB_READONLY_TOKEN}
+    docker login code.ornl.gov:4567 -u ${GITLAB_READONLY_USERNAME} -p ${GITLAB_READONLY_TOKEN}
 fi
 
 # provide read only access to the private olcf dockerhub repository
@@ -32,7 +32,7 @@ grep 'FROM olcf/' ./container.def
 GREP_RC=$?
 if [[ ${GREP_RC} -eq 0 ]] ; then
     echo "Using OLCF Dockerhub registry login credentials"
-    docker ${DEBUG_FLAG} login code.ornl.gov:4567 -u ${DOCKERHUB_READONLY_USERNAME} -p ${DOCKERHUB_READONLY_TOKEN}
+    docker login -u ${DOCKERHUB_READONLY_USERNAME} -p ${DOCKERHUB_READONLY_TOKEN}
 fi
 
 # Spin up local registry

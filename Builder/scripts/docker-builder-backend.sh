@@ -19,20 +19,19 @@ case ${i} in
 esac
 done
 
-# We don't wish to show the output of secondary commands unless debugging is enabled
+# We don't wish to show the stdout of secondary commands unless debugging is enabled
 if [[ -z ${DEBUG_FLAG+x} ]]; then
-  exec {OUT_FD} &> /dev/null
+  exec {OUT_FD}>/dev/null
 else
   OUT_FD=1
 fi
-
 
 # Provide read only access to the private gitlab docker repository if using the container-recipes docker registry
 grep 'FROM code.ornl.gov:4567' ./container.def
 GREP_RC=$?
 if [[ ${GREP_RC} -eq 0 ]] ; then
     echo "Using OLCF Gitlab registry login credentials"
-    docker login code.ornl.gov:4567 -u ${GITLAB_READONLY_USERNAME} -p ${GITLAB_READONLY_TOKEN} &>"$OUT_FD"
+    docker login code.ornl.gov:4567 -u ${GITLAB_READONLY_USERNAME} -p ${GITLAB_READONLY_TOKEN} >&${OUT_FD}
 fi
 
 # provide read only access to the private olcf dockerhub repository
@@ -40,12 +39,11 @@ grep 'FROM olcf/' ./container.def
 GREP_RC=$?
 if [[ ${GREP_RC} -eq 0 ]] ; then
     echo "Using OLCF Dockerhub registry login credentials"
-    docker login -u ${DOCKERHUB_READONLY_USERNAME} -p ${DOCKERHUB_READONLY_TOKEN} &>"$OUT_FD"
+    docker login -u ${DOCKERHUB_READONLY_USERNAME} -p ${DOCKERHUB_READONLY_TOKEN} >&${OUT_FD}
 fi
 
-
 # Spin up local registry
-docker ${DEBUG_FLAG} run -d -p 5000:5000 --restart=always --name registry registry:2 &>"$OUT_FD"
+docker ${DEBUG_FLAG} run -d -p 5000:5000 --restart=always --name registry registry:2 >&${OUT_FD}
 
 # Build the Dockerfile docker image in the current directory
 mv ./container.def Dockerfile

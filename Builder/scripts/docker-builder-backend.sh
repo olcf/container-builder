@@ -56,9 +56,9 @@ docker ${DEBUG_FLAG} push localhost:5000/docker_image:latest &>"$OUT_FD"
 export SINGULARITY_CACHEDIR=/home/builder/.singularity
 export SINGULARITY_NOHTTPS=true
 export SINGULARITY_PULLFOLDER=/home/builder
-singularity ${DEBUG_FLAG} pull --name container.simg docker://localhost:5000/docker_image:latest
+singularity ${DEBUG_FLAG} pull --name container.simg docker://localhost:5000/docker_image:latest >&${OUT_FD}
 
 # Workaround for PULLFOLDER not being respected: https://github.com/singularityware/singularity/pull/855
 if [ -e ${SINGULARITY_CACHEDIR}/container.simg ] ; then
-    mv ${SINGULARITY_CACHEDIR}/container.simg ./container.simg
+    mv ${SINGULARITY_CACHEDIR}/container.simg ./container.simg >&${OUT_FD}
 fi

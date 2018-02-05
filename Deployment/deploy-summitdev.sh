@@ -26,7 +26,7 @@ rm -rf boost_build && mkdir boost_build && cd boost_build
 curl -L https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz -O
 tar xf boost_1_66_0.tar.gz
 cd boost_1_66_0
-./bootstrap.sh --with-libraries=filesystem,regex,system,serialization,thread,program_options --prefix=${SW_ROOT}
+./bootstrap.sh --with-libraries=filesystem,regex,system,serialization,thread,program_options --prefix=${SW_ROOT} --with-toolset=gcc
 ./b2 install || :
 rm -rf /boost_1_66_0
 

@@ -18,7 +18,7 @@ class BuilderQueue {
 public:
     explicit BuilderQueue(asio::io_context &io_context) : io_context(io_context),
                                                           max_builder_count(20),
-                                                          max_reserve_builder_count(5),
+                                                          max_reserve_builder_count(20),
                                                           outstanding_create_count(0) {
         create_reserve_builders();
     }

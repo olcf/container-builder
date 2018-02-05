@@ -12,8 +12,9 @@ void BuilderQueue::return_builder(BuilderData builder) {
             create_reserve_builders();
         } else {
             Logger::info("Error destroying builder, retrying in 5 seconds: " + builder.id);
-//            asio::deadline_timer timer(io_context, boost::posix_time::seconds(5));
-//            timer.async_wait(std::bind(&BuilderQueue::return_builder, this, builder));
+            // the timer is passed as an unused shared pointer so it isn't destructed early. This should be safe
+            auto timer = std::make_shared<asio::deadline_timer>(io_context, boost::posix_time::seconds(5));
+            timer->async_wait(std::bind(&BuilderQueue::return_builder, this, builder, timer));
         }
     });
 }
@@ -78,8 +79,9 @@ void BuilderQueue::create_reserve_builders() {
                             process_pending_handler();
                         } else {
                             Logger::error("Error creating builder, retrying in five seconds: " + std::to_string(i));
-//                            asio::deadline_timer timer(io_context, boost::posix_time::seconds(5));
-//                            timer.async_wait(std::bind(&BuilderQueue::create_reserve_builders, this));
+                            // the timer is passed as an unused shared pointer so it isn't destructed early. This should be safe
+                            auto timer = std::make_shared<asio::deadline_timer>(io_context, boost::posix_time::seconds(5));
+                            timer->async_wait(std::bind(&BuilderQueue::create_reserve_builders, this, timer));
                         }
                     });
         }

@@ -67,6 +67,6 @@ private:
     // Maximum number of builders to spin and keep up in reserve
     const std::size_t max_reserve_builder_count;
 
-    // Number of build requests that have been requested but not yet compelted
+    // Number of build requests that have been requested but not yet completed
     int outstanding_create_count;
 };

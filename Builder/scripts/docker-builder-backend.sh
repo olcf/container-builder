@@ -50,15 +50,15 @@ mv ./container.def Dockerfile
 /usr/bin/unbuffer docker ${DEBUG_FLAG} build -t localhost:5000/docker_image:latest . || { echo 'Build Failed' ; exit 1; }
 
 # Push to the local registry
-docker ${DEBUG_FLAG} push localhost:5000/docker_image:latest &>"$OUT_FD"
+docker ${DEBUG_FLAG} push localhost:5000/docker_image:latest
 
 # Build the singularity container from the docker image
 export SINGULARITY_CACHEDIR=/home/builder/.singularity
 export SINGULARITY_NOHTTPS=true
 export SINGULARITY_PULLFOLDER=/home/builder
-/usr/bin/unbuffer singularity ${DEBUG_FLAG} pull --name container.simg docker://localhost:5000/docker_image:latest 2>&1 >&${OUT_FD}
+/usr/bin/unbuffer singularity ${DEBUG_FLAG} pull --name container.simg docker://localhost:5000/docker_image:latest
 
 # Workaround for PULLFOLDER not being respected: https://github.com/singularityware/singularity/pull/855
 if [ -e ${SINGULARITY_CACHEDIR}/container.simg ] ; then
-    mv ${SINGULARITY_CACHEDIR}/container.simg ./container.simg 2>&1 >&${OUT_FD}
+    mv ${SINGULARITY_CACHEDIR}/container.simg ./container.simg
 fi

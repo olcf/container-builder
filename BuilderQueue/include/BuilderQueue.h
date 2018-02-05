@@ -6,6 +6,8 @@
 #include <list>
 #include <queue>
 #include <set>
+#include "boost/asio/deadline_timer.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace asio = boost::asio;
 
@@ -49,6 +51,15 @@ public:
 
     // Create reserve builders as needed
     void create_reserve_builders();
+
+    // Wrappers to persist timer if retrying command due to error, this should be needed on newer compilers
+    // This is a mess that needs fixed
+    void retry_return_builder(BuilderData builder, std::shared_ptr<boost::asio::basic_deadline_timer<boost::posix_time::ptime> >& ignore) {
+        return_builder(builder);
+    }
+    void retry_create_reserve_builders(std::shared_ptr<boost::asio::basic_deadline_timer<boost::posix_time::ptime> >&) {
+        create_reserve_builders();
+    }
 
 private:
     asio::io_context &io_context;

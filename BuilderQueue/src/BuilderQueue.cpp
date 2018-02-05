@@ -1,7 +1,5 @@
 #include "BuilderQueue.h"
 #include "OpenStack.h"
-#include "boost/asio/deadline_timer.hpp"
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 void BuilderQueue::return_builder(BuilderData builder) {
     Logger::info("Attempting to destroy builder: " + builder.id);
@@ -14,7 +12,7 @@ void BuilderQueue::return_builder(BuilderData builder) {
             Logger::info("Error destroying builder, retrying in 5 seconds: " + builder.id);
             // the timer is passed as an unused shared pointer so it isn't destructed early. This should be safe
             auto timer = std::make_shared<asio::deadline_timer>(io_context, boost::posix_time::seconds(5));
-            timer->async_wait(std::bind(&BuilderQueue::return_builder, this, builder, timer));
+            timer->async_wait(std::bind(&BuilderQueue::retry_return_builder, this, builder, timer));
         }
     });
 }
@@ -63,16 +61,16 @@ void BuilderQueue::create_reserve_builders() {
         // Make sure we stay under the maximum number of total builders
         auto request_count = std::min(reserve_request_count, max_builder_count - potential_total_count);
 
-        outstanding_create_count += request_count;
-
         Logger::info("Attempting to create " + std::to_string(request_count) + " builders");
 
         for (std::size_t i = 0; i < request_count; i++) {
             Logger::info("Attempting to create builder " + std::to_string(i));
+            outstanding_create_count++;
 
             std::make_shared<OpenStack>(io_context)->request_create(
                     [this, i](std::error_code error, BuilderData builder) {
                         outstanding_create_count--;
+
                         if (!error) {
                             Logger::info("Created builder " + std::to_string(i) + ": " + builder.id);
                             reserve_builders.push_back(builder);
@@ -81,7 +79,7 @@ void BuilderQueue::create_reserve_builders() {
                             Logger::error("Error creating builder, retrying in five seconds: " + std::to_string(i));
                             // the timer is passed as an unused shared pointer so it isn't destructed early. This should be safe
                             auto timer = std::make_shared<asio::deadline_timer>(io_context, boost::posix_time::seconds(5));
-                            timer->async_wait(std::bind(&BuilderQueue::create_reserve_builders, this, timer));
+                            timer->async_wait(std::bind(&BuilderQueue::retry_create_reserve_builders, this, timer));
                         }
                     });
         }

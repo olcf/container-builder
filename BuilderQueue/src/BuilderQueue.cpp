@@ -12,8 +12,8 @@ void BuilderQueue::return_builder(BuilderData builder) {
             create_reserve_builders();
         } else {
             Logger::info("Error destroying builder, retrying in 5 seconds: " + builder.id);
-            asio::deadline_timer timer(io_context, boost::posix_time::seconds(5));
-            timer.async_wait(std::bind(&BuilderQueue::return_builder, this, builder));
+//            asio::deadline_timer timer(io_context, boost::posix_time::seconds(5));
+//            timer.async_wait(std::bind(&BuilderQueue::return_builder, this, builder));
         }
     });
 }
@@ -78,8 +78,8 @@ void BuilderQueue::create_reserve_builders() {
                             process_pending_handler();
                         } else {
                             Logger::error("Error creating builder, retrying in five seconds: " + std::to_string(i));
-                            asio::deadline_timer timer(io_context, boost::posix_time::seconds(5));
-                            timer.async_wait(std::bind(&BuilderQueue::create_reserve_builders, this));
+//                            asio::deadline_timer timer(io_context, boost::posix_time::seconds(5));
+//                            timer.async_wait(std::bind(&BuilderQueue::create_reserve_builders, this));
                         }
                     });
         }

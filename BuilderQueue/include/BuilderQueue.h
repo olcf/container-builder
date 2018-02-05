@@ -52,8 +52,8 @@ public:
     // Create reserve builders as needed
     void create_reserve_builders();
 
-    // Wrappers to persist timer if retrying command due to error, this should be needed on newer compilers
-    // This is a mess that needs fixed
+    // Wrappers to persist timer if retrying command due to error
+    // std::bind doesn't handle overloads and so wrappers seem necessary
     void retry_return_builder(BuilderData builder, std::shared_ptr<boost::asio::basic_deadline_timer<boost::posix_time::ptime> >& ignore) {
         return_builder(builder);
     }

@@ -11,6 +11,7 @@
 #include <boost/crc.hpp>
 #include <boost/program_options.hpp>
 #include <regex>
+#include <csignal>
 #include "ClientData.h"
 #include "BuilderData.h"
 #include "WaitingAnimation.h"
@@ -264,12 +265,22 @@ void check_input_files(ClientData &client_data) {
 
 }
 
+void hide_cursor() {
+    std::cout << "\e[?25l";
+}
+
+void show_cursor() {
+    std::cout << "\e[?25h";
+}
+
 int main(int argc, char *argv[]) {
     // Remove buffering from cout
     std::cout.setf(std::ios::unitbuf);
 
-    // Hide the the cursor
-    std::cout << "\e[?25l";
+    // Catch ctrl-c and restore cursor
+    std::signal(SIGABRT, [](int signal){ std::cout << "Aborting\n"; show_cursor(); std::abort();});
+
+    hide_cursor();
 
     asio::io_context io_context;
     websocket::stream<tcp::socket> queue_stream(io_context);
@@ -333,8 +344,7 @@ int main(int argc, char *argv[]) {
         Logger::debug("Failed to cleanly close the WebSockets");
     }
 
-    // Show the cursor
-    std::cout << "\e[?25h";
+    show_cursor();
 
     return 0;
 }

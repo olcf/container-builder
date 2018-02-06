@@ -16,7 +16,7 @@ module load gcc
 
 set -x
 
-SW_ROOT=/sw/summitdev/container-builder/${VERSION}
+SW_ROOT=/sw/summit/container-builder/${VERSION}
 mkdir -p ${SW_ROOT}
 
 mkdir boost_install && cd boost_install
@@ -39,7 +39,7 @@ make container-builder
 cmake -DCOMPONENT=container-builder -P cmake_install.cmake
 
 # Generate a public modulefile
-MF_ROOT=/sw/summitdev/modulefiles/core/container-builder
+MF_ROOT=/sw/summit/modulefiles/core/container-builder
 mkdir -p ${MF_ROOT}
 
 # Grab latest queue host

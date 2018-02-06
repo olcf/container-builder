@@ -40,11 +40,12 @@ set(SOURCE_FILES_CLIENT
         Common/include/ClientData.h)
 
 # Scripts required for runtime
-set(SCRIPTS
-        Builder/scripts/create-builder.sh
-        Builder/scripts/destroy-builder.sh
+set(BUILDER_SCRIPTS
         Builder/scripts/singularity-builder-backend.sh
         Builder/scripts/docker-builder-backend.sh)
+set(QUEUE_SCRIPTS
+        Builder/scripts/create-builder.sh
+        Builder/scripts/destroy-builder.sh)
 
 # Create executables
 add_executable(builder-queue ${SOURCE_FILES_QUEUE})
@@ -87,7 +88,10 @@ install(TARGETS builder-queue COMPONENT builder-queue DESTINATION bin OPTIONAL)
 install(TARGETS builder-server COMPONENT builder-server DESTINATION bin OPTIONAL)
 install(TARGETS container-builder COMPONENT container-builder DESTINATION bin OPTIONAL)
 
-# Install scripts if target the builder-server
-install(FILES ${SCRIPTS}
+# Install scripts
+install(FILES ${BUILDER_SCRIPTS}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ
 WORLD_EXECUTE DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" COMPONENT builder-server OPTIONAL)
+install(FILES ${QUEUE_SCRIPTS}
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ
+        WORLD_EXECUTE DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" COMPONENT builder-queue OPTIONAL)

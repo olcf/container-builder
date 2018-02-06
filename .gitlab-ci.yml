@@ -20,6 +20,15 @@ deploy-summitdev:
   only:
   - tags
 
+deploy-summitdev:
+  script:
+  - cd Deployment && ./deploy-summit.sh $CI_COMMIT_TAG
+  tags:
+  - Summit
+  stage: deploy-client
+  only:
+  - tags
+
 deploy-openstack:
   script:
   - cd Deployment && ./deploy-openstack.sh $CI_COMMIT_TAG

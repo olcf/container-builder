@@ -4,6 +4,8 @@ project(ContainerBuilder)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+SET(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE)
+
 include_directories(BuilderQueue/include Builder/include Client/include Common/include)
 
 set(SOURCE_FILES_QUEUE
@@ -80,9 +82,12 @@ target_link_libraries(builder-queue ${Boost_LIBRARIES})
 target_link_libraries(builder-server ${Boost_LIBRARIES})
 target_link_libraries(container-builder ${Boost_LIBRARIES})
 
-install(TARGETS builder-queue builder-server container-builder RUNTIME DESTINATION bin)
+# Install executables
+install(TARGETS builder-queue COMPONENT builder-queue DESTINATION bin OPTIONAL)
+install(TARGETS builder-server COMPONENT builder-server DESTINATION bin OPTIONAL)
+install(TARGETS container-builder COMPONENT container-builder DESTINATION bin OPTIONAL)
 
-# Install scripts
+# Install scripts if target the builder-server
 install(FILES ${SCRIPTS}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ
-WORLD_EXECUTE DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+WORLD_EXECUTE DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" COMPONENT server OPTIONAL)

@@ -29,9 +29,9 @@ cd /
 git clone https://code.ornl.gov/olcf/container-builder.git
 cd container-builder
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTAL_PREFIX="/usr/local" ..
-make
-make install
+cmake -DCOMPONENT=builder-queue -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTAL_PREFIX="/usr/local" ..
+make builder-queue
+cmake -DCOMPONENT=builder-queue -P cmake_install.cmake
 cd /
 rm -rf /container-builder
 

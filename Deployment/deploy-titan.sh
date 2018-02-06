@@ -36,8 +36,8 @@ rm -rf /boost_1_66_0
 cd ${TOP_LEVEL}
 rm -rf build && mkdir build && cd build
 CC=gcc CXX=g++ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${SW_ROOT} ..
-make
-make install
+make container-builder
+cmake -DCOMPONENT=container-builder -P cmake_install.cmake
 
 # Generate a public modulefile
 MF_ROOT=/sw/xk6/modulefiles/container-builder

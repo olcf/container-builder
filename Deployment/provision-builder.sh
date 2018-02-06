@@ -88,10 +88,10 @@ git clone https://code.ornl.gov/olcf/container-builder.git
 cd container-builder
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr/local" ..
-make
-make install
-
+make builder-server
+cmake -DCOMPONENT=builder-server -P cmake_install.cmake
 cd /
+rm -rf /container-builder
 
 # Create systemd script and launch the Builder daemon
 cat << EOF > /etc/systemd/system/builder-server.service

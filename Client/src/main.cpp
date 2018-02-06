@@ -278,7 +278,7 @@ int main(int argc, char *argv[]) {
     std::cout.setf(std::ios::unitbuf);
 
     // Catch ctrl-c and restore cursor
-    std::signal(SIGABRT, [](int signal){ std::cout << "Aborting\n"; show_cursor(); std::abort();});
+    std::signal(SIGINT, [](int signal){ std::cout << "Aborting\n"; show_cursor(); std::abort();});
 
     hide_cursor();
 

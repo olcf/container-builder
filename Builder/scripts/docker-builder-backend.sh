@@ -54,11 +54,6 @@ mv ./container.def Dockerfile
 
 # Build the singularity container from the docker image
 export SINGULARITY_CACHEDIR=/home/builder/.singularity
-export SINGULARITY_NOHTTPS=true
+export SINGULARITY_NOHTTPS=true # Needed as we're pulling from localhost
 export SINGULARITY_PULLFOLDER=/home/builder
-/usr/bin/unbuffer /usr/bin/singularity ${DEBUG_FLAG} pull --name container.simg docker://localhost:5000/docker_image:latest
-
-# Workaround for PULLFOLDER not being respected: https://github.com/singularityware/singularity/pull/855
-if [ -e ${SINGULARITY_CACHEDIR}/container.simg ] ; then
-    mv ${SINGULARITY_CACHEDIR}/container.simg ./container.simg
-fi
+/usr/bin/unbuffer /usr/bin/singularity ${DEBUG_FLAG} build container.simg docker://localhost:5000/docker_image:latest

@@ -55,9 +55,6 @@ done
 echo "Reboot the server to work around /var/lib/apt/lists/lock issue when using apt"
 openstack server reboot --wait ${VM_UUID}
 sleep 10
-function ssh_is_up() {
-    ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} exit &> /dev/null
-}
 while ! ssh_is_up; do
     sleep 1
 done

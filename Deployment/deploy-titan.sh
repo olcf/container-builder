@@ -17,6 +17,7 @@ module load cmake3/3.9.0
 
 set -x
 
+rm -rf /sw/xk6/container-builder/*
 SW_ROOT=/sw/xk6/container-builder/${VERSION}
 mkdir -p ${SW_ROOT}
 
@@ -40,6 +41,7 @@ make container-builder
 cmake -DCOMPONENT=container-builder -P cmake_install.cmake
 
 # Generate a public modulefile
+rm /sw/xk6/modulefiles/container-builder/*
 MF_ROOT=/sw/xk6/modulefiles/container-builder
 mkdir -p ${MF_ROOT}
 

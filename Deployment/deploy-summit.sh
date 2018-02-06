@@ -16,6 +16,7 @@ module load gcc
 
 set -x
 
+rm -rf /sw/summit/container-builder/*
 SW_ROOT=/sw/summit/container-builder/${VERSION}
 mkdir -p ${SW_ROOT}
 
@@ -39,6 +40,7 @@ make container-builder
 cmake -DCOMPONENT=container-builder -P cmake_install.cmake
 
 # Generate a public modulefile
+rm /sw/summit/modulefiles/core/container-builder/*
 MF_ROOT=/sw/summit/modulefiles/core/container-builder
 mkdir -p ${MF_ROOT}
 

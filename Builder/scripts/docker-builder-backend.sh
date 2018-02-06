@@ -47,16 +47,16 @@ docker ${DEBUG_FLAG} run -d -p 5000:5000 --restart=always --name registry regist
 
 # Build the Dockerfile docker image in the current directory
 mv ./container.def Dockerfile
-docker ${DEBUG_FLAG} build -t localhost:5000/docker_image:latest . || { echo 'Build Failed' ; exit 1; }
+/usr/bin/unbuffer /usr/bin/docker ${DEBUG_FLAG} build -t localhost:5000/docker_image:latest . || { echo 'Build Failed' ; exit 1; }
 
 # Push to the local registry
-docker ${DEBUG_FLAG} push localhost:5000/docker_image:latest
+/usr/bin/unbuffer /usr/bin/docker ${DEBUG_FLAG} push localhost:5000/docker_image:latest
 
 # Build the singularity container from the docker image
 export SINGULARITY_CACHEDIR=/home/builder/.singularity
 export SINGULARITY_NOHTTPS=true
 export SINGULARITY_PULLFOLDER=/home/builder
-singularity ${DEBUG_FLAG} pull --name container.simg docker://localhost:5000/docker_image:latest
+/usr/bin/unbuffer /usr/bin/singularity ${DEBUG_FLAG} pull --name container.simg docker://localhost:5000/docker_image:latest
 
 # Workaround for PULLFOLDER not being respected: https://github.com/singularityware/singularity/pull/855
 if [ -e ${SINGULARITY_CACHEDIR}/container.simg ] ; then

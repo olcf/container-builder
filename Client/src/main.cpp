@@ -315,6 +315,7 @@ int main(int argc, char *argv[]) {
         // Read container from builder
         read_file(builder_stream, client_data.container_path);
 
+        Logger::info("Images created at " + client_data.container_path);
     } catch (const boost::exception &ex) {
         auto diagnostics = diagnostic_information(ex);
         Logger::error(std::string() + "Container Builder exception encountered: " + diagnostics);

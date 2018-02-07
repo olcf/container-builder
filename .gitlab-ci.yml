@@ -20,7 +20,7 @@ deploy-summitdev:
   only:
   - tags
 
-deploy-summitdev:
+deploy-summit:
   script:
   - cd Deployment && ./deploy-summit.sh $CI_COMMIT_TAG
   tags:

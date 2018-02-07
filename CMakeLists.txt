@@ -44,8 +44,8 @@ set(BUILDER_SCRIPTS
         Builder/scripts/singularity-builder-backend.sh
         Builder/scripts/docker-builder-backend.sh)
 set(QUEUE_SCRIPTS
-        Builder/scripts/create-builder.sh
-        Builder/scripts/destroy-builder.sh)
+        BuilderQueue/scripts/create-builder.sh
+        BuilderQueue/scripts/destroy-builder.sh)
 
 # Create executables
 add_executable(builder-queue ${SOURCE_FILES_QUEUE})

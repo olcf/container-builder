@@ -324,9 +324,10 @@ int main(int argc, char *argv[]) {
         stream_build(builder_stream);
 
         // Read container from builder
+        WaitingAnimation wait_transfer("Transferring " + client_data.container_path );
         read_file(builder_stream, client_data.container_path);
+        wait_transfer.stop_success("Completed");
 
-        Logger::info("Images created at " + client_data.container_path);
     } catch (const boost::exception &ex) {
         auto diagnostics = diagnostic_information(ex);
         Logger::error(std::string() + "Container Builder exception encountered: " + diagnostics);

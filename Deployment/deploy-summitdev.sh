@@ -40,7 +40,7 @@ make container-builder
 cmake -DCOMPONENT=container-builder -P cmake_install.cmake
 
 # Generate a public modulefile
-rm /sw/summitdev/modulefiles/core/container-builder/*
+rm -f /sw/summitdev/modulefiles/core/container-builder/*
 MF_ROOT=/sw/summitdev/modulefiles/core/container-builder
 mkdir -p ${MF_ROOT}
 

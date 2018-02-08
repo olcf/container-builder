@@ -41,7 +41,7 @@ make container-builder
 cmake -DCOMPONENT=container-builder -P cmake_install.cmake
 
 # Generate a public modulefile
-rm /sw/xk6/modulefiles/container-builder/*
+rm -f /sw/xk6/modulefiles/container-builder/*
 MF_ROOT=/sw/xk6/modulefiles/container-builder
 mkdir -p ${MF_ROOT}
 

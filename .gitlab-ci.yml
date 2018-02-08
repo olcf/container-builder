@@ -39,4 +39,4 @@ deploy-openstack:
   - tags
   artifacts:
     paths:
-      - artifacts/ContainerBuilderKey
+      - Deployment/artifacts/ContainerBuilderKey

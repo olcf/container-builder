@@ -56,4 +56,4 @@ mv ./container.def Dockerfile
 export SINGULARITY_CACHEDIR=/home/builder/.singularity
 export SINGULARITY_NOHTTPS=true # Needed as we're pulling from localhost
 export SINGULARITY_PULLFOLDER=/home/builder
-/usr/bin/unbuffer /usr/bin/singularity ${DEBUG_FLAG} build container.simg docker://localhost:5000/docker_image:latest
+/usr/bin/unbuffer /usr/local/bin/singularity ${DEBUG_FLAG} build container.simg docker://localhost:5000/docker_image:latest

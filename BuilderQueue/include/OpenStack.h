@@ -131,8 +131,8 @@ public:
                                  auto read_error = std::error_code(error.value(), std::generic_category());
                                  io_context.post(std::bind(handler, read_error));
                              } else {
-                                 Logger::error("Builder destroyed");
-                                 io_context.post(std::bind(handler, std::error_code()));
+                             Logger::info("Builder destroyed");
+                             io_context.post(std::bind(handler, std::error_code()));
                              }
 
                              // Verify that the application exited cleanly

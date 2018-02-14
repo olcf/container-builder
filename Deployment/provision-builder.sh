@@ -13,13 +13,22 @@ chmod 0440 /etc/sudoers.d/builder
 
 apt-get -y update
 apt-get -y install expect
-apt-get -y install yum rpm
+apt-get -y install yum rpm ufw
 
 # Install docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 apt-get update
 apt-get install -y docker-ce
+
+# Setup firewall
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow ssh
+ufw allow from 160.91.205.192/26 to any port 8080 # Titan
+ufw allow from 128.219.141.227 to any port 8080   # Summitdev
+ufw allow from 128.219.134.71/26 to any port 8080 # Summit
+ufw enable
 
 #####################################
 # begin ppc64le QUEMU stuff

@@ -6,9 +6,6 @@ set -o xtrace
 # Create non root queue user
 useradd --create-home --home-dir /home/queue --shell /bin/bash queue
 
-apt-get -y update
-apt-get -y install ufw
-
 # Setup firewall
 ufw default deny incoming
 ufw default allow outgoing
@@ -16,7 +13,7 @@ ufw allow ssh
 ufw allow from 160.91.205.192/26 to any port 8080 # Titan
 ufw allow from 128.219.141.227 to any port 8080   # Summitdev
 ufw allow from 128.219.134.71/26 to any port 8080 # Summit
-ufw enable
+ufw --force enable
 
 # Update cmake version
 cd /

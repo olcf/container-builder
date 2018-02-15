@@ -13,7 +13,7 @@ chmod 0440 /etc/sudoers.d/builder
 
 apt-get -y update
 apt-get -y install expect
-apt-get -y install yum rpm ufw
+apt-get -y install yum rpm
 
 # Install docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
@@ -28,7 +28,7 @@ ufw allow ssh
 ufw allow from 160.91.205.192/26 to any port 8080 # Titan
 ufw allow from 128.219.141.227 to any port 8080   # Summitdev
 ufw allow from 128.219.134.71/26 to any port 8080 # Summit
-ufw enable
+ufw --force enable
 
 #####################################
 # begin ppc64le QUEMU stuff

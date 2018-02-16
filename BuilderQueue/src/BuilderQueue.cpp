@@ -1,5 +1,37 @@
 #include "BuilderQueue.h"
 #include "OpenStack.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
+std::string BuilderQueue::status_json() {
+    pt::ptree status_tree;
+
+    // Insert active builders
+    pt::ptree active_tree;
+    for (auto builder : active_builders) {
+        pt::ptree builder_node;
+        builder_node.add("id", builder.id);
+        builder_node.add("host", builder.host);
+        builder_node.add("port", builder.port);
+        active_tree.push_back(std::make_pair("", builder_node));
+    }
+    status_tree.add_child("active", active_tree);
+
+    // Insert reserve builders
+    pt::ptree reserve_tree;
+    for (auto builder : reserve_builders) {
+        pt::ptree builder_node;
+        builder_node.add("id", builder.id);
+        builder_node.add("host", builder.host);
+        builder_node.add("port", builder.port);
+        reserve_tree.push_back(std::make_pair("", builder_node));
+    }
+    status_tree.add_child("reserve", reserve_tree);
+
+    std::stringstream tree_stream;
+    boost::property_tree::json_parser::write_json(tree_stream, status_tree);
+    return tree_stream.str();
+}
 
 void BuilderQueue::return_builder(BuilderData builder) {
     Logger::info("Attempting to destroy builder: " + builder.id);

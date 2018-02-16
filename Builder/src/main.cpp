@@ -217,6 +217,7 @@ int main(int argc, char *argv[]) {
 
     // Attempt to close connection
     try {
+        Logger::debug("Attempting normal close");
         client_stream.close(websocket::close_code::normal);
     } catch (...) {
         Logger::error("Failed to cleanly close the WebSocket");

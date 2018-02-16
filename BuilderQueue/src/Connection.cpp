@@ -33,12 +33,12 @@ void Connection::builder_ready(BuilderData builder) {
     std::string request_string(serialized_builder);
 
     Logger::info("Writing builder: " + builder.id);
-    stream.async_write(asio::buffer(request_string), [this, self, builder](beast::error_code error, std::size_t bytes) {
+    stream.async_write(asio::buffer(request_string), [this, self, request_string](beast::error_code error, std::size_t bytes) {
         boost::ignore_unused(bytes);
         if (!error) {
             wait_for_close();
         } else {
-            Logger::error("Error writing builder: " + builder.id);
+            Logger::error("Error writing builder: " + request_string);
         }
     });
 }
@@ -55,6 +55,22 @@ void Connection::request_builder() {
     });
 }
 
+void Connection::request_queue_stats() {
+    // Persist this connection
+    auto self(shared_from_this());
+
+    Logger::info("Request for queue stats made");
+    auto status = queue.status_json();
+    Logger::info("Writing queue stats");
+
+    stream.async_write(asio::buffer(status), [this, self, status](beast::error_code error, std::size_t bytes) {
+        boost::ignore_unused(bytes);
+        if (error) {
+            Logger::error("Wrote job stats");
+        }
+    });
+}
+
 void Connection::read_request_string() {
     // Persist this connection
     auto self(shared_from_this());
@@ -67,6 +83,8 @@ void Connection::read_request_string() {
             buffer.consume(buffer.size());
             if (request == "checkout_builder_request") {
                 request_builder();
+            } else if(request == "queue_status_request") {
+                request_queue_stats();
             } else {
                 Logger::error("Bad initial request string: " + request);
             }

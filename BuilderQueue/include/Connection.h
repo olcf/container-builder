@@ -35,6 +35,8 @@ private:
 
     void request_builder();
 
+    void request_queue_stats();
+
     void builder_ready(BuilderData builder);
 
     void wait_for_close();

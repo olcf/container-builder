@@ -278,7 +278,7 @@ int main(int argc, char *argv[]) {
     std::cout.setf(std::ios::unitbuf);
 
     // Catch ctrl-c and restore cursor
-    std::signal(SIGINT, [](int signal){ std::cout << "Aborting\n"; show_cursor(); std::abort();});
+    std::signal(SIGINT, [](int signal){ throw std::runtime_error("User requested interrupt"); });
 
     hide_cursor();
 
@@ -339,10 +339,17 @@ int main(int argc, char *argv[]) {
 
     // Attempt to disconnect from builder and queue
     try {
+        Logger::debug("Attempting normal close of builder");
         builder_stream.close(websocket::close_code::normal);
+    } catch (...) {
+        Logger::debug("Failed to cleanly close the WebSocket to builder");
+    }
+
+    try {
+        Logger::debug("Attempting normal close of queue");
         queue_stream.close(websocket::close_code::normal);
     } catch (...) {
-        Logger::debug("Failed to cleanly close the WebSockets");
+        Logger::debug("Failed to cleanly close the WebSocket to queue");
     }
 
     show_cursor();

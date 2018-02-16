@@ -34,7 +34,6 @@ public:
 
     BuilderQueue &operator=(BuilderQueue &&)      = delete;
 
-
     // Add the specified handler to the queue
     // When a builder is ready the handler will be called and passed the builder
     template<typename FetchHandler>
@@ -61,6 +60,8 @@ public:
         create_reserve_builders();
     }
 
+    // Return a json formatted string representing the status of the queue
+    std::string status_json();
 private:
     asio::io_context &io_context;
 

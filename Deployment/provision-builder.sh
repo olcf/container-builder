@@ -41,9 +41,9 @@ rm -rf /var/lib/apt/lists/*
 
 # Install a newer qemu from source to support ppc64le
 # This makes a very long time so perhaps just build the ppc64le component?
-wget -q 'https://download.qemu.org/qemu-2.11.0.tar.xz'
-tar xvJf qemu-2.11.0.tar.xz
-cd qemu-2.11.0
+wget -q 'https://download.qemu.org/qemu-2.11.1.tar.xz'
+tar xvJf qemu-2.11.1.tar.xz
+cd qemu-2.11.1
 mkdir build
 cd build
 ../configure --static --target-list=ppc64le-linux-user

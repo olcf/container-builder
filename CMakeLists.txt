@@ -29,9 +29,17 @@ set(SOURCE_FILES_BUILDER
         Common/include/Logger.h
         )
 
-# Files related to the API
 set(SOURCE_FILES_CLIENT
         Client/src/main.cpp
+        Client/include/WaitingAnimation.h
+        Common/include/BuilderData.h
+        Common/src/Logger.cpp
+        Common/include/Logger.h
+        Common/src/BuilderData.cpp
+        Common/include/ClientData.h)
+
+set(SOURCE_FILES_STATUS
+        Client/src/status.cpp
         Client/include/WaitingAnimation.h
         Common/include/BuilderData.h
         Common/src/Logger.cpp
@@ -51,6 +59,7 @@ set(QUEUE_SCRIPTS
 add_executable(builder-queue ${SOURCE_FILES_QUEUE})
 add_executable(builder-server ${SOURCE_FILES_BUILDER})
 add_executable(container-builder ${SOURCE_FILES_CLIENT})
+add_executable(cb-status ${SOURCE_FILES_STATUS})
 
 # Ignore system boost and use module system boost
 set(Boost_NO_BOOST_CMAKE TRUE)
@@ -69,12 +78,15 @@ set_target_properties(builder-server PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} 
 set_target_properties(builder-server PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(container-builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(container-builder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(cb-status PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(cb-status PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(builder-queue ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(builder-server ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(container-builder ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(cb-status ${CMAKE_THREAD_LIBS_INIT})
 
 
 find_package(Boost 1.66.0 COMPONENTS system filesystem serialization regex thread program_options REQUIRED)
@@ -82,11 +94,13 @@ include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(builder-queue ${Boost_LIBRARIES})
 target_link_libraries(builder-server ${Boost_LIBRARIES})
 target_link_libraries(container-builder ${Boost_LIBRARIES})
+target_link_libraries(cb-status ${Boost_LIBRARIES})
 
 # Install executables
 install(TARGETS builder-queue COMPONENT builder-queue DESTINATION bin OPTIONAL)
 install(TARGETS builder-server COMPONENT builder-server DESTINATION bin OPTIONAL)
 install(TARGETS container-builder COMPONENT container-builder DESTINATION bin OPTIONAL)
+install(TARGETS cb-status COMPONENT container-builder DESTINATION bin OPTIONAL)
 
 # Install scripts
 install(FILES ${BUILDER_SCRIPTS}

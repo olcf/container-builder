@@ -48,9 +48,10 @@ void print_status(websocket::stream<tcp::socket> &queue_stream) {
     std::string queue_status_string;
     auto queue_status_buffer = boost::asio::dynamic_buffer(queue_status_string);
     queue_stream.read(queue_status_buffer);
+    std::stringstream json_stream(queue_status_string);
 
     pt::ptree status_tree;
-    pt::read_json(queue_status_string, status_tree);
+    pt::read_json(json_stream, status_tree);
     std::cout<<"Active builders\n";
     for(auto builder : status_tree.get_child("active")) {
         std::cout<<"ID: " << builder.second.get<std::string>("id") << std::endl;

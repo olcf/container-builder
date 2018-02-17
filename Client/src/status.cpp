@@ -52,7 +52,10 @@ void print_status(websocket::stream<tcp::socket> &queue_stream) {
 
     pt::ptree status_tree;
     pt::read_json(json_stream, status_tree);
+    std::cout<<"-------------\n";
     std::cout<<"Active builders\n";
+    std::cout<<"-------------\n\n";
+
     for(auto builder : status_tree.get_child("active")) {
         std::cout<<"ID: " << builder.second.get<std::string>("id") << std::endl;
         std::cout<<"HOST: " << builder.second.get<std::string>("host") << std::endl;
@@ -60,7 +63,10 @@ void print_status(websocket::stream<tcp::socket> &queue_stream) {
         std::cout<<"-------------\n";
     }
 
+    std::cout<<"-------------\n";
     std::cout<<"Reserve builders\n";
+    std::cout<<"-------------\n\n";
+
     for(auto builder : status_tree.get_child("reserve")) {
         std::cout<<"ID: " << builder.second.get<std::string>("id") << std::endl;
         std::cout<<"HOST: " << builder.second.get<std::string>("host") << std::endl;

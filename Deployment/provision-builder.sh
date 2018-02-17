@@ -112,7 +112,7 @@ After=network.target
 Type=simple
 User=builder
 WorkingDirectory=/home/builder
-EnvironmentFile=/home/queue/environment.sh
+EnvironmentFile=/home/builder/environment.sh
 ExecStart=/usr/local/bin/builder-server
 Restart=no
 

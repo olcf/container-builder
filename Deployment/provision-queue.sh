@@ -6,6 +6,9 @@ set -o xtrace
 # Create non root queue user
 useradd --create-home --home-dir /home/queue --shell /bin/bash queue
 
+apt-get -y update
+apt-get -y install unzip
+
 # Setup firewall
 ufw default deny incoming
 ufw default allow outgoing

@@ -21,7 +21,7 @@ namespace bp = boost::process;
 
 using callback_type = std::function<void(const boost::system::error_code &, std::size_t size)>;
 
-ClientData read_client_data(websocket::stream<tcp::socket> &client_stream) {
+ClientData read_client_data(websocket::stream<tcp::socket&> &client_stream) {
     Logger::info("Reading client data");
 
     Logger::info("Reading serialized client data");
@@ -39,7 +39,7 @@ ClientData read_client_data(websocket::stream<tcp::socket> &client_stream) {
     return client_data;
 }
 
-void read_file(websocket::stream<tcp::socket> &client_stream,
+void read_file(websocket::stream<tcp::socket&> &client_stream,
                const std::string &file_name) {
     Logger::info("Opening " + file_name + " for writing");
     std::ofstream file;
@@ -97,7 +97,7 @@ std::string build_command(const ClientData &client_data) {
     return build_command;
 }
 
-void stream_build(websocket::stream<tcp::socket> &client_stream,
+void stream_build(websocket::stream<tcp::socket&> &client_stream,
                   const std::string &build_command) {
 
     Logger::info("Starting subprocess and redirecting output to pipe");
@@ -140,7 +140,7 @@ void stream_build(websocket::stream<tcp::socket> &client_stream,
     Logger::info("Done streaming subprocess output");
 }
 
-void write_file(websocket::stream<tcp::socket> &client_stream,
+void write_file(websocket::stream<tcp::socket&> &client_stream,
                 const std::string &file_name) {
     Logger::info("Opening " + file_name + " for reading");
 
@@ -179,10 +179,15 @@ int main(int argc, char *argv[]) {
     boost::ignore_unused(argc, argv);
 
     asio::io_context io_context;
-    websocket::stream<tcp::socket> client_stream(io_context);
+    tcp::socket socket{io_context};
+    websocket::stream<tcp::socket&> client_stream{socket};
     tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), 8080));
 
     try {
+        // Use keep alive, which hopefully detect badly disconnected clients
+        boost::asio::socket_base::keep_alive keep_alive(true);
+        socket.set_option(keep_alive);
+
         Logger::info("Accepting an in coming websocket connection");
         acceptor.accept(client_stream.next_layer());
         client_stream.accept();
@@ -215,12 +220,5 @@ int main(int argc, char *argv[]) {
         Logger::error("Unknown exception caught!");
     }
 
-    // Attempt to close connection
-    try {
-        Logger::debug("Attempting normal close");
-        client_stream.close(websocket::close_code::normal);
-    } catch (...) {
-        Logger::error("Failed to cleanly close the WebSocket");
-    }
     return 0;
 }

@@ -278,7 +278,7 @@ int main(int argc, char *argv[]) {
     std::cout.setf(std::ios::unitbuf);
 
     // Catch ctrl-c and restore cursor
-    std::signal(SIGINT, [](int signal){ throw std::runtime_error("User requested interrupt"); });
+    std::signal(SIGINT, [](int signal){ std::cout << "Aborting\n"; show_cursor(); std::abort(); });
 
     hide_cursor();
 

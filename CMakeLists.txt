@@ -99,8 +99,8 @@ target_link_libraries(cb-status ${Boost_LIBRARIES})
 # Install executables
 install(TARGETS builder-queue COMPONENT builder-queue DESTINATION bin OPTIONAL)
 install(TARGETS builder-server COMPONENT builder-server DESTINATION bin OPTIONAL)
-install(TARGETS container-builder COMPONENT container-builder DESTINATION bin OPTIONAL)
-install(TARGETS cb-status COMPONENT container-builder DESTINATION bin OPTIONAL)
+install(TARGETS container-builder COMPONENT client DESTINATION bin OPTIONAL)
+install(TARGETS cb-status COMPONENT client DESTINATION bin OPTIONAL)
 
 # Install scripts
 install(FILES ${BUILDER_SCRIPTS}

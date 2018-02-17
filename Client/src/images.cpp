@@ -35,19 +35,6 @@ void parse_environment(ClientData &client_data) {
     client_data.queue_host = std::string(host);
 }
 
-void print_images(websocket::stream<tcp::socket> &queue_stream) {
-    Logger::debug("Writing image list request string");
-    std::string request_string("image_list_request");
-    queue_stream.write(asio::buffer(request_string));
-
-    Logger::debug("Read image list string");
-    std::string images_string;
-    auto images_buffer = boost::asio::dynamic_buffer(images_string);
-    queue_stream.read(images_buffer);
-
-    std::cout << images_string;
-}
-
 int main(int argc, char *argv[]) {
     asio::io_context io_context;
     websocket::stream<tcp::socket> queue_stream(io_context);
@@ -65,8 +52,19 @@ int main(int argc, char *argv[]) {
         wait_queue.stop_success("Connected to queue: " + client_data.queue_host);
 
         // Request a build host from the queue
-        WaitingAnimation wait_builder("Requesting image list");
-        print_images(queue_stream);
+        WaitingAnimation wait_images("Requesting image list");
+
+        Logger::debug("Writing image list request string");
+        std::string request_string("image_list_request");
+        queue_stream.write(asio::buffer(request_string));
+
+        Logger::debug("Read image list string");
+        std::string images_string;
+        auto images_buffer = boost::asio::dynamic_buffer(images_string);
+        queue_stream.read(images_buffer);
+
+        wait_images.stop_success("Fetched");
+        std::cout << images_string;
 
     } catch (const boost::exception &ex) {
         auto diagnostics = diagnostic_information(ex);

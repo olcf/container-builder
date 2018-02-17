@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
         wait_queue.stop_success("Connected to queue: " + client_data.queue_host);
 
         // Request a build host from the queue
-        WaitingAnimation wait_builder("Requesting queue status");
+        Logger::info("Requesting queue status");
         print_status(queue_stream);
 
     } catch (const boost::exception &ex) {

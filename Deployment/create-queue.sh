@@ -59,7 +59,7 @@ printenv | grep ^OS_ > ./environment.sh # "Reconstruct" openrc.sh
 echo "DOCKERHUB_READONLY_USERNAME=${DOCKERHUB_READONLY_USERNAME}" >> ./environment.sh
 echo "DOCKERHUB_READONLY_TOKEN=${DOCKERHUB_READONLY_TOKEN}" >> ./environment.sh
 echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib" >> ./environment.sh
-scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./openrc.sh cades@${VM_IP}:/home/cades/environment.sh
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./environment.sh cades@${VM_IP}:/home/cades/environment.sh
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/environment.sh /home/queue/environment.sh'
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo chown queue /home/queue/environment.sh'
 

@@ -184,13 +184,13 @@ int main(int argc, char *argv[]) {
     tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), 8080));
 
     try {
-        // Use keep alive, which hopefully detect badly disconnected clients
-        boost::asio::socket_base::keep_alive keep_alive(true);
-        socket.set_option(keep_alive);
-
         Logger::info("Accepting an in coming websocket connection");
         acceptor.accept(client_stream.next_layer());
         client_stream.accept();
+
+        // Use keep alive, which hopefully detect badly disconnected clients
+        boost::asio::socket_base::keep_alive keep_alive(true);
+        socket.set_option(keep_alive);
 
         Logger::info("Setting the websocket stream to handle binary data and have an unlimited(uint64_t) message size");
         client_stream.binary(true);

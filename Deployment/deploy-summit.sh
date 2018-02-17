@@ -38,6 +38,7 @@ rm -rf build && mkdir build && cd build
 CC=gcc CXX=g++ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${SW_ROOT} ..
 make container-builder
 make cb-status
+make images
 cmake -DCOMPONENT=client -P cmake_install.cmake
 
 # Generate a public modulefile

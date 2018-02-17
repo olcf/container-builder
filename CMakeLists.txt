@@ -20,7 +20,8 @@ set(SOURCE_FILES_QUEUE
         BuilderQueue/include/OpenStack.h
         Common/src/BuilderData.cpp
         Common/include/ClientData.h
-        BuilderQueue/include/Server.h)
+        BuilderQueue/include/Server.h
+        BuilderQueue/include/Docker.h)
 
 set(SOURCE_FILES_BUILDER
         Builder/src/main.cpp
@@ -47,19 +48,28 @@ set(SOURCE_FILES_STATUS
         Common/src/BuilderData.cpp
         Common/include/ClientData.h)
 
+set(SOURCE_FILES_IMAGES
+        Client/src/images.cpp
+        Client/include/WaitingAnimation.h
+        Common/src/Logger.cpp
+        Common/include/Logger.h
+        Common/include/ClientData.h)
+
 # Scripts required for runtime
 set(BUILDER_SCRIPTS
         Builder/scripts/singularity-builder-backend.sh
         Builder/scripts/docker-builder-backend.sh)
 set(QUEUE_SCRIPTS
         BuilderQueue/scripts/create-builder.sh
-        BuilderQueue/scripts/destroy-builder.sh)
+        BuilderQueue/scripts/destroy-builder.sh
+        BuilderQueue/scripts/list-images.sh)
 
 # Create executables
 add_executable(builder-queue ${SOURCE_FILES_QUEUE})
 add_executable(builder-server ${SOURCE_FILES_BUILDER})
 add_executable(container-builder ${SOURCE_FILES_CLIENT})
 add_executable(cb-status ${SOURCE_FILES_STATUS})
+add_executable(cb-images ${SOURCE_FILES_IMAGES})
 
 # Ignore system boost and use module system boost
 set(Boost_NO_BOOST_CMAKE TRUE)
@@ -80,6 +90,8 @@ set_target_properties(container-builder PROPERTIES COMPILE_FLAGS "${COMPILE_FLAG
 set_target_properties(container-builder PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(cb-status PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
 set_target_properties(cb-status PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(cb-images PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} ${HARDENING_FLAGS}")
+set_target_properties(cb-images PROPERTIES LINK_FLAGS "${LINK_FLAGS} ${HARDENING_FLAGS}")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -87,6 +99,7 @@ target_link_libraries(builder-queue ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(builder-server ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(container-builder ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(cb-status ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(cb-images ${CMAKE_THREAD_LIBS_INIT})
 
 
 find_package(Boost 1.66.0 COMPONENTS system filesystem serialization regex thread program_options REQUIRED)
@@ -95,12 +108,15 @@ target_link_libraries(builder-queue ${Boost_LIBRARIES})
 target_link_libraries(builder-server ${Boost_LIBRARIES})
 target_link_libraries(container-builder ${Boost_LIBRARIES})
 target_link_libraries(cb-status ${Boost_LIBRARIES})
+target_link_libraries(cb-images ${Boost_LIBRARIES})
+
 
 # Install executables
 install(TARGETS builder-queue COMPONENT builder-queue DESTINATION bin OPTIONAL)
 install(TARGETS builder-server COMPONENT builder-server DESTINATION bin OPTIONAL)
 install(TARGETS container-builder COMPONENT client DESTINATION bin OPTIONAL)
 install(TARGETS cb-status COMPONENT client DESTINATION bin OPTIONAL)
+install(TARGETS cb-images COMPONENT client DESTINATION bin OPTIONAL)
 
 # Install scripts
 install(FILES ${BUILDER_SCRIPTS}

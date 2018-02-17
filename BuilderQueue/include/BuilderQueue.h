@@ -62,6 +62,7 @@ public:
 
     // Return a json formatted string representing the status of the queue
     std::string status_json();
+
 private:
     asio::io_context &io_context;
 

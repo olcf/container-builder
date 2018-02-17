@@ -45,12 +45,15 @@ ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < $
 echo "Provisioning the queue"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/provision-queue.sh
 
-# Copy OpenStack credentials to VM and then move to correct directory
-# These credentials are available as environment variables to the runners
-printenv | grep ^OS_ > ./openrc.sh # "Reconstruct" openrc.sh
-scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./openrc.sh cades@${VM_IP}:/home/cades/openrc.sh
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/openrc.sh /home/queue/openrc.sh'
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo chown queue /home/queue/openrc.sh'
+# Copy OpenStack and Docker registry credentials to VM and then move to correct directory
+# These credentials are available as environment variables to the gitlab runners
+printenv | grep ^OS_ > ./environment.sh # "Reconstruct" openrc.sh
+echo "DOCKERHUB_READONLY_USERNAME=${DOCKERHUB_READONLY_USERNAME}" >> ./environment.sh
+echo "DOCKERHUB_READONLY_TOKEN=${DOCKERHUB_READONLY_TOKEN}" >> ./environment.sh
+echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib" >> ./environment.sh
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./openrc.sh cades@${VM_IP}:/home/cades/environment.sh
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/environment.sh /home/queue/environment.sh'
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo chown queue /home/queue/environment.sh'
 
 # Reboot to start queue service added in provisioning
 openstack server reboot --wait ${VM_UUID}

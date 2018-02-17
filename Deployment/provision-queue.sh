@@ -47,6 +47,12 @@ rm -rf /container-builder
 # Install OpenStack command line client
 pip install python-openstackclient
 
+# Install docker-ls
+wget https://github.com/mayflower/docker-ls/releases/download/v0.3.1/docker-ls-linux-amd64.zip
+unzip docker-ls-linux-amd64
+mv docker-ls /usr/local/bin
+rm docker-rm
+
 # Create systemd script and launch the BuilderQueue daemon
 cat << EOF > /etc/systemd/system/builder-queue.service
 [Unit]
@@ -56,8 +62,7 @@ After=network.target
 [Service]
 Type=simple
 User=queue
-EnvironmentFile=/home/queue/openrc.sh
-Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
+EnvironmentFile=/home/queue/environment.sh
 WorkingDirectory=/home/queue
 ExecStart=/usr/local/bin/builder-queue
 Restart=no

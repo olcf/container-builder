@@ -46,6 +46,8 @@ private:
 
     void request_queue_stats();
 
+    void request_image_list();
+
     void builder_ready(BuilderData builder);
 
     void wait_for_close();

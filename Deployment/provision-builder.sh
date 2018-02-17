@@ -112,7 +112,7 @@ After=network.target
 Type=simple
 User=builder
 WorkingDirectory=/home/builder
-Environment="LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib"
+EnvironmentFile=/home/queue/environment.sh
 ExecStart=/usr/local/bin/builder-server
 Restart=no
 

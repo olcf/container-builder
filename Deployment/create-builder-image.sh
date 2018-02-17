@@ -66,13 +66,14 @@ echo "Provisioning the builder"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/provision-builder.sh
 
 # Copy readonly credentials to the builder, these variables must be set in the gitlab runner that's running this script
-echo "GITLAB_READONLY_USERNAME=${GITLAB_READONLY_USERNAME}" > ./registry-credentials
-echo "GITLAB_READONLY_TOKEN=${GITLAB_READONLY_TOKEN}" >> ./registry-credentials
-echo "DOCKERHUB_READONLY_USERNAME=${DOCKERHUB_READONLY_USERNAME}" >> ./registry-credentials
-echo "DOCKERHUB_READONLY_TOKEN=${DOCKERHUB_READONLY_TOKEN}" >> ./registry-credentials
-scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./registry-credentials cades@${VM_IP}:/home/cades/registry-credentials
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/registry-credentials /home/builder/registry-credentials'
-ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo chown builder /home/builder/registry-credentials'
+echo "GITLAB_READONLY_USERNAME=${GITLAB_READONLY_USERNAME}" > ./environment.sh
+echo "GITLAB_READONLY_TOKEN=${GITLAB_READONLY_TOKEN}" >> ./environment.sh
+echo "DOCKERHUB_READONLY_USERNAME=${DOCKERHUB_READONLY_USERNAME}" >> ./environment.sh
+echo "DOCKERHUB_READONLY_TOKEN=${DOCKERHUB_READONLY_TOKEN}" >> ./environment.sh
+echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib" >> ./environment
+scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./environment.sh cades@${VM_IP}:/home/cades/environment.sh
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/environment.sh /home/builder/environment.sh'
+ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo chown builder /home/builder/environment.sh'
 
 echo "Reboot the server to ensure its in a clean state before creating the snapshot"
 openstack server reboot --wait ${VM_UUID}

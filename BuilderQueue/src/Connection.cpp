@@ -1,6 +1,7 @@
 #include "Connection.h"
 #include <boost/beast/core/buffers_to_string.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include "Docker.h"
 
 using namespace std::placeholders;
 
@@ -71,6 +72,23 @@ void Connection::request_queue_stats() {
     });
 }
 
+void Connection::request_image_list() {
+    // Persist this connection
+    auto self(shared_from_this());
+
+    // Get list of docker images
+    Logger::info("Request for image list");
+    std::make_shared<Docker>(stream.get_executor().context())->request_image_list([this, self](std::error_code ec, std::string image_list){
+        Logger::info("Writing image list");
+        stream.async_write(asio::buffer(image_list), [this, self, image_list](beast::error_code error, std::size_t bytes) {
+            boost::ignore_unused(bytes);
+            if (error) {
+                Logger::error("Wrote image list");
+            }
+        });
+    });
+}
+
 void Connection::read_request_string() {
     // Persist this connection
     auto self(shared_from_this());
@@ -85,6 +103,8 @@ void Connection::read_request_string() {
                 request_builder();
             } else if(request == "queue_status_request") {
                 request_queue_stats();
+            } else if(request == "image_list_request") {
+                request_image_list();
             } else {
                 Logger::error("Bad initial request string: " + request);
             }

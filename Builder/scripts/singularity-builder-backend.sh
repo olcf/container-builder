@@ -2,13 +2,17 @@
 
 source /home/builder/environment.sh
 
-# Test for any arguments, such as --debug
+# Test for any arguments
 for i in "$@"
 do
 case ${i} in
     --debug)
     DEBUG_FLAG='--debug'
-    shift # past argument with no value
+    shift
+    ;;
+    --tty)
+    TTY='/usr/bin/unbuffer'
+    shift
     ;;
     *)
       echo "unknown argument to singularity-builder-backend.sh"
@@ -36,4 +40,4 @@ if [[ ${GREP_RC} -eq 0 ]] ; then
 fi
 
 export SINGULARITY_CACHEDIR=/home/builder/.singularity
-/usr/bin/unbuffer /usr/local/bin/singularity ${DEBUG_FLAG} build ./container.simg ./container.def
+${TTY} /usr/local/bin/singularity ${DEBUG_FLAG} build ./container.simg ./container.def

@@ -92,6 +92,11 @@ std::string build_command(const ClientData &client_data) {
         build_command += " --debug";
     }
 
+    // Enable pseudo tty
+    if (client_data.tty) {
+        build_command += " --tty";
+    }
+
     Logger::info("Build command prepared: " + build_command);
 
     return build_command;

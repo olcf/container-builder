@@ -2,13 +2,17 @@
 
 source /home/builder/environment.sh
 
-# Test for any arguments, such as --debug
+# Test for any arguments
 for i in "$@"
 do
 case ${i} in
     --debug)
     DEBUG_FLAG='--debug'
-    shift # past argument with no value
+    shift
+    ;;
+    --tty)
+    TTY='/usr/bin/unbuffer'
+    shift
     ;;
     *)
       echo "unknown argument to singularity-builder-backend.sh"
@@ -45,13 +49,13 @@ docker ${DEBUG_FLAG} run -d -p 5000:5000 --restart=always --name registry regist
 
 # Build the Dockerfile docker image in the current directory
 mv ./container.def Dockerfile
-/usr/bin/unbuffer /usr/bin/docker ${DEBUG_FLAG} build -t localhost:5000/docker_image:latest . || { echo 'Build Failed' ; exit 1; }
+${TTY} /usr/bin/docker ${DEBUG_FLAG} build -t localhost:5000/docker_image:latest . || { echo 'Build Failed' ; exit 1; }
 
 # Push to the local registry
-/usr/bin/unbuffer /usr/bin/docker ${DEBUG_FLAG} push localhost:5000/docker_image:latest
+${TTY} /usr/bin/docker ${DEBUG_FLAG} push localhost:5000/docker_image:latest
 
 # Build the singularity container from the docker image
 export SINGULARITY_CACHEDIR=/home/builder/.singularity
 export SINGULARITY_NOHTTPS=true # Needed as we're pulling from localhost
 export SINGULARITY_PULLFOLDER=/home/builder
-/usr/bin/unbuffer /usr/local/bin/singularity ${DEBUG_FLAG} build container.simg docker://localhost:5000/docker_image:latest
+${TTY} /usr/local/bin/singularity ${DEBUG_FLAG} build container.simg docker://localhost:5000/docker_image:latest

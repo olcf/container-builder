@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /home/builder/environment.sh
+
 # Test for any arguments, such as --debug
 for i in "$@"
 do

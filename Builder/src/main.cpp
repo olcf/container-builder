@@ -80,9 +80,9 @@ std::string build_command(const ClientData &client_data) {
 
     // Basic build command
     if (client_data.backend == BackendType::singularity) {
-        build_command = "/usr/bin/sudo -E /usr/local/bin/singularity-builder-backend.sh";
+        build_command = "/usr/bin/sudo /usr/local/bin/singularity-builder-backend.sh";
     } else if (client_data.backend == BackendType::docker) {
-        build_command = "/usr/bin/sudo -E /usr/local/bin/docker-builder-backend.sh";
+        build_command = "/usr/bin/sudo /usr/local/bin/docker-builder-backend.sh";
     } else {
         throw std::runtime_error("Invalid builder backend");
     }

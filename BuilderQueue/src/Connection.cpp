@@ -5,6 +5,28 @@
 
 using namespace std::placeholders;
 
+void Connection::enable_keep_alive() {
+    auto socket = stream.next_layer().native_handle();
+
+    // Enable keep alive
+    int enable = 1;
+    int rc = setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, &enable, sizeof(enable));
+
+    // Set keep alive values
+    unsigned interval_milliseconds = 30000;
+    struct timeval tv;
+    tv.tv_sec  = interval_milliseconds / 1000;
+    tv.tv_usec = interval_milliseconds % 1000;
+    int max_retry = 5;
+    rc |= setsockopt(socket, SOL_TCP, TCP_KEEPIDLE, &tv, sizeof(tv));
+    rc |= setsockopt(socket, SOL_TCP, TCP_KEEPINTVL, &tv, sizeof(tv));
+    rc |= setsockopt(socket, SOL_TCP, TCP_KEEPCNT, &max_retry, sizeof(max_retry));
+
+    if(rc != 0) {
+        Logger::error(std::string("Error setting keepalive: ") + strerror(errno));
+    }
+}
+
 void Connection::wait_for_close() {
     // Persist this connection
     auto self(shared_from_this());

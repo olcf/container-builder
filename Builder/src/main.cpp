@@ -193,10 +193,6 @@ int main(int argc, char *argv[]) {
         acceptor.accept(client_stream.next_layer());
         client_stream.accept();
 
-        // Use keep alive, which hopefully detect badly disconnected clients
-        boost::asio::socket_base::keep_alive keep_alive(true);
-        socket.set_option(keep_alive);
-
         Logger::info("Setting the websocket stream to handle binary data and have an unlimited(uint64_t) message size");
         client_stream.binary(true);
         client_stream.read_message_max(0);

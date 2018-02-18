@@ -16,13 +16,7 @@ class Connection : public std::enable_shared_from_this<Connection> {
 public:
     explicit Connection(tcp::socket socket, BuilderQueue &queue) : stream(std::move(socket)),
                                                                    queue(queue) {
-        // Use keep alive, which hopefully detect badly disconnected clients
-        boost::asio::socket_base::keep_alive keep_alive(true);
-        boost::system::error_code ec;
-        socket.set_option(keep_alive, ec);
-        if(ec) {
-            Logger::error("Error setting keep alive on socket");
-        }
+        enable_keep_alive();
     };
 
     ~Connection() {
@@ -39,6 +33,8 @@ private:
     BuilderQueue &queue;
     beast::flat_buffer buffer;
     boost::optional<BuilderData> builder;
+
+    void enable_keep_alive();
 
     void read_request_string();
 

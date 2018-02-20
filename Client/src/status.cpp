@@ -63,7 +63,7 @@ void print_status(websocket::stream<tcp::socket> &queue_stream) {
         std::cout<<"-------------\n";
     }
 
-    std::cout<<"-------------\n";
+    std::cout<<"\n-------------\n";
     std::cout<<"Reserve builders\n";
     std::cout<<"-------------\n\n";
 

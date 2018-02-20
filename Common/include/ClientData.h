@@ -5,7 +5,6 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/serialization/string.hpp>
-#include <boost/core/ignore_unused.hpp>
 #include "Logger.h"
 
 enum class ArchType {
@@ -57,8 +56,7 @@ namespace boost {
     namespace serialization {
 
         template<class Archive>
-        void serialize(Archive &ar, ClientData &client_data, const unsigned int version) {
-            boost::ignore_unused(version);
+        void serialize(Archive &ar, ClientData &client_data, const unsigned int) {
             ar & client_data.user_id;
             ar & client_data.tty;
             ar & client_data.log_priority;

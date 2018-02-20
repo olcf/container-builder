@@ -5,7 +5,6 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/serialization/string.hpp>
-#include <boost/core/ignore_unused.hpp>
 
 class BuilderData {
 public:
@@ -22,8 +21,7 @@ namespace boost {
     namespace serialization {
 
         template<class Archive>
-        void serialize(Archive &ar, BuilderData &builder, const unsigned int version) {
-            boost::ignore_unused(version);
+        void serialize(Archive &ar, BuilderData &builder, const unsigned int) {
             ar & builder.host;
             ar & builder.port;
             ar & builder.id;

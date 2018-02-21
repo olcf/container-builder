@@ -5,20 +5,54 @@ container-builder is an interactive container building utility that gets around 
 
 Use
 =================
-Singularity recipe:
+`container-builder` requires two arguments, the name of the created container and the container definition.
 ```
 $ module load container-builder
-$ container-builder container.img singularity.recipe
-```
-Docker recipe:
-```
-$ module load container-builder
-$ container-builder --backend=docker container.img docker.recipe
+$ container-builder container.img container.recipe
+... Output streams...
 ```
 
-OLCF Recipes
-==================
-container-builder has access to the private OLCF container-recipes docker registry.
+To list base images available within `container-builder` the `cb-images` command can be used
+```
+$ cb-images
+Connecting to BuilderQueue: Connected to queue: 128.219.187.52
+Requesting image list: Fetched
+-----------------------------
+repository: olcf/titan
+tags:
+- centos-7_2018-01-18
+- ubuntu-16.04_2018-01-18
+-----------------------------
+repository: olcf/summit
+tags:
+- centos-7_2018-02-08
+```
+
+To get an overview of the builder VM status `cb-status` is available
+```
+$ cb-status
+Connecting to BuilderQueue: Connected to queue: 128.219.187.52
+[INFO] Requesting queue status
+-------------
+Active builders
+-------------
+
+ID: e6a0cd58-255c-4f17-b0df-51c5b0120d07
+HOST: 128.219.187.95
+PORT: 8080
+-------------
+
+-------------
+Reserve builders
+-------------
+
+ID: 60c95481-92f3-4491-94d3-14c45bfbc279
+HOST: 128.219.187.96
+PORT: 8080
+-------------
+
+...
+```  
 
 Implementation
 ==================

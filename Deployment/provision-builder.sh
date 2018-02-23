@@ -21,6 +21,15 @@ add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(
 apt-get update
 apt-get install -y docker-ce
 
+# Use overlay2 to get around issues with aufs .wh files blowing up singularity
+sudo systemctl stop docker
+cat << EOF > /etc/docker/daemon.json
+{
+  "storage-driver": "overlay2"
+}
+EOF
+sudo systemctl start docker
+
 # Setup firewall
 ufw default deny incoming
 ufw default allow outgoing

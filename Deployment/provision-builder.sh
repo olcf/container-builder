@@ -78,6 +78,7 @@ git clone https://github.com/singularityware/singularity.git
 cd singularity
 git fetch
 git checkout release-2.4
+./autogen.sh
 ./configure --prefix=/usr/local
 make
 make install

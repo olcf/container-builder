@@ -13,7 +13,7 @@ chmod 0440 /etc/sudoers.d/builder
 
 apt-get -y update
 apt-get -y install expect
-apt-get -y install yum rpm autogen autoconf libtool
+apt-get -y install yum rpm autogen autoconf libtool libarchive-dev
 
 # Install docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -

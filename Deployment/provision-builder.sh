@@ -74,10 +74,10 @@ EOF
 
 # Install Singularity
 cd /
-export VERSION=2.4.2
-wget -q https://github.com/singularityware/singularity/releases/download/${VERSION}/singularity-${VERSION}.tar.gz
-tar xvf singularity-${VERSION}.tar.gz
-cd singularity-${VERSION}
+git clone https://github.com/singularityware/singularity.git
+cd singularity
+git fetch
+git checkout release-2.4
 ./configure --prefix=/usr/local
 make
 make install

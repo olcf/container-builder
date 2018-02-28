@@ -8,6 +8,7 @@
 #include <boost/exception/all.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/process/system.hpp>
 #include <boost/crc.hpp>
 #include <boost/program_options.hpp>
 #include <regex>
@@ -21,7 +22,8 @@ namespace asio = boost::asio;
 using asio::ip::tcp;
 namespace beast = boost::beast;
 namespace websocket = beast::websocket;
-using bfs = boost::filesytsem;
+namespace bfs = boost::filesystem;
+namespace bp = boost::process;
 
 void write_client_data(websocket::stream<tcp::socket> &builder_stream, ClientData client_data) {
     Logger::debug("Writing client data");
@@ -77,7 +79,7 @@ void write_file(websocket::stream<tcp::socket> &stream,
     std::ifstream container;
     container.exceptions(std::ofstream::failbit | std::ofstream::badbit);
     container.open(file_name, std::fstream::in | std::fstream::binary);
-    const auto file_size = boost::filesystem::file_size(file_name);
+    const auto file_size = bfs::file_size(file_name);
 
     // Write the file in chunks to the client
     auto bytes_remaining = file_size;
@@ -247,7 +249,7 @@ bool is_singularity_recipe(std::string file_path) {
 void check_input_files(ClientData &client_data) {
 
     // Check that definition exists
-    if (!boost::filesystem::exists(client_data.definition_path)) {
+    if (!bfs::exists(client_data.definition_path)) {
         throw std::runtime_error(client_data.definition_path + " Does not exists");
     }
 
@@ -287,27 +289,26 @@ void show_cursor() {
 // Write build context to builder
 void write_context(websocket::stream<tcp::socket> &builder_stream, const ClientData &client_data) {
     // Create unique directory
-    bfs::path context_path = unique_path(bfs::temp_directory_path() + "/%%%%-%%%%-%%%%");
-    bfs::create_directories(context_path);
+    std::string context_temp_path = bfs::unique_path(bfs::temp_directory_path().string() + "/%%%%-%%%%-%%%%/cb-context").string();
+    bfs::create_directories(context_temp_path);
 
-    // If requested transfer entire context
+    // If requested copy current context directory to context tmp
     if(client_data.transfer_context) {
-
-        // Copy definition to container.def
-        bfs::
-
-        // Tar current directory(context)
-
-    } else { // Transfer just the definition file
-        // tar just the definition file
+        bfs::copy_directory(".", context_temp_path);
     }
 
-    // Transfer context
-    write_file(builder_stream, context_path);
+    // Copy the definition file to context tmp
+    bfs::copy_file(client_data.definition_path, context_temp_path + "/cb-definition");
 
-    // Remove context path
-    boost::filesytsem::remove_all(context_path);
+    // Tar context tmp directory to cb-context.tar.gz
+    std::string context_tar_file = bfs::unique_path(bfs::temp_directory_path().string() + "/%%%%-%%%%-%%%%/cb-context.tar").string();
+    bp::system("tar zcvf " + context_tar_file + " " + context_temp_path);
 
+    // Transfer context tar
+    write_file(builder_stream, context_tar_file);
+
+    // Remove context tmp
+    bfs::remove_all(context_temp_path);
 }
 
 int main(int argc, char *argv[]) {
@@ -359,17 +360,17 @@ int main(int argc, char *argv[]) {
         write_client_data(builder_stream, client_data);
 
         // Write build context/recipe
-        WaitingAnimation wait_transfer("Transfering context payload to builder");
+        WaitingAnimation wait_context("Transfering context payload to builder");
         write_context(builder_stream, client_data);
-        wait_transfer.stop_success("Transfered context");
+        wait_context.stop_success("Completed");
 
         // stream builder output
         stream_build(builder_stream);
 
         // Read container from builder
-        WaitingAnimation wait_transfer("Transferring " + client_data.container_path);
+        WaitingAnimation wait_image("Transferring " + client_data.container_path);
         read_file(builder_stream, client_data.container_path);
-        wait_transfer.stop_success("Completed");
+        wait_image.stop_success("Completed");
 
     } catch (const boost::exception &ex) {
         auto diagnostics = diagnostic_information(ex);

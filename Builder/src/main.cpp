@@ -10,14 +10,16 @@
 #include <boost/process/async_pipe.hpp>
 #include <boost/process/group.hpp>
 #include <boost/process/io.hpp>
+#include <boost/process/system.hpp>
+#include <boost/filesystem.hpp>
 #include "ClientData.h"
-#include "Logger.h"
 
 namespace asio = boost::asio;
 using asio::ip::tcp;
 namespace beast = boost::beast;
 namespace websocket = beast::websocket;
 namespace bp = boost::process;
+namespace bfs = boost::filesystem;
 
 using callback_type = std::function<void(const boost::system::error_code &, std::size_t size)>;
 
@@ -179,6 +181,17 @@ void write_file(websocket::stream<tcp::socket&> &client_stream,
     Logger::info(file_name + " successfully written");
 }
 
+void read_context(websocket::stream<tcp::socket&> &client_stream) {
+    // Read the context tarball
+    read_file(client_stream, "cb-context.tar.gz");
+
+    // Untar the context
+    bp::system("tar xf cb-context.tar.gz");
+
+    // Change current directory to context
+    bfs::current_path("./cb-context");
+}
+
 // A blocking I/O container building websocket server
 int main(int argc, char *argv[]) {
     boost::ignore_unused(argc, argv);
@@ -201,7 +214,7 @@ int main(int argc, char *argv[]) {
         auto client_data = read_client_data(client_stream);
 
         Logger::info("Reading client definition file");
-        read_file(client_stream, "container.def");
+        read_context(client_stream);
 
         Logger::info("Creating build command based upon the client data");
         auto build_string = build_command(client_data);

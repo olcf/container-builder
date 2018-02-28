@@ -113,6 +113,7 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
     desc.add_options()
             ("help", "produce help message")
             ("debug", po::bool_switch(), "enable debug information")
+            ("force", po::bool_switch(), "force the build, overwriting any existing image file")
             ("arch", po::value<std::string>()->default_value("x86_64"),
              "select architecture, valid options are x86_64 and ppc64le(Currently this does nothing)")
             ("backend", po::value<std::string>()->default_value("unspecified"),
@@ -144,6 +145,7 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
     }
 
     // Set client data based upon program arguments
+    client_data.force = vm["force"].as<bool>();
     client_data.definition_path = vm["definition"].as<std::string>();
     client_data.container_path = vm["container"].as<std::string>();
     client_data.tty = vm["tty"].as<bool>();
@@ -241,28 +243,34 @@ bool is_singularity_recipe(std::string file_path) {
 // Simple checks image and definition files provided on the command line
 void check_input_files(ClientData &client_data) {
 
-    // Detect the backend to use if not specified
-    if(client_data.backend == BackendType::unspecified) {
+    // Check that definition exists
+    if (!boost::filesystem::exists(client_data.definition_path)) {
+        throw std::runtime_error(client_data.definition_path + " Does not exists");
+    }
 
-        if(is_docker_recipe(client_data.definition_path)) {
+    // Detect the backend to use if not specified
+    if (client_data.backend == BackendType::unspecified) {
+
+        if (is_docker_recipe(client_data.definition_path)) {
             client_data.backend = BackendType::docker;
             Logger::success("Detected dockerfile");
-        }
-        else if(is_singularity_recipe(client_data.definition_path)) {
+        } else if (is_singularity_recipe(client_data.definition_path)) {
             client_data.backend = BackendType::singularity;
             Logger::success("Detected singularity file");
-        }
-        else {
+        } else {
             throw std::runtime_error("Unable to detect type of " + client_data.definition_path);
         }
 
     }
 
     // Check if image already exists
-    if( boost::filesystem::exists(client_data.container_path) ) {
-        throw std::runtime_error(client_data.container_path + " : file already exists!");
+    if (boost::filesystem::exists(client_data.container_path)) {
+        if (client_data.force) {
+            Logger::info("Forcing build: image file " + client_data.container_path + "will be overwritten");
+        } else {
+            throw std::runtime_error(client_data.container_path + " : file already exists. Add --force flag to override");
+        }
     }
-
 }
 
 void hide_cursor() {
@@ -278,7 +286,11 @@ int main(int argc, char *argv[]) {
     std::cout.setf(std::ios::unitbuf);
 
     // Catch ctrl-c and restore cursor
-    std::signal(SIGINT, [](int signal){ std::cout << "\nUser requested exit\n"; show_cursor(); std::exit(EXIT_FAILURE); });
+    std::signal(SIGINT, [](int signal) {
+        std::cout << "\nUser requested exit\n";
+        show_cursor();
+        std::exit(EXIT_FAILURE);
+    });
 
     hide_cursor();
 
@@ -324,7 +336,7 @@ int main(int argc, char *argv[]) {
         stream_build(builder_stream);
 
         // Read container from builder
-        WaitingAnimation wait_transfer("Transferring " + client_data.container_path );
+        WaitingAnimation wait_transfer("Transferring " + client_data.container_path);
         read_file(builder_stream, client_data.container_path);
         wait_transfer.stop_success("Completed");
 

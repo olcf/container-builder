@@ -44,6 +44,7 @@ class ClientData {
 public:
     std::string user_id;
     bool tty;
+    bool force;
     LogPriority log_priority;
     ArchType arch;
     BackendType backend;
@@ -59,6 +60,7 @@ namespace boost {
         void serialize(Archive &ar, ClientData &client_data, const unsigned int) {
             ar & client_data.user_id;
             ar & client_data.tty;
+            ar & client_data.force;
             ar & client_data.log_priority;
             ar & client_data.arch;
             ar & client_data.backend;

@@ -300,8 +300,8 @@ void write_context(websocket::stream<tcp::socket> &builder_stream, const ClientD
         Logger::debug("Copied full context");
     }
 
-    // Copy definition file, renaming it to cb-definition
-    bfs::copy_file(client_data.definition_path, context_temp_path + "/cb-definition");
+    // Copy definition file, renaming it to container.def
+    bfs::copy_file(client_data.definition_path, context_temp_path + "/container.def");
     Logger::debug("Copied definition: " + client_data.definition_path);
 
     // Tar context tmp directory to cb-context.tar.gz

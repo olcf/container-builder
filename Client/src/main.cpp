@@ -305,17 +305,16 @@ void write_context(websocket::stream<tcp::socket> &builder_stream, const ClientD
     Logger::debug("Copied definition: " + client_data.definition_path);
 
     // Tar context tmp directory to cb-context.tar.gz
-    std::string context_tar_file = temp_path + "/cb-context.tar";
-    bp::system("tar zcvf " + context_tar_file + " " + context_temp_path);
+    bp::system("cd " + temp_path + "&& tar zcvf cb-context.tar.gz cb_context");
     Logger::debug("Created tarball of context directory");
 
     // Transfer context tar
-    write_file(builder_stream, context_tar_file);
+    write_file(builder_stream, temp_path + "/cb-context.tar.gz");
     Logger::debug("Wrote context tarball");
 
     // Remove context tmp
     bfs::remove_all(temp_path);
-    Logger::debug("Removing temp directory" + temp_path);
+    Logger::debug("Removing temp directory: " + temp_path);
 }
 
 int main(int argc, char *argv[]) {

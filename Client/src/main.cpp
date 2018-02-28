@@ -289,26 +289,33 @@ void show_cursor() {
 // Write build context to builder
 void write_context(websocket::stream<tcp::socket> &builder_stream, const ClientData &client_data) {
     // Create unique directory
-    std::string context_temp_path = bfs::unique_path(bfs::temp_directory_path().string() + "/%%%%-%%%%-%%%%/cb-context").string();
+    std::string temp_path = bfs::unique_path(bfs::temp_directory_path().string() + "/%%%%-%%%%-%%%%").string();
+    std::string context_temp_path = temp_path + "/cb-context";
     bfs::create_directories(context_temp_path);
+    Logger::debug("Created temp context directory: " + context_temp_path);
 
     // If requested copy current context directory to context tmp
     if(client_data.transfer_context) {
-        bfs::copy_directory(".", context_temp_path);
+        bp::system("cp -r ./* " + context_temp_path);
+        Logger::debug("Copied full context");
     }
 
-    // Copy the definition file to context tmp
+    // Copy definition file, renaming it to cb-definition
     bfs::copy_file(client_data.definition_path, context_temp_path + "/cb-definition");
+    Logger::debug("Copied definition: " + client_data.definition_path);
 
     // Tar context tmp directory to cb-context.tar.gz
-    std::string context_tar_file = bfs::unique_path(bfs::temp_directory_path().string() + "/%%%%-%%%%-%%%%/cb-context.tar").string();
+    std::string context_tar_file = temp_path + "/cb-context.tar";
     bp::system("tar zcvf " + context_tar_file + " " + context_temp_path);
+    Logger::debug("Created tarball of context directory");
 
     // Transfer context tar
     write_file(builder_stream, context_tar_file);
+    Logger::debug("Wrote context tarball");
 
     // Remove context tmp
-    bfs::remove_all(context_temp_path);
+    bfs::remove_all(temp_path);
+    Logger::debug("Removing temp directory" + temp_path);
 }
 
 int main(int argc, char *argv[]) {
@@ -360,7 +367,7 @@ int main(int argc, char *argv[]) {
         write_client_data(builder_stream, client_data);
 
         // Write build context/recipe
-        WaitingAnimation wait_context("Transfering context payload to builder");
+        WaitingAnimation wait_context("Transferring build context to builder");
         write_context(builder_stream, client_data);
         wait_context.stop_success("Completed");
 

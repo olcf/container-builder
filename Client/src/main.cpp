@@ -21,6 +21,7 @@ namespace asio = boost::asio;
 using asio::ip::tcp;
 namespace beast = boost::beast;
 namespace websocket = beast::websocket;
+using bfs = boost::filesytsem;
 
 void write_client_data(websocket::stream<tcp::socket> &builder_stream, ClientData client_data) {
     Logger::debug("Writing client data");
@@ -114,6 +115,7 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
             ("help", "produce help message")
             ("debug", po::bool_switch(), "enable debug information")
             ("force", po::bool_switch(), "force the build, overwriting any existing image file")
+            ("transfer_context", po::bool_switch(), "trasnfer the contents of the current directory to the build host")
             ("arch", po::value<std::string>()->default_value("x86_64"),
              "select architecture, valid options are x86_64 and ppc64le(Currently this does nothing)")
             ("backend", po::value<std::string>()->default_value("unspecified"),
@@ -152,6 +154,7 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
     client_data.arch = Arch::to_arch(vm["arch"].as<std::string>());
     client_data.backend = Backend::to_backend(vm["backend"].as<std::string>());
     client_data.log_priority = Logger::get_priority();
+    client_data.transfer_context = vm["transfer_context"].as<bool>();
 
     // Make sure variables are set as required
     po::notify(vm);
@@ -281,6 +284,32 @@ void show_cursor() {
     std::cout << "\e[?25h";
 }
 
+// Write build context to builder
+void write_context(websocket::stream<tcp::socket> &builder_stream, const ClientData &client_data) {
+    // Create unique directory
+    bfs::path context_path = unique_path(bfs::temp_directory_path() + "/%%%%-%%%%-%%%%");
+    bfs::create_directories(context_path);
+
+    // If requested transfer entire context
+    if(client_data.transfer_context) {
+
+        // Copy definition to container.def
+        bfs::
+
+        // Tar current directory(context)
+
+    } else { // Transfer just the definition file
+        // tar just the definition file
+    }
+
+    // Transfer context
+    write_file(builder_stream, context_path);
+
+    // Remove context path
+    boost::filesytsem::remove_all(context_path);
+
+}
+
 int main(int argc, char *argv[]) {
     // Remove buffering from cout
     std::cout.setf(std::ios::unitbuf);
@@ -329,8 +358,10 @@ int main(int argc, char *argv[]) {
         // Write client data to builder
         write_client_data(builder_stream, client_data);
 
-        // Write definition to builder
-        write_file(builder_stream, client_data.definition_path);
+        // Write build context/recipe
+        WaitingAnimation wait_transfer("Transfering context payload to builder");
+        write_context(builder_stream, client_data);
+        wait_transfer.stop_success("Transfered context");
 
         // stream builder output
         stream_build(builder_stream);

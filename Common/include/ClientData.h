@@ -48,6 +48,7 @@ public:
     LogPriority log_priority;
     ArchType arch;
     BackendType backend;
+    bool transfer_context;
     std::string container_path;
     std::string definition_path;
     std::string queue_host;
@@ -64,6 +65,7 @@ namespace boost {
             ar & client_data.log_priority;
             ar & client_data.arch;
             ar & client_data.backend;
+            ar & client_data.context_path;
             ar & client_data.container_path;   // Client side container image path
             ar & client_data.definition_path;  // Client side definition path
             ar & client_data.queue_host;

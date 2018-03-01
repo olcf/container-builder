@@ -25,6 +25,19 @@ namespace websocket = beast::websocket;
 namespace bfs = boost::filesystem;
 namespace bp = boost::process;
 
+void hide_cursor() {
+    std::cout << "\e[?25l";
+}
+
+void show_cursor() {
+    std::cout << "\e[?25h";
+}
+
+void early_exit() {
+    show_cursor();
+    std::exit(EXIT_FAILURE);
+}
+
 void write_client_data(websocket::stream<tcp::socket> &builder_stream, ClientData client_data) {
     Logger::debug("Writing client data");
 
@@ -142,7 +155,7 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
     // Print help if requested or if minimum arguments aren't provided
     if (!vm.count("container") || !vm.count("definition") || vm.count("help")) {
         std::cerr << desc << std::endl;
-        exit(EXIT_FAILURE);
+        early_exit();
     }
 
     // Enable debug information
@@ -281,14 +294,6 @@ void check_input_files(ClientData &client_data) {
     }
 }
 
-void hide_cursor() {
-    std::cout << "\e[?25l";
-}
-
-void show_cursor() {
-    std::cout << "\e[?25h";
-}
-
 // Write build context to builder
 void write_context(websocket::stream<tcp::socket> &builder_stream, const ClientData &client_data) {
     // Create unique directory
@@ -335,8 +340,7 @@ int main(int argc, char *argv[]) {
     // Catch ctrl-c and restore cursor
     std::signal(SIGINT, [](int signal) {
         std::cout << "\nUser requested exit\n";
-        show_cursor();
-        std::exit(EXIT_FAILURE);
+        early_exit();
     });
 
     hide_cursor();

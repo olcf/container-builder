@@ -299,7 +299,7 @@ void write_context(websocket::stream<tcp::socket> &builder_stream, const ClientD
 
     // If requested copy current context directory to context tmp
     if(client_data.transfer_context) {
-        int cp_rc = bp::system("cp -r ./* " + context_temp_path);
+        int cp_rc = bp::system("cp -r . " + context_temp_path);
         if(cp_rc != 0) {
             throw std::runtime_error("Error copying build context");
         }
@@ -310,7 +310,7 @@ void write_context(websocket::stream<tcp::socket> &builder_stream, const ClientD
     bfs::copy_file(client_data.definition_path, context_temp_path + "/container.def");
 
     // Tar context tmp directory to cb-context.tar.gz
-    auto original_pwd = bfs::current_path();
+    std::string original_pwd = bfs::current_path().string();
     bfs::current_path(temp_path);
     int tar_rc = bp::system("tar zcvf cb-context.tar.gz cb-context");
     if(tar_rc != 0) {

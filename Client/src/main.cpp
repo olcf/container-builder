@@ -120,7 +120,7 @@ void parse_arguments(ClientData &client_data, int argc, char **argv) {
             ("help", "produce help message")
             ("debug", po::bool_switch(), "enable debug information")
             ("force", po::bool_switch(), "force the build, overwriting any existing image file")
-            ("transfer_context", po::bool_switch(), "trasnfer the contents of the current directory to the build host")
+            ("transfer_context", po::bool_switch(), "transfer the contents of the current directory to the build host")
             ("arch", po::value<std::string>()->default_value("x86_64"),
              "select architecture, valid options are x86_64 and ppc64le(Currently this does nothing)")
             ("backend", po::value<std::string>()->default_value("unspecified"),

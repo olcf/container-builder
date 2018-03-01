@@ -79,6 +79,9 @@ void write_file(websocket::stream<tcp::socket> &stream,
     std::ifstream container;
     container.exceptions(std::ofstream::failbit | std::ofstream::badbit);
     container.open(file_name, std::fstream::in | std::fstream::binary);
+    if(container.fail()) {
+        throw std::runtime_error("Failed to open file for reading: " + file_name);
+    }
     const auto file_size = bfs::file_size(file_name);
 
     // Write the file in chunks to the client
@@ -296,7 +299,10 @@ void write_context(websocket::stream<tcp::socket> &builder_stream, const ClientD
 
     // If requested copy current context directory to context tmp
     if(client_data.transfer_context) {
-        bp::system("cp -r ./* " + context_temp_path);
+        int cp_rc = bp::system("cp -r ./* " + context_temp_path);
+        if(cp_rc != 0) {
+            throw std::runtime_error("Error copying build context");
+        }
         Logger::debug("Copied full context");
     }
 
@@ -306,7 +312,10 @@ void write_context(websocket::stream<tcp::socket> &builder_stream, const ClientD
     // Tar context tmp directory to cb-context.tar.gz
     auto original_pwd = bfs::current_path();
     bfs::current_path(temp_path);
-    bp::system("tar zcvf cb-context.tar.gz cb_context");
+    int tar_rc = bp::system("tar zcvf cb-context.tar.gz cb-context");
+    if(tar_rc != 0) {
+        throw std::runtime_error("Error creating build context tarball");
+    }
     bfs::current_path(original_pwd);
     Logger::debug("Created tarball of context directory");
 

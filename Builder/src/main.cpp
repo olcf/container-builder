@@ -154,6 +154,9 @@ void write_file(websocket::stream<tcp::socket&> &client_stream,
     std::ifstream container;
     container.exceptions(std::ofstream::failbit | std::ofstream::badbit);
     container.open(file_name, std::fstream::in | std::fstream::binary);
+    if(container.fail()) {
+        throw std::runtime_error("Failed to open file for reading: " + file_name);
+    }
     const auto file_size = boost::filesystem::file_size(file_name);
 
     // Write the file in chunks to the client
@@ -186,7 +189,10 @@ void read_context(websocket::stream<tcp::socket&> &client_stream) {
     read_file(client_stream, "cb-context.tar.gz");
 
     // Untar the context
-    bp::system("tar xf cb-context.tar.gz");
+    int tar_rc = bp::system("tar xf cb-context.tar.gz");
+    if(tar_rc != 0) {
+        throw std::runtime_error("Error untarring build context");
+    }
 
     // Change current directory to context
     bfs::current_path("./cb-context");

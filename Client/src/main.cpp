@@ -302,10 +302,12 @@ void write_context(websocket::stream<tcp::socket> &builder_stream, const ClientD
 
     // Copy definition file, renaming it to container.def
     bfs::copy_file(client_data.definition_path, context_temp_path + "/container.def");
-    Logger::debug("Copied definition: " + client_data.definition_path);
 
     // Tar context tmp directory to cb-context.tar.gz
-    bp::system("cd " + temp_path + "&& tar zcvf cb-context.tar.gz cb_context");
+    auto original_pwd = bfs::current_path();
+    bfs::current_path(temp_path);
+    bp::system("tar zcvf cb-context.tar.gz cb_context");
+    bfs::current_path(original_pwd);
     Logger::debug("Created tarball of context directory");
 
     // Transfer context tar

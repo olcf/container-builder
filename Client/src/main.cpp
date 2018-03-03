@@ -288,7 +288,7 @@ void check_input_files(ClientData &client_data) {
     // Check if image already exists
     if (boost::filesystem::exists(client_data.container_path)) {
         if (client_data.force) {
-            Logger::info("Forcing build: image file " + client_data.container_path + "will be overwritten");
+            Logger::info("Forcing build: image file " + client_data.container_path + " will be overwritten");
         } else {
             throw std::runtime_error(client_data.container_path + " : file already exists. Add --force flag to override");
         }

@@ -9,6 +9,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/process/system.hpp>
+#include <boost/process/io.hpp>
 #include <boost/crc.hpp>
 #include <boost/program_options.hpp>
 #include <regex>
@@ -317,7 +318,7 @@ void write_context(websocket::stream<tcp::socket> &builder_stream, const ClientD
     // Tar context tmp directory to cb-context.tar.gz
     std::string original_pwd = bfs::current_path().string();
     bfs::current_path(temp_path);
-    int tar_rc = bp::system("tar zcvf cb-context.tar.gz cb-context");
+    int tar_rc = bp::system("tar zcvf cb-context.tar.gz cb-context",  bp::std_out > bp::null,  bp::std_err > bp::null);
     if(tar_rc != 0) {
         throw std::runtime_error("Error creating build context tarball");
     }

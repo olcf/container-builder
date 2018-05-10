@@ -48,15 +48,16 @@ function ssh_is_up() {
     ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} exit &> /dev/null
 }
 while ! ssh_is_up; do
-    sleep 1
+    sleep 3
 done
 
-# Reboot to fix a strange issue with apt-get update: Could not get lock /var/lib/apt/lists/lock - open (11: Resource temporarily unavailable)
+# Reboot to fix a strange issue with apt-get update:
+# "could not get lock /var/lib/apt/lists/lock - open (11: Resource temporarily unavailable)"
 echo "Reboot the server to work around /var/lib/apt/lists/lock issue when using apt"
 openstack server reboot --wait ${VM_UUID}
 sleep 10
 while ! ssh_is_up; do
-    sleep 1
+    sleep 3
 done
 
 echo "Fixing ORNL TCP timeout issue for current session"
@@ -65,7 +66,8 @@ ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < $
 echo "Provisioning the builder"
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo bash -s' < ${SCRIPT_DIR}/provision-builder.sh
 
-# Copy readonly credentials to the builder, these variables must be set in the gitlab runner that's running this script
+# Copy readonly credentials to the builder, these variables must be set in
+# the gitlab runner that's running this script
 echo "GITLAB_READONLY_USERNAME=${GITLAB_READONLY_USERNAME}" > ./environment.sh
 echo "GITLAB_READONLY_TOKEN=${GITLAB_READONLY_TOKEN}" >> ./environment.sh
 echo "DOCKERHUB_READONLY_USERNAME=${DOCKERHUB_READONLY_USERNAME}" >> ./environment.sh
@@ -75,17 +77,17 @@ scp -o StrictHostKeyChecking=no -i ${KEY_FILE} ./environment.sh cades@${VM_IP}:/
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo mv /home/cades/environment.sh /home/builder/environment.sh'
 ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} 'sudo chown builder /home/builder/environment.sh'
 
-echo "Reboot the server to ensure its in a clean state before creating the snapshot"
+echo "Rebooting the server to ensure a clean state before creating the snapshot"
 openstack server reboot --wait ${VM_UUID}
 
 echo "Shutting down server"
 openstack server stop ${VM_UUID}
 until openstack server list --status SHUTOFF | grep ${VM_UUID} > /dev/null 2>&1; do
-  sleep 1
+  sleep 3
 done
 echo -ne "\n"
 
-echo "Sleeping for a bit to make sure builder is completely shut down"
+echo "Sleeping for (1) minute to make sure builder is completely shut down"
 sleep 60
 
 echo "Creating builder snapshot image"

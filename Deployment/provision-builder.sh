@@ -73,6 +73,7 @@ cat << EOF > /root/.rpmmacros
 EOF
 
 # Install Singularity
+apt-get install -y libarchive-dev
 cd /
 git clone https://github.com/singularityware/singularity.git
 cd singularity

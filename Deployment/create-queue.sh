@@ -36,7 +36,7 @@ function ssh_is_up() {
     ssh -o StrictHostKeyChecking=no -i ${KEY_FILE} cades@${VM_IP} exit &> /dev/null
 }
 while ! ssh_is_up; do
-    sleep 1
+    sleep 3
 done
 
 # Reboot to fix a strange issue with apt-get update: Could not get lock /var/lib/apt/lists/lock - open (11: Resource temporarily unavailable)
@@ -44,7 +44,7 @@ echo "Reboot the server to work around /var/lib/apt/lists/lock issue when using 
 openstack server reboot --wait ${VM_UUID}
 sleep 10
 while ! ssh_is_up; do
-    sleep 1
+    sleep 3
 done
 
 echo "Fixing ORNL TCP timeout issue for current session"

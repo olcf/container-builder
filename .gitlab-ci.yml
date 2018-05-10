@@ -4,39 +4,45 @@ stages:
 
 deploy-titan:
   script:
-  - cd Deployment && ./deploy-titan.sh $CI_COMMIT_TAG
+    - cd Deployment && ./deploy-titan.sh $CI_COMMIT_TAG
   tags:
-  - Titan
+    - Titan
   stage: deploy-client
   only:
-  - tags
+    - tags
+  except:
+    - /^.*openstack.*$/
 
 deploy-summitdev:
   script:
-  - cd Deployment && ./deploy-summitdev.sh $CI_COMMIT_TAG
+    - cd Deployment && ./deploy-summitdev.sh $CI_COMMIT_TAG
   tags:
-  - SummitDev
+    - SummitDev
   stage: deploy-client
   only:
-  - tags
+    - tags
+  except:
+    - /^.*openstack.*$/
 
 deploy-summit:
   script:
-  - cd Deployment && ./deploy-summit.sh $CI_COMMIT_TAG
+    - cd Deployment && ./deploy-summit.sh $CI_COMMIT_TAG
   tags:
-  - Summit
+    - Summit
   stage: deploy-client
   only:
-  - tags
+    - tags
+  except:
+    - /^.*openstack.*$/
 
 deploy-openstack:
   script:
-  - cd Deployment && ./deploy-openstack.sh $CI_COMMIT_TAG
+    - cd Deployment && ./deploy-openstack.sh $CI_COMMIT_TAG
   tags:
-  - OpenStack
+    - OpenStack
   stage: deploy-queue
   only:
-  - tags
+    - tags
   artifacts:
     paths:
       - Deployment/artifacts/ContainerBuilderKey
